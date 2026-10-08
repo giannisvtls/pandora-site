@@ -143,15 +143,10 @@ export default defineConfig(
     files: ALL_FILES,
     extends: [unicorn.configs.recommended, sonarjs.configs.recommended],
     rules: {
-      // Components are PascalCase (BaseLayout.astro), modules kebab-case; [param] routes are Astro's
-      // and __tests__/__fixtures__ directories are the test-runner convention (the rule checks
-      // directory names too, and an ignored segment skips the whole path).
+      // Components are PascalCase (BaseLayout.astro), modules kebab-case; [param] routes are Astro's.
       'unicorn/filename-case': [
         'error',
-        {
-          cases: { kebabCase: true, pascalCase: true },
-          ignore: [String.raw`^\[.+\]\.astro$`, '^__[a-z]+__$'],
-        },
+        { cases: { kebabCase: true, pascalCase: true }, ignore: [String.raw`^\[.+\]\.astro$`] },
       ],
       // Preact components return null to render nothing, and DOM APIs return null.
       'unicorn/no-null': 'off',
@@ -177,6 +172,17 @@ export default defineConfig(
     files: ['**/*.config.{js,mjs,cjs,ts,mts}', '**/*.astro'],
     rules: { 'unicorn/no-top-level-side-effects': 'off' },
   },
+  {
+    // __tests__/__fixtures__ directories are the test-runner convention: skip the directory-name
+    // check there, but keep checking the file names inside them (an `ignore` would skip both).
+    files: ['**/__tests__/**', '**/__fixtures__/**'],
+    rules: {
+      'unicorn/filename-case': [
+        'error',
+        { cases: { kebabCase: true, pascalCase: true }, checkDirectories: false },
+      ],
+    },
+  },
 
   // --- tests: relax ---
   {
@@ -185,6 +191,10 @@ export default defineConfig(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
+      // Container API tests pass .astro components, which typed ESLint (plain TypeScript) cannot
+      // read, so they arrive as error types. A global `declare module '*.astro'` would fix that
+      // but also hide missing .astro imports from `astro check`.
+      '@typescript-eslint/no-unsafe-argument': 'off',
       'max-lines-per-function': 'off',
       'sonarjs/no-identical-functions': 'off',
     },
