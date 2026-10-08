@@ -44,7 +44,7 @@ async function loadSnapshot(
 ): Promise<void> {
   const relativePath = `content-snapshot/${collection}.json`;
   // config.root, not process.cwd(): the build can be started from another directory.
-  const raw: unknown = JSON.parse(await readFile(new URL(relativePath, config.root), 'utf8'));
+  const raw = parseJson(await readFile(new URL(relativePath, config.root), 'utf8'), relativePath);
   const items = validateItems(collection, raw, relativePath);
 
   // The data store persists between builds: clear it so a removed or changed item is never
@@ -90,6 +90,16 @@ function validateItems(collection: CollectionName, raw: unknown, relativePath: s
     );
   }
   return items;
+}
+
+// JSON.parse's own message does not say which file is broken.
+function parseJson(text: string, relativePath: string): unknown {
+  try {
+    return JSON.parse(text) as unknown;
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new SyntaxError(`${relativePath}: invalid JSON: ${reason}`, { cause: error });
+  }
 }
 
 // Names an item by its id when it has a string one, else by its position in the file.

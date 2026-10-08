@@ -44,6 +44,16 @@ describe('productSchema', () => {
     expect(result.error?.issues).toMatchObject([{ code: 'custom', path: ['name', 'en'] }]);
   });
 
+  it('rejects a product with no blurb in its source language (showIn[0] = en)', () => {
+    const product = validProduct();
+    delete product.blurb.en;
+
+    const result = productSchema.safeParse(product);
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues).toMatchObject([{ code: 'custom', path: ['blurb', 'en'] }]);
+  });
+
   it('takes the source language from showIn[0], not from English', () => {
     const product = validProduct();
     product.showIn = ['it'];

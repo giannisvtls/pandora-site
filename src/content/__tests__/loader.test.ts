@@ -38,13 +38,18 @@ function fakeContext(root: URL) {
 
 const temporaryRoots: string[] = [];
 
-// A project root whose content-snapshot/products.json holds the given items.
-async function rootWithSnapshot(items: unknown): Promise<URL> {
+// A project root whose content-snapshot/products.json holds the given text.
+async function rootWithSnapshotText(text: string): Promise<URL> {
   const directory = await mkdtemp(path.join(tmpdir(), 'content-loader-'));
   temporaryRoots.push(directory);
   await mkdir(path.join(directory, 'content-snapshot'));
-  await writeFile(path.join(directory, 'content-snapshot', 'products.json'), JSON.stringify(items));
+  await writeFile(path.join(directory, 'content-snapshot', 'products.json'), text);
   return pathToFileURL(`${directory}${path.sep}`);
+}
+
+// A project root whose content-snapshot/products.json holds the given items.
+async function rootWithSnapshot(items: unknown): Promise<URL> {
+  return rootWithSnapshotText(JSON.stringify(items));
 }
 
 // Each test sets CONTENT_SOURCE itself; the shell's value never leaks in.
@@ -81,6 +86,25 @@ describe('contentLoader', () => {
       /item "camperv3", field name\.en: /,
     );
     // Validation runs before the store is touched.
+    expect(calls).toStrictEqual([]);
+  });
+
+  it('rejects a snapshot that repeats an id, before touching the store', async () => {
+    const [item] = JSON.parse(readFileSync(SNAPSHOT, 'utf8')) as unknown[];
+    const { context, calls } = fakeContext(await rootWithSnapshot([item, item]));
+
+    await expect(contentLoader('products').load(context)).rejects.toThrow(
+      /item "camperv3": the id appears more than once/,
+    );
+    expect(calls).toStrictEqual([]);
+  });
+
+  it('names the snapshot file when it is not valid JSON', async () => {
+    const { context, calls } = fakeContext(await rootWithSnapshotText('[{"id": "camperv3",}]'));
+
+    await expect(contentLoader('products').load(context)).rejects.toThrow(
+      /^content-snapshot\/products\.json: invalid JSON: /,
+    );
     expect(calls).toStrictEqual([]);
   });
 
