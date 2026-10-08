@@ -5,4 +5,9 @@ node -e "process.exit(Number(process.versions.node.split('.')[0]) >= 24 ? 0 : 1)
   exit 1
 }
 
+# Typed lint resolves astro:content through .astro/types.d.ts, which a fresh clone does not have
+# (it is gitignored). Generate it first. This also runs the content loader, so a snapshot that
+# breaks the contract cannot be committed.
+node_modules/.bin/astro sync
+
 lint-staged
