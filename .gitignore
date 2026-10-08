@@ -4,6 +4,9 @@ node_modules/
 # build output
 dist/
 
+# test coverage reports
+coverage/
+
 # Astro generated types and content data store
 .astro/
 

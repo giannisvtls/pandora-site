@@ -143,10 +143,15 @@ export default defineConfig(
     files: ALL_FILES,
     extends: [unicorn.configs.recommended, sonarjs.configs.recommended],
     rules: {
-      // Components are PascalCase (BaseLayout.astro), modules kebab-case; [param] routes are Astro's.
+      // Components are PascalCase (BaseLayout.astro), modules kebab-case; [param] routes are Astro's
+      // and __tests__/__fixtures__ directories are the test-runner convention (the rule checks
+      // directory names too, and an ignored segment skips the whole path).
       'unicorn/filename-case': [
         'error',
-        { cases: { kebabCase: true, pascalCase: true }, ignore: [String.raw`^\[.+\]\.astro$`] },
+        {
+          cases: { kebabCase: true, pascalCase: true },
+          ignore: [String.raw`^\[.+\]\.astro$`, '^__[a-z]+__$'],
+        },
       ],
       // Preact components return null to render nothing, and DOM APIs return null.
       'unicorn/no-null': 'off',
