@@ -1,0 +1,8 @@
+# ESLint 10 + eslint-plugin-unicorn crash on Node < 24, and lint-staged then reverts the staged
+# files. Stop early with a clear message instead.
+node -e "process.exit(Number(process.versions.node.split('.')[0]) >= 24 ? 0 : 1)" || {
+  echo "pre-commit: Node 24+ is required (PATH node is $(node -v)). Put Node 24 first on PATH." >&2
+  exit 1
+}
+
+lint-staged
