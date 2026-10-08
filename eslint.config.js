@@ -93,6 +93,7 @@ export default defineConfig(
   { files: ASTRO_SCRIPT_FILES, extends: [tseslint.configs.disableTypeChecked] },
 
   // --- Preact islands: a11y for .tsx ---
+  // jsx-a11y's label rule only recognises `htmlFor`: write `htmlFor`, not Preact's native `for`.
   {
     files: ['**/*.tsx'],
     extends: [jsxA11y.flatConfigs.recommended],
@@ -112,6 +113,12 @@ export default defineConfig(
       'import-x/resolver-next': [
         createNodeResolver({
           extensions: ['.ts', '.tsx', '.mts', '.cts', '.js', '.mjs', '.cjs', '.astro', '.json'],
+          // Node-ESM style `./x.js` specifiers that point at `./x.ts` must resolve, or no-cycle misses them.
+          extensionAlias: {
+            '.js': ['.ts', '.tsx', '.js'],
+            '.mjs': ['.mts', '.mjs'],
+            '.cjs': ['.cts', '.cjs'],
+          },
         }),
       ],
     },
@@ -143,8 +150,6 @@ export default defineConfig(
       ],
       // Preact components return null to render nothing, and DOM APIs return null.
       'unicorn/no-null': 'off',
-      // Astro and ESLint configs must be `export default defineConfig(...)`, which it flags.
-      'unicorn/no-top-level-side-effects': 'off',
       // Wants `Props` -> `Properties`, but Astro types Astro.props through `interface Props`.
       'unicorn/name-replacements': 'off',
       // Duplicates @typescript-eslint/no-unused-vars (one rule, one report).
@@ -160,6 +165,12 @@ export default defineConfig(
       'max-lines-per-function': ['warn', { max: 80, skipBlankLines: true, skipComments: true }],
       'max-lines': ['warn', { max: 300, skipBlankLines: true, skipComments: true }],
     },
+  },
+  {
+    // Configs must be `export default defineConfig(...)` and .astro frontmatter is top-level
+    // by design; everywhere else the rule stays on.
+    files: ['**/*.config.{js,mjs,cjs,ts,mts}', '**/*.astro'],
+    rules: { 'unicorn/no-top-level-side-effects': 'off' },
   },
 
   // --- tests: relax ---
