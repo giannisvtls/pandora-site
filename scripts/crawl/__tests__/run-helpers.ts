@@ -1,22 +1,17 @@
 // Shared setup for the end-to-end crawl tests over the fake two-host site. The fake fetch never
-// opens a socket, and the global fetch is replaced by a guard that only lets 127.0.0.1 through.
+// opens a socket; the global fetch guard (fetch-guard-setup.ts, every test file) only lets
+// 127.0.0.1 through.
 import { readFile } from 'node:fs/promises';
 
-import { afterEach, beforeEach, vi } from 'vitest';
+import { afterEach } from 'vitest';
 
 import { cachePaths } from '../cache';
 import type { CliIo } from '../cli';
-import { HOSTS } from '../config';
-import type { FetchLike } from '../fetcher';
+import { HOSTS, type HostConfig } from '../config';
+import type { FetchLike, RequestLogEntry } from '../fetcher';
 import { byCodeUnit, crawlOutputSchema, type CrawlOutput, type UrlRecord } from '../output';
 import { runCrawl, type CrawlOptions, type CrawlResult } from '../run';
-import {
-  crawlOptions,
-  fakeFetch,
-  loopbackOnlyFetch,
-  temporaryDirectory,
-  type Route,
-} from './helpers';
+import { crawlOptions, fakeFetch, temporaryDirectory, text, xml, type Route } from './helpers';
 import { expectedUrls, testSite } from './site';
 
 export const A = 'https://invetec.eu';
@@ -26,14 +21,39 @@ export const EXPECTED = expectedUrls(ORIGINS, true).toSorted(byCodeUnit);
 
 export const fakeSite = (routes: Record<string, Route> = testSite(ORIGINS)) => fakeFetch(routes);
 
-// Registers the fetch guard and the clean-up of every output folder made by `outDir`.
+// A one-host site for focused tests: invetec.eu alone.
+export const ONE_HOST: readonly HostConfig[] = [{ origin: A, rootLang: 'el' }];
+
+// Routes of a one-host site: a robots.txt without rules, /sitemap_index.xml listing
+// /<name>.xml, that sitemap listing `locs`, and the given page routes.
+export function oneHostSite(
+  locs: readonly string[],
+  pages: Record<string, Route>,
+  name = 'page-sitemap',
+): Record<string, Route> {
+  const urls = locs.map((loc) => `<url><loc>${loc}</loc></url>`).join('');
+  return {
+    [`${A}/robots.txt`]: text('User-agent: *\nDisallow:\n'),
+    [`${A}/sitemap_index.xml`]: xml(
+      `<sitemapindex><sitemap><loc>${A}/${name}.xml</loc></sitemap></sitemapindex>`,
+    ),
+    [`${A}/${name}.xml`]: xml(`<urlset>${urls}</urlset>`),
+    ...pages,
+  };
+}
+
+export function crawlOneHost(
+  dir: string,
+  site: { fetch: FetchLike },
+  overrides: Partial<CrawlOptions> = {},
+): Promise<CrawlResult> {
+  return runCrawl(crawlOptions(ONE_HOST, dir, site.fetch, overrides));
+}
+
+// Registers the clean-up of every output folder made by `outDir`.
 export function useCrawlSandbox(): { outDir: () => Promise<string> } {
   const cleanups: (() => Promise<void>)[] = [];
-  beforeEach(() => {
-    vi.stubGlobal('fetch', loopbackOnlyFetch);
-  });
   afterEach(async () => {
-    vi.unstubAllGlobals();
     await Promise.all(cleanups.splice(0).map((cleanup) => cleanup()));
   });
   return {
@@ -64,6 +84,20 @@ export async function readJsonLines<T>(file: string): Promise<T[]> {
     .split('\n')
     .filter((line) => line !== '')
     .map((line) => JSON.parse(line) as T);
+}
+
+export type SentRequest = Extract<RequestLogEntry, { event: 'sent' }>;
+export type DoneRequest = Extract<RequestLogEntry, { event: 'done' }>;
+
+// requests.jsonl split into its `sent` and `done` lines.
+export async function readRequestLog(
+  dir: string,
+): Promise<{ sent: SentRequest[]; done: DoneRequest[] }> {
+  const lines = await readJsonLines<RequestLogEntry>(cachePaths(dir).requests);
+  return {
+    sent: lines.filter((line): line is SentRequest => line.event === 'sent'),
+    done: lines.filter((line): line is DoneRequest => line.event === 'done'),
+  };
 }
 
 export function byUrl(output: CrawlOutput, url: string): UrlRecord {

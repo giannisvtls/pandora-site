@@ -1,11 +1,17 @@
 // One URL of the crawl: fetch it (redirects followed by hand), read its head, and for a sitemap
-// page scan its links for the one-hop queue.
-import type { CacheLine, LinkScan, QueueEntry, SeedState } from './cache';
+// page scan its links for the one-hop queue. URLs are compared by urlKey (escape case ignored).
+import type { LinkScan, PageResults, QueueEntry, SeedState } from './cache';
 import { classifyPageType, inferLang, inferPathLang } from './classify';
 import { extractHead, extractHrefs } from './extract';
-import { fetchFollowing, type FollowOptions, type Http, type ShouldReadBody } from './fetcher';
+import {
+  fetchFollowing,
+  isTransientOutcome,
+  type FollowOptions,
+  type Http,
+  type ShouldReadBody,
+} from './fetcher';
 import { classifyLink, type SkipReason } from './links';
-import { byCodeUnit, type LinkCounts, type UrlRecord } from './output';
+import { byCodeUnit, urlKey, type LinkCounts, type UrlRecord } from './output';
 
 export interface PageContext {
   readonly http: Http;
@@ -13,6 +19,13 @@ export interface PageContext {
   readonly rootLang: (host: string) => string | null;
   readonly isRobotsAllowed: (url: URL) => boolean;
   readonly isSitemapUrl: (url: string) => boolean;
+}
+
+// The result of one fetch of a URL, before the queue decides whether it is final.
+export interface PageResult {
+  readonly record: UrlRecord;
+  // Link scan of a sitemap page that returned HTML; null otherwise.
+  readonly links: LinkScan | null;
 }
 
 const HTML_TYPE = /^\s*(?:text\/html|application\/xhtml\+xml)\s*(?:;|$)/i;
@@ -31,8 +44,8 @@ const SKIP_FIELDS: Record<
   other: 'skippedOther',
 };
 
-// Every link is counted once per page: by its normalized URL for a page link, by its resolved
-// URL for a skipped one. Only page links outside every sitemap become candidates.
+// Every link is counted once per page: by the urlKey of its normalized URL for a page link, of
+// its resolved URL for a skipped one. Only page links outside every sitemap become candidates.
 export function scanLinks(html: string, pageUrl: string, context: PageContext): LinkScan {
   const scan: LinkScan = {
     candidates: [],
@@ -48,8 +61,8 @@ export function scanLinks(html: string, pageUrl: string, context: PageContext): 
     const verdict = classifyLink(href, pageUrl);
     const key =
       verdict.kind === 'page'
-        ? verdict.url
-        : `${verdict.reason} ${URL.parse(href.trim(), pageUrl)?.href ?? href}`;
+        ? urlKey(verdict.url)
+        : `${verdict.reason} ${urlKey(URL.parse(href.trim(), pageUrl)?.href ?? href)}`;
     if (seen.has(key)) {
       continue;
     }
@@ -68,7 +81,7 @@ export function scanLinks(html: string, pageUrl: string, context: PageContext): 
   return scan;
 }
 
-export async function crawlEntry(entry: QueueEntry, context: PageContext): Promise<CacheLine> {
+export async function crawlEntry(entry: QueueEntry, context: PageContext): Promise<PageResult> {
   const trace = await fetchFollowing(entry.url, context.http, {
     ...context.follow,
     shouldReadBody: shouldReadHtml,
@@ -102,25 +115,22 @@ export async function crawlEntry(entry: QueueEntry, context: PageContext): Promi
   return { record, links };
 }
 
-// A result worth another try on the next run: a network error or timeout, 403, 429 or 5xx.
-// These are kept out of the resume cache, and a long streak of them stops the run.
+// A result worth another try in a later run: a network error or timeout, 403, 429 or 5xx.
 export function isTransient(record: UrlRecord): boolean {
-  const { status, error } = record;
-  return status === null
-    ? error === 'timeout' || (error?.startsWith('network:') ?? false)
-    : status >= 500 || status === 429 || status === 403;
+  return isTransientOutcome(record.status, record.error);
 }
 
-// The one-hop queue: page links found on sitemap pages that no sitemap lists, each once, sorted
-// by code unit (the default string sort).
-export function linkHopQueue(state: SeedState, done: ReadonlyMap<string, CacheLine>): QueueEntry[] {
-  const sitemapUrls = new Set(state.entries.map((entry) => entry.url));
-  const candidates = new Set<string>();
+// The one-hop queue: page links found on sitemap pages that no sitemap lists, each once by urlKey
+// (the first spelling found is kept), sorted by code unit (the default string sort).
+export function linkHopQueue(state: SeedState, results: PageResults): QueueEntry[] {
+  const sitemapKeys = new Set(state.entries.map((entry) => urlKey(entry.url)));
+  const candidates = new Map<string, string>();
   for (const entry of state.entries) {
-    const found = done.get(entry.url)?.links?.candidates ?? [];
+    const found = results.get(entry.url)?.links?.candidates ?? [];
     for (const url of found) {
-      if (!sitemapUrls.has(url)) {
-        candidates.add(url);
+      const key = urlKey(url);
+      if (!sitemapKeys.has(key) && !candidates.has(key)) {
+        candidates.set(key, url);
       }
     }
   }
@@ -133,7 +143,7 @@ export function linkHopQueue(state: SeedState, done: ReadonlyMap<string, CacheLi
 
 export function linkCounts(
   state: SeedState,
-  done: ReadonlyMap<string, CacheLine>,
+  results: PageResults,
   hopQueue: readonly QueueEntry[],
 ): Record<string, LinkCounts> {
   const counts = new Map<string, LinkCounts>(
@@ -152,7 +162,7 @@ export function linkCounts(
     ]),
   );
   for (const entry of state.entries) {
-    const scan = done.get(entry.url)?.links;
+    const scan = results.get(entry.url)?.links;
     const total = counts.get(entry.host);
     if (scan === null || scan === undefined || total === undefined) {
       continue;

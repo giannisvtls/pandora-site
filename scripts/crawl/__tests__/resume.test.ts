@@ -10,6 +10,7 @@ import type { UrlRecord } from '../output';
 import { FAST_POLITENESS, fakeClock, redirect, text, type Route } from './helpers';
 import {
   A,
+  B,
   byUrl,
   captureIo,
   cliOverrides,
@@ -67,17 +68,35 @@ describe('resume', () => {
     expect(output.urls.map((record) => record.url)).toStrictEqual(EXPECTED);
   });
 
-  it('keeps network errors, 403, 429 and 5xx out of the cache so the next run retries them', async () => {
+  it.each<[string, Route]>([
+    ['503', { status: 503 }],
+    ['403', { status: 403 }],
+    ['429', { status: 429 }],
+    [
+      'a network error',
+      () => {
+        throw new TypeError('fetch failed', { cause: { code: 'ECONNRESET' } });
+      },
+    ],
+  ])('retries a URL that answers %s in the next runs, then keeps that result', async (_, down) => {
     const dir = await outDir();
-    const down: Route = { status: 503 };
     const routes = { ...testSite(ORIGINS), [`${A}/flaky/`]: down };
-    await crawlFake(dir, fakeSite(routes));
-    expect(byUrl(await readOutput(dir), `${A}/flaky/`).status).toBe(503);
 
-    const again = fakeSite(routes);
-    await crawlFake(dir, again);
+    const first = await crawlFake(dir, fakeSite(routes));
+    const second = fakeSite(routes);
+    const secondResult = await crawlFake(dir, second);
+    const third = fakeSite(routes);
+    const thirdResult = await crawlFake(dir, third);
 
-    expect(new Set(again.calls.map((call) => call.url))).toStrictEqual(new Set([`${A}/flaky/`]));
+    expect(first).toStrictEqual({ complete: false, reason: 'retry', remaining: 1 });
+    expect(secondResult).toStrictEqual({ complete: false, reason: 'retry', remaining: 1 });
+    expect(new Set(second.calls.map((call) => call.url))).toStrictEqual(new Set([`${A}/flaky/`]));
+    expect(new Set(third.calls.map((call) => call.url))).toStrictEqual(new Set([`${A}/flaky/`]));
+    expect(thirdResult).toMatchObject({ complete: true, urls: EXPECTED.length });
+    const flaky = byUrl(await readOutput(dir), `${A}/flaky/`);
+    expect(typeof down === 'function' ? flaky.error : flaky.status).toBe(
+      typeof down === 'function' ? 'network: ECONNRESET' : down.status,
+    );
   });
 
   it('starts over with --fresh', async () => {
@@ -168,6 +187,22 @@ describe('refusing to crawl', () => {
     expect(code).toBe(EXIT_CODES.error);
     expect(io.err.join('')).toMatch(/asks for Crawl-delay 5 s/);
     expect(site.calls.map((call) => call.url)).toStrictEqual([`${A}/robots.txt`]);
+  });
+
+  it('reads every robots.txt before any sitemap: a Crawl-delay on host 2 stops all sitemaps', async () => {
+    const dir = await outDir();
+    const slowRobots = text('User-agent: *\nCrawl-delay: 2\n');
+    const site = fakeSite({ ...testSite(ORIGINS), [`${B}/robots.txt`]: slowRobots });
+    const io = captureIo();
+
+    const code = await runCli([], cliOverrides(dir, site.fetch), io);
+
+    expect(code).toBe(EXIT_CODES.error);
+    expect(io.err.join('')).toMatch(/robots\.txt of lenovo\.invetec\.eu asks for Crawl-delay 2 s/);
+    expect(site.calls.map((call) => call.url)).toStrictEqual([
+      `${A}/robots.txt`,
+      `${B}/robots.txt`,
+    ]);
   });
 
   it('records a redirect to another scheme on an allowed host without following it', async () => {

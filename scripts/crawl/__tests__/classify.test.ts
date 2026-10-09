@@ -73,6 +73,15 @@ describe('classifyPageType', () => {
     ['https://lenovo.invetec.eu/product-tag/x/', null, 'product-tag'],
     ['https://invetec.eu/product/x/', 'elementor_library-sitemap', 'product'],
     ['https://invetec.eu/en/about/', null, 'other'],
+    // Object.prototype names in a path or a sitemap name are not types.
+    ['https://invetec.eu/constructor/', null, 'other'],
+    ['https://invetec.eu/toString/', null, 'other'],
+    ['https://invetec.eu/__proto__/', null, 'other'],
+    ['https://invetec.eu/en/hasOwnProperty/x/', null, 'other'],
+    ['https://invetec.eu/x/', '__proto__-sitemap', 'other'],
+    ['https://invetec.eu/x/', 'constructor-sitemap', 'other'],
+    ['https://lenovo.invetec.eu/x/', 'wp-sitemap-posts-toString-1', 'other'],
+    ['https://invetec.eu/constructor/', '__proto__-sitemap', 'other'],
   ])('%s from %s -> %s', (url, sitemap, expected) => {
     expect(classifyPageType(url, sitemap)).toBe(expected);
   });

@@ -1,11 +1,20 @@
 // The shape of redirects/crawl.json (spec: "Output"), its builder and its atomic writer.
 import { rename, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 
 import { z } from 'zod';
 
 import { PAGE_TYPES } from './classify';
 
 const count = z.number().int().nonnegative();
+
+// The identity of a URL for every "same URL?" check of the crawl: percent-escape hex digits are
+// upper-cased (RFC 3986 section 6.2.2.1: %ce%b5 and %CE%B5 are the same octet), nothing else
+// changes (trailing slash and path case stay significant). Callers pass URL-parsed hrefs, in
+// which non-ASCII is already percent-encoded. Records keep the spelling the site used.
+export function urlKey(url: string): string {
+  return url.replaceAll(/%[\da-f]{2}/gi, (escape) => escape.toUpperCase());
+}
 
 const redirectHopSchema = z.strictObject({
   url: z.string(),
@@ -103,6 +112,17 @@ function firstUnsorted(urls: readonly { readonly url: string }[]): number {
   return urls.findIndex((record, index) => index > 0 && (urls[index - 1]?.url ?? '') >= record.url);
 }
 
+// The index of the first url whose urlKey an earlier url already has (%ce vs %CE), or -1.
+function firstSameKey(urls: readonly { readonly url: string }[]): number {
+  const keys = new Set<string>();
+  return urls.findIndex(({ url }) => {
+    const key = urlKey(url);
+    const isRepeat = keys.has(key);
+    keys.add(key);
+    return isRepeat;
+  });
+}
+
 export const crawlOutputSchema = z
   .strictObject({
     crawledAt: z.iso.datetime(),
@@ -119,6 +139,14 @@ export const crawlOutputSchema = z
         code: 'custom',
         path: ['urls', index, 'url'],
         message: 'urls must be sorted by url, without duplicates',
+      });
+    }
+    const repeat = firstSameKey(output.urls);
+    if (repeat !== -1) {
+      context.addIssue({
+        code: 'custom',
+        path: ['urls', repeat, 'url'],
+        message: 'urls must not repeat a URL with other percent-escape case',
       });
     }
     if (output.counts.urls !== output.urls.length) {
@@ -139,16 +167,17 @@ export function byCodeUnit(a: string, b: string): number {
   return a < b ? -1 : 1;
 }
 
-// One record per url (the first one wins), sorted by code unit so the order never depends on a
-// locale and diffs stay stable.
+// One record per URL by urlKey (the first one wins, so a sitemap's spelling beats a link's),
+// sorted by code unit so the order never depends on a locale and diffs stay stable.
 export function sortAndDedupe(records: Iterable<UrlRecord>): UrlRecord[] {
-  const byUrl = new Map<string, UrlRecord>();
+  const byKey = new Map<string, UrlRecord>();
   for (const record of records) {
-    if (!byUrl.has(record.url)) {
-      byUrl.set(record.url, record);
+    const key = urlKey(record.url);
+    if (!byKey.has(key)) {
+      byKey.set(key, record);
     }
   }
-  return byUrl
+  return byKey
     .values()
     .toArray()
     .toSorted((a, b) => byCodeUnit(a.url, b.url));
@@ -189,9 +218,15 @@ export function buildOutput(input: OutputInput): CrawlOutput {
   });
 }
 
-// Written to a side file first and renamed into place, so a reader never sees half a file.
-export async function writeJsonAtomic(filePath: string, value: unknown): Promise<void> {
-  const partial = `${filePath}.partial`;
+// Written to a side file in `tempDir` first and renamed into place, so a reader never sees half a
+// file. `tempDir` must be on the same volume (the crawl passes its gitignored cache folder), so
+// the rename stays atomic and a killed run leaves no stray file next to crawl.json.
+export async function writeJsonAtomic(
+  filePath: string,
+  value: unknown,
+  tempDir: string,
+): Promise<void> {
+  const partial = path.join(tempDir, `${path.basename(filePath)}.partial`);
   await writeFile(partial, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
   await rename(partial, filePath);
 }

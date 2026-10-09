@@ -1,4 +1,4 @@
-import { readdir, readFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
@@ -7,6 +7,7 @@ import {
   buildOutput,
   crawlOutputSchema,
   sortAndDedupe,
+  urlKey,
   writeJsonAtomic,
   type LinkCounts,
   type UrlRecord,
@@ -65,26 +66,40 @@ function input(records: UrlRecord[]) {
   };
 }
 
+describe('urlKey', () => {
+  it.each([
+    ['https://invetec.eu/%ce%b1/', 'https://invetec.eu/%CE%B1/'],
+    ['https://invetec.eu/%CE%B1/', 'https://invetec.eu/%CE%B1/'],
+    ['https://invetec.eu/%Ce%b1/x', 'https://invetec.eu/%CE%B1/x'],
+    // Only escape hex changes: path case and the trailing slash stay significant.
+    ['https://invetec.eu/En/About', 'https://invetec.eu/En/About'],
+    ['https://invetec.eu/en/about', 'https://invetec.eu/en/about'],
+    ['https://invetec.eu/100%25-safe/', 'https://invetec.eu/100%25-safe/'],
+  ])('%s -> %s', (url, key) => {
+    expect(urlKey(url)).toBe(key);
+  });
+});
+
 describe('sortAndDedupe', () => {
-  it('keeps the first record per url and sorts by code unit, not by locale', () => {
+  it('keeps the first record per URL (escape case ignored) and sorts by code unit', () => {
     const records = [
       record('https://invetec.eu/en/b/'),
-      record('https://invetec.eu/%ce%b1/'),
+      record('https://invetec.eu/%ce%b1/', { source: 'sitemap:page-sitemap' }),
       record('https://invetec.eu/en/a/', { title: 'first' }),
       record('https://invetec.eu/en/B/'),
       record('https://invetec.eu/en/a/', { title: 'second' }),
-      record('https://invetec.eu/%CE%B1/'),
+      record('https://invetec.eu/%CE%B1/', { source: 'link' }),
     ];
 
     const sorted = sortAndDedupe(records);
 
     expect(sorted.map((item) => item.url)).toStrictEqual([
-      'https://invetec.eu/%CE%B1/',
       'https://invetec.eu/%ce%b1/',
       'https://invetec.eu/en/B/',
       'https://invetec.eu/en/a/',
       'https://invetec.eu/en/b/',
     ]);
+    expect(sorted[0]?.source).toBe('sitemap:page-sitemap');
     expect(sorted.find((item) => item.url === 'https://invetec.eu/en/a/')?.title).toBe('first');
   });
 });
@@ -140,6 +155,15 @@ describe('crawlOutputSchema', () => {
     expect(crawlOutputSchema.safeParse(duplicated).success).toBe(false);
     expect(crawlOutputSchema.safeParse(miscounted).success).toBe(false);
   });
+
+  it('rejects two urls that differ only in percent-escape case', () => {
+    const twins = buildOutput(input([record('https://invetec.eu/%CE%B1/')]));
+    const [upper] = twins.urls;
+    const lower = { ...upper!, url: 'https://invetec.eu/%ce%b1/' };
+    const repeated = { ...twins, urls: [upper, lower], counts: { ...twins.counts, urls: 2 } };
+
+    expect(crawlOutputSchema.safeParse(repeated).success).toBe(false);
+  });
 });
 
 describe('writeJsonAtomic', () => {
@@ -148,14 +172,34 @@ describe('writeJsonAtomic', () => {
     await Promise.all(cleanups.splice(0).map((cleanup) => cleanup()));
   });
 
-  it('writes pretty UTF-8 JSON with real Greek characters and leaves no side file', async () => {
+  async function folders() {
     const { dir, remove } = await temporaryDirectory();
     cleanups.push(remove);
+    const cache = path.join(dir, '.crawl-cache');
+    await mkdir(cache);
+    return { dir, cache };
+  }
+
+  it('writes pretty UTF-8 JSON with real Greek characters and leaves no side file', async () => {
+    const { dir, cache } = await folders();
     const file = path.join(dir, 'crawl.json');
 
-    await writeJsonAtomic(file, { title: 'Επικοινωνία' });
+    await writeJsonAtomic(file, { title: 'Επικοινωνία' }, cache);
 
     expect(await readFile(file, 'utf8')).toBe('{\n  "title": "Επικοινωνία"\n}\n');
-    expect(await readdir(dir)).toStrictEqual(['crawl.json']);
+    expect(await readdir(dir)).toStrictEqual(['.crawl-cache', 'crawl.json']);
+    expect(await readdir(cache)).toStrictEqual([]);
+  });
+
+  it('writes its side file in the temp folder, never next to the target', async () => {
+    const { dir, cache } = await folders();
+    // A folder in the target's place makes the rename fail and leaves the side file behind.
+    const file = path.join(dir, 'crawl.json');
+    await mkdir(file);
+
+    await expect(writeJsonAtomic(file, { a: 1 }, cache)).rejects.toThrow();
+
+    expect(await readdir(cache)).toStrictEqual(['crawl.json.partial']);
+    expect(await readdir(dir)).toStrictEqual(['.crawl-cache', 'crawl.json']);
   });
 });

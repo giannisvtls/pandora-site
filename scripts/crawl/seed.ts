@@ -1,10 +1,17 @@
-// The seed phase, per host: robots.txt, then every sitemap file reachable from its `Sitemap:`
-// lines and the two WordPress defaults, sitemap indexes expanded recursively. Each sitemap URL
-// keeps the name of the file that listed it and its <lastmod>.
+// The requests of the seed phase: a host's robots.txt, and every sitemap file reachable from its
+// `Sitemap:` lines and the two WordPress defaults, sitemap indexes expanded recursively. Each
+// sitemap URL keeps the name of the file that listed it and its <lastmod>. seeding.ts runs them in
+// order and decides when a seed is complete.
 import type { QueueEntry } from './cache';
 import { hostOf, MAX_SITEMAP_FILES, SITEMAP_SEED_PATHS, type HostConfig } from './config';
-import { fetchFollowing, type FetchTrace, type FollowOptions, type Http } from './fetcher';
-import type { RobotsSummary, SitemapCounts, SitemapFile } from './output';
+import {
+  fetchFollowing,
+  isTransientOutcome,
+  type FetchTrace,
+  type FollowOptions,
+  type Http,
+} from './fetcher';
+import { urlKey, type RobotsSummary, type SitemapCounts, type SitemapFile } from './output';
 import { DISALLOW_ALL, NO_RULES, parseRobots, type RobotsRules } from './robots';
 import { parseSitemap, sitemapName, type ParsedSitemap, type SitemapEntry } from './sitemaps';
 
@@ -14,24 +21,43 @@ export interface SeedContext {
   readonly refuse: FollowOptions['refuse'];
 }
 
+// A seed request that failed in a way worth another seed attempt.
+export interface TransientSeedRequest {
+  readonly url: string;
+  readonly status: number | null;
+  readonly error: string | null;
+}
+
 const isSuccess = (status: number) => status >= 200 && status < 300;
 
-// 2xx: its `User-agent: *` rules. 4xx: no rules. 5xx, network errors and broken redirects:
-// disallow everything (RFC 9309: an unreachable robots.txt means "do not crawl").
-function robotsRulesOf({ status, body, error }: FetchTrace): RobotsRules {
+// 2xx: its `User-agent: *` rules. Any other 4xx but 429: no rules (RFC 9309: "unavailable").
+// 429, 5xx, network errors and broken redirects: disallow everything (RFC 9309: "unreachable").
+export function robotsRulesOf({
+  status,
+  body,
+  error,
+}: Pick<FetchTrace, 'status' | 'body' | 'error'>): RobotsRules {
   if (status === null || error !== null) {
     return DISALLOW_ALL;
   }
   if (body !== undefined && isSuccess(status)) {
     return parseRobots(body);
   }
-  return status >= 400 && status < 500 ? NO_RULES : DISALLOW_ALL;
+  const isUnavailable = status >= 400 && status < 500 && status !== 429;
+  return isUnavailable ? NO_RULES : DISALLOW_ALL;
+}
+
+// Network error, timeout, 429 or 5xx; for a sitemap file also 403, as for pages. A robots.txt 403
+// is RFC 9309's "unavailable" (no rules), a final answer.
+export function isTransientSeed(trace: FetchTrace, kind: 'robots' | 'sitemap'): boolean {
+  const isTransient = isTransientOutcome(trace.status, trace.error);
+  return isTransient && !(kind === 'robots' && trace.status === 403);
 }
 
 export async function fetchRobots(
   host: HostConfig,
   context: SeedContext,
-): Promise<{ rules: RobotsRules; summary: RobotsSummary }> {
+): Promise<{ rules: RobotsRules; summary: RobotsSummary; trace: FetchTrace }> {
   const url = `${host.origin}/robots.txt`;
   const trace = await fetchFollowing(url, context.http, {
     maxRedirects: context.maxRedirects,
@@ -39,13 +65,14 @@ export async function fetchRobots(
     refuse: context.refuse,
   });
   const rules = robotsRulesOf(trace);
-  return { rules, summary: { url, status: trace.status, ...rules, error: trace.error } };
+  return { rules, summary: { url, status: trace.status, ...rules, error: trace.error }, trace };
 }
 
-interface Discovery {
+export interface Discovery {
   readonly files: SitemapFile[];
   readonly entries: QueueEntry[];
   readonly counts: SitemapCounts;
+  readonly transient: TransientSeedRequest[];
 }
 
 type EntrySkip = 'invalid' | 'offHost' | 'query';
@@ -78,7 +105,7 @@ function safeName(url: string): string {
 }
 
 // Walks the sitemap files of one host; `visit` reads one file and returns the child sitemaps of
-// an index, which the caller visits next.
+// an index, which the caller visits next. URLs are compared by urlKey.
 class SitemapWalk {
   private readonly perFile = new Map<string, number>();
   private readonly listed = new Set<string>();
@@ -88,6 +115,7 @@ class SitemapWalk {
   private fetched = 0;
   private readonly files: SitemapFile[] = [];
   private readonly entries: QueueEntry[] = [];
+  private readonly transient: TransientSeedRequest[] = [];
 
   constructor(
     private readonly host: string,
@@ -128,6 +156,8 @@ class SitemapWalk {
     return [];
   }
 
+  // The first spelling of a URL is kept; a later one that differs only in escape case is a
+  // duplicate.
   private addUrl(entry: SitemapEntry, name: string): void {
     const url = URL.parse(entry.loc);
     const skip = entrySkip(url, this.host);
@@ -136,11 +166,12 @@ class SitemapWalk {
       return;
     }
     url.hash = '';
-    if (this.listed.has(url.href)) {
+    const key = urlKey(url.href);
+    if (this.listed.has(key)) {
       this.duplicates += 1;
       return;
     }
-    this.listed.add(url.href);
+    this.listed.add(key);
     this.entries.push({ url: url.href, host: this.host, sitemap: name, lastmod: entry.lastmod });
     this.perFile.set(name, (this.perFile.get(name) ?? 0) + 1);
   }
@@ -153,27 +184,31 @@ class SitemapWalk {
       this.skip(raw, null, skip ?? 'invalid URL');
       return [];
     }
-    if (this.seen.has(url.href)) {
+    if (this.seen.has(urlKey(url.href))) {
       return [];
     }
     if (this.fetched >= MAX_SITEMAP_FILES) {
       this.skip(url.href, null, `over the limit of ${String(MAX_SITEMAP_FILES)} sitemap files`);
       return [];
     }
-    this.seen.add(url.href);
+    this.seen.add(urlKey(url.href));
     this.fetched += 1;
     const trace = await fetchFollowing(url.href, this.context.http, {
       maxRedirects: this.context.maxRedirects,
       shouldReadBody: (status) => status === 200,
       // A redirect to a sitemap already read (wp-sitemap.xml -> sitemap_index.xml) stops there.
-      refuse: (target) => (this.seen.has(target.href) ? ALREADY_READ : this.context.refuse(target)),
+      refuse: (target) =>
+        this.seen.has(urlKey(target.href)) ? ALREADY_READ : this.context.refuse(target),
     });
     const problem = this.problemOf(trace);
     if (problem !== null || trace.body === undefined) {
       this.skip(url.href, trace.status, problem ?? 'no body');
+      if (isTransientSeed(trace, 'sitemap')) {
+        this.transient.push({ url: url.href, status: trace.status, error: trace.error });
+      }
       return [];
     }
-    this.seen.add(trace.finalUrl);
+    this.seen.add(urlKey(trace.finalUrl));
     return this.record(url.href, trace, parseSitemap(trace.body));
   }
 
@@ -186,6 +221,7 @@ class SitemapWalk {
         duplicateSitemapEntries: this.duplicates,
         skippedSitemapEntries: { ...this.skipped },
       },
+      transient: this.transient,
     };
   }
 }

@@ -2,59 +2,10 @@ import { Buffer } from 'node:buffer';
 
 import { describe, expect, it } from 'vitest';
 
-import { POLITENESS, USER_AGENT, type Politeness } from '../config';
-import {
-  createHttp,
-  fetchFollowing,
-  repairLocation,
-  type FetchLike,
-  type FollowOptions,
-  type RequestLogEntry,
-} from '../fetcher';
-import { fakeClock, fakeFetch, html, redirect, type Route } from './helpers';
-
-const ORIGIN = 'https://invetec.eu';
-const HOSTS = new Set(['invetec.eu', 'lenovo.invetec.eu']);
-
-function setup(
-  routes: Record<string, Route>,
-  options: {
-    politeness?: Partial<Politeness>;
-    isRobotsAllowed?: (url: URL) => boolean;
-    isClockFrozen?: boolean;
-  } = {},
-) {
-  const site = fakeFetch(routes);
-  const clock = fakeClock({ isFrozen: options.isClockFrozen ?? false });
-  const log: RequestLogEntry[] = [];
-  const http = createHttp({
-    fetch: site.fetch,
-    userAgent: USER_AGENT,
-    politeness: { ...POLITENESS, ...options.politeness },
-    sleep: clock.sleep,
-    now: clock.now,
-    allowedHosts: HOSTS,
-    isRobotsAllowed: options.isRobotsAllowed ?? (() => true),
-    log: (entry) => {
-      log.push(entry);
-    },
-  });
-  return { site, clock, log, http };
-}
-
-const follow: FollowOptions = {
-  maxRedirects: POLITENESS.maxRedirects,
-  shouldReadBody: (status) => status === 200,
-  refuse: (url) => (HOSTS.has(url.host) ? null : 'redirect-off-site'),
-};
-
-// A fetch that never answers until its signal aborts.
-const hang: FetchLike = (_url, init) =>
-  new Promise((_resolve, reject) => {
-    init.signal?.addEventListener('abort', () => {
-      reject(new DOMException('aborted', 'AbortError'));
-    });
-  });
+import { POLITENESS, USER_AGENT } from '../config';
+import { createHttp, fetchFollowing } from '../fetcher';
+import { html, redirect, type Route } from './helpers';
+import { follow, hang, HOSTS, logRows, ORIGIN, setup } from './http-setup';
 
 // /r0/ -> /r1/ -> ... -> /r<length>/, alternating 301 and 302.
 function redirectChain(length: number): Record<string, Route> {
@@ -141,10 +92,13 @@ describe('createHttp: retries', () => {
     expect(outcome).toMatchObject({ ok: true, status: 200, body: 'ok' });
     expect(site.calls).toHaveLength(3);
     expect(clock.sleeps.filter((ms) => ms !== 250)).toStrictEqual([1000, 2000]);
-    expect(log.map((entry) => [entry.attempt, entry.status])).toStrictEqual([
-      [1, 503],
-      [2, 502],
-      [3, 200],
+    expect(logRows(log)).toStrictEqual([
+      ['sent', 1, 1],
+      ['done', 1, 503],
+      ['sent', 2, 2],
+      ['done', 2, 502],
+      ['sent', 3, 3],
+      ['done', 3, 200],
     ]);
   });
 
@@ -199,6 +153,8 @@ describe('createHttp: retries', () => {
       now: () => 0,
       allowedHosts: HOSTS,
       isRobotsAllowed: () => true,
+      signal: new AbortController().signal,
+      firstSeq: 1,
       log: () => {
         // not asserted
       },
@@ -326,13 +282,5 @@ describe('fetchFollowing: redirects', () => {
     const trace = await fetchFollowing(`${ORIGIN}/x/`, http, follow);
 
     expect(trace).toMatchObject({ status: null, error: 'network: ENOTFOUND', redirectChain: [] });
-  });
-});
-
-describe('repairLocation', () => {
-  it('turns Latin-1-decoded UTF-8 back into text and leaves anything else alone', () => {
-    expect(repairLocation(Buffer.from('/αρχική/', 'utf8').toString('latin1'))).toBe('/αρχική/');
-    expect(repairLocation('/en/contact/')).toBe('/en/contact/');
-    expect(repairLocation('/αρχική/')).toBe('/αρχική/');
   });
 });

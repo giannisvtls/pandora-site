@@ -15,20 +15,13 @@ import {
   crawlFake,
   EXPECTED,
   fakeSite,
-  readJsonLines,
   readOutput,
+  readRequestLog,
   useCrawlSandbox,
 } from './run-helpers';
 import { CONTACT_PATH, DISALLOWED_PREFIX, PRIVACY_PATH, WORDPRESS_SYSTEM } from './site';
 
 const { outDir } = useCrawlSandbox();
-
-// The request log as written, without the RequestLogEntry literal types.
-interface LoggedRequest {
-  readonly method: string;
-  readonly url: string;
-  readonly robotsAllowed: boolean;
-}
 
 describe('crawl CLI', () => {
   it('prints the usage for --help and makes no request', async () => {
@@ -71,6 +64,7 @@ describe('a complete crawl of the fake site', () => {
       complete: true,
       outputPath: cachePaths(dir).output,
       urls: EXPECTED.length,
+      warnings: [],
     });
     const output = await readOutput(dir);
     expect(output.urls.map((record) => record.url)).toStrictEqual(EXPECTED);
@@ -201,15 +195,20 @@ describe('a complete crawl of the fake site', () => {
     const site = fakeSite();
     await crawlFake(dir, site);
 
-    const log = await readJsonLines<LoggedRequest>(cachePaths(dir).requests);
+    const { sent, done } = await readRequestLog(dir);
 
-    expect(log).toHaveLength(site.calls.length);
-    // Same requests; the order can differ, since two are in flight and finish in any order.
-    const loggedUrls = log.map((entry) => entry.url).toSorted(byCodeUnit);
-    expect(loggedUrls).toStrictEqual(site.calls.map((call) => call.url).toSorted(byCodeUnit));
-    expect(new Set(log.map((entry) => entry.method))).toStrictEqual(new Set(['GET']));
+    // Logged in the order sent; seq numbers 1..n, each joined by exactly one outcome.
+    expect(sent.map((entry) => entry.url)).toStrictEqual(site.calls.map((call) => call.url));
+    expect(sent.map((entry) => entry.seq)).toStrictEqual(sent.map((_, index) => index + 1));
+    expect(done.map((entry) => entry.seq).toSorted((a, b) => a - b)).toStrictEqual(
+      sent.map((entry) => entry.seq),
+    );
+    // The outcome names the same URL; the order can differ, since two requests are in flight.
+    const doneUrls = done.map((entry) => entry.url).toSorted(byCodeUnit);
+    expect(doneUrls).toStrictEqual(sent.map((entry) => entry.url).toSorted(byCodeUnit));
+    expect(new Set(sent.map((entry) => entry.method))).toStrictEqual(new Set(['GET']));
     expect(new Set(site.calls.map((call) => call.method))).toStrictEqual(new Set(['GET']));
-    for (const entry of log) {
+    for (const entry of sent) {
       expect(entry.robotsAllowed).toBe(true);
       const url = new URL(entry.url);
       expect(url.search).toBe('');

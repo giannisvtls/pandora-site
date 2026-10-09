@@ -50,19 +50,23 @@ const SHOP_SYSTEM_SLUGS = new Set([
   'mio-account',
 ]);
 
+// The lookup tables below are Maps, not objects: their keys come from the site (a sitemap name,
+// a path segment), and `constructor`, `toString` or `__proto__` must not find an
+// Object.prototype member.
+
 // Object types named in sitemap files: Yoast `<type>-sitemap<N>`, WordPress core
 // `wp-sitemap-posts-<type>-<N>`, `wp-sitemap-taxonomies-<type>-<N>`, `wp-sitemap-users-<N>`.
-const SITEMAP_OBJECT_TYPES: Readonly<Record<string, PageType>> = {
-  post: 'post',
-  page: 'page',
-  category: 'category',
-  post_tag: 'tag',
-  author: 'author',
-  users: 'author',
-  product: 'product',
-  product_cat: 'product-category',
-  product_tag: 'product-tag',
-};
+const SITEMAP_OBJECT_TYPES: ReadonlyMap<string, PageType> = new Map([
+  ['post', 'post'],
+  ['page', 'page'],
+  ['category', 'category'],
+  ['post_tag', 'tag'],
+  ['author', 'author'],
+  ['users', 'author'],
+  ['product', 'product'],
+  ['product_cat', 'product-category'],
+  ['product_tag', 'product-tag'],
+]);
 
 function sitemapObjectType(name: string): string | null {
   const core = /^wp-sitemap-(?:posts|taxonomies)-(.+)-\d+$/.exec(name);
@@ -74,14 +78,14 @@ function sitemapObjectType(name: string): string | null {
 }
 
 // First path segment (after a language prefix) -> page type, for URLs not typed by a sitemap.
-const PATH_TYPES: Readonly<Record<string, PageType>> = {
-  category: 'category',
-  tag: 'tag',
-  author: 'author',
-  product: 'product',
-  'product-category': 'product-category',
-  'product-tag': 'product-tag',
-};
+const PATH_TYPES: ReadonlyMap<string, PageType> = new Map([
+  ['category', 'category'],
+  ['tag', 'tag'],
+  ['author', 'author'],
+  ['product', 'product'],
+  ['product-category', 'product-category'],
+  ['product-tag', 'product-tag'],
+]);
 
 function typeFromPath(segments: string[]): PageType {
   const [first] = segments;
@@ -89,7 +93,7 @@ function typeFromPath(segments: string[]): PageType {
     return 'home';
   }
   const isShopSystem = segments.length === 1 && SHOP_SYSTEM_SLUGS.has(first);
-  return isShopSystem ? 'shop-system' : (PATH_TYPES[first] ?? 'other');
+  return isShopSystem ? 'shop-system' : (PATH_TYPES.get(first) ?? 'other');
 }
 
 // Home first (the root or a bare language root), then a WooCommerce system page, then the
@@ -102,6 +106,6 @@ export function classifyPageType(url: string, sitemap: string | null): PageType 
     return byPath;
   }
   const objectType = sitemap === null ? null : sitemapObjectType(sitemap);
-  const bySitemap = objectType === null ? undefined : SITEMAP_OBJECT_TYPES[objectType];
+  const bySitemap = objectType === null ? undefined : SITEMAP_OBJECT_TYPES.get(objectType);
   return bySitemap ?? byPath;
 }

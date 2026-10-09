@@ -1,9 +1,19 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { PageResults, type SeedState } from '../cache';
 import type { Http } from '../fetcher';
 import { classifyLink, type LinkVerdict } from '../links';
-import { scanLinks, type PageContext } from '../page';
+import type { UrlRecord } from '../output';
+import { linkHopQueue, scanLinks, type PageContext } from '../page';
 import { fixture } from './helpers';
+
+const NO_SKIPS = {
+  skippedAsset: 0,
+  skippedQuery: 0,
+  skippedExternal: 0,
+  skippedOther: 0,
+  skippedRobots: 0,
+};
 
 const CONTACT_EL =
   'https://invetec.eu/%ce%b5%cf%80%ce%b9%ce%ba%ce%bf%ce%b9%ce%bd%cf%89%ce%bd%ce%af%ce%b1/';
@@ -122,5 +132,52 @@ describe('scanLinks (one-hop filter)', () => {
     expect(scan.candidates).toHaveLength(7);
     expect(scan.pageLinks).toBe(11);
     expect(scan.skippedRobots).toBe(1);
+  });
+
+  it('counts one link for spellings that differ only in escape case, keeping the first', () => {
+    const page = ['/%cf%80/', '/%CF%80/', '/π/', '/%Cf%80/#x'].map((href) => `<a href="${href}">`);
+
+    const scan = scanLinks(
+      page.join(''),
+      'https://invetec.eu/en/',
+      pageContext(() => true),
+    );
+
+    expect(scan.candidates).toStrictEqual(['https://invetec.eu/%cf%80/']);
+    expect(scan.pageLinks).toBe(1);
+  });
+});
+
+describe('linkHopQueue', () => {
+  it('lists a link-only URL once across pages that spell its escapes differently', () => {
+    const pages = ['https://invetec.eu/a/', 'https://invetec.eu/b/'];
+    const state: SeedState = {
+      version: 2,
+      startedAt: '2026-10-09T10:00:00.000Z',
+      hosts: [],
+      robots: {},
+      sitemapCounts: {},
+      entries: pages.map((url) => ({
+        url,
+        host: 'invetec.eu',
+        sitemap: 'page-sitemap',
+        lastmod: null,
+      })),
+      warnings: [],
+    };
+    const results = new PageResults();
+    const links = ['https://invetec.eu/%cf%80/', 'https://invetec.eu/%CF%80/'];
+    for (const [index, url] of pages.entries()) {
+      results.set({
+        record: { url } as UrlRecord,
+        links: { ...NO_SKIPS, candidates: [links[index] ?? ''], pageLinks: 1 },
+        failedRuns: 0,
+        isFinal: true,
+      });
+    }
+
+    expect(linkHopQueue(state, results).map((entry) => entry.url)).toStrictEqual([
+      'https://invetec.eu/%cf%80/',
+    ]);
   });
 });

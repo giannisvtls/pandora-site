@@ -1,5 +1,5 @@
-// Test helpers for the crawler: fixtures, a fake fetch over a route table, fake clocks, and a
-// guard that makes any real request outside 127.0.0.1 fail. No helper here opens a socket.
+// Test helpers for the crawler: fixtures, a fake fetch over a route table, fake clocks and
+// temporary folders. No helper here opens a socket.
 import { readFileSync } from 'node:fs';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -111,17 +111,8 @@ export function fakeClock({ isFrozen = false }: { isFrozen?: boolean } = {}) {
   };
 }
 
-// Replaces the global fetch so a test that forgets to inject one fails instead of reaching a
-// live site. Only 127.0.0.1 passes through, to the real fetch captured at import time.
-const realFetch = fetch;
-
-export const loopbackOnlyFetch: typeof fetch = async (input, init) => {
-  const url = new URL(input instanceof Request ? input.url : String(input));
-  if (url.hostname !== '127.0.0.1') {
-    throw new Error(`test tried to reach ${url.href}; only 127.0.0.1 is allowed`);
-  }
-  return realFetch(input, init);
-};
+// The global fetch guard (installed for every test file by fetch-guard-setup.ts).
+export { loopbackOnlyFetch } from './fetch-guard';
 
 export async function temporaryDirectory(): Promise<{ dir: string; remove: () => Promise<void> }> {
   const dir = await mkdtemp(path.join(tmpdir(), 'pandora-crawl-'));

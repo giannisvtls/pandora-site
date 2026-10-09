@@ -122,34 +122,57 @@ are about to touch. When you hit a new one, add it here in the same shape.
 
 ## Redirect crawler
 
-- **Non-ASCII in source files.** An escape such as `﻿` typed through an agent's file-writing
-  tool can land in the file as the literal character.
+- **Non-ASCII in source files.** A Unicode escape typed through an agent's file-writing tool
+  (for example one for U+FEFF, the byte-order mark) can land in the file as the literal character.
   - Symptom: an invisible byte-order mark (or other raw character) inside a regex or string.
   - Fix: write code points as `String.fromCodePoint(0xfe_ff)` and classes as `\p{ASCII}` or
     `\p{Script=Greek}`; keep Greek in fixtures as real UTF-8 and check them with a byte dump
     (lead bytes `ce`/`cf`).
-- **A test that forgets to inject `fetch` would crawl the live sites.** `runCli` and `runCrawl`
-  default to the real hosts, the real `fetch` and the repo's `redirects/` folder.
+- **A test that forgets to inject `fetch` would crawl the live sites.** `runCli` defaults to the
+  real hosts, the global `fetch` and the repo's `redirects/` folder (`runCrawl` has no defaults;
+  its caller passes everything).
   - Symptom: live requests and files written into `redirects/` from a test run.
-  - Fix: crawler tests call `useCrawlSandbox()` (`__tests__/run-helpers.ts`), which replaces the
-    global `fetch` with `loopbackOnlyFetch` (127.0.0.1 only), and always pass `fetch` and `outDir`.
-- **A raw UTF-8 `Location` header.** fetch exposes header bytes as Latin-1.
-  - Symptom: a redirect to an unencoded Greek path reads as mojibake and the next hop requests
-    the wrong URL.
-  - Fix: `repairLocation()` in `fetcher.ts` re-decodes a Latin-1-only value as UTF-8 before the
-    URL is resolved. Keep crawled URLs in Node; never pass them through a shell.
-- **A stopped run exits 3.**
-  - Symptom: `npm run crawl -- --max-minutes 8` ends with `STOPPED (max-minutes)` and exit code
-    3, which wrappers such as `gates.sh run crawl` report as a failure; no `crawl.json` appears.
+  - Fix: `vitest.config.ts` lists `scripts/crawl/__tests__/fetch-guard-setup.ts` in
+    `setupFiles`, so every test file, site tests included, runs with the global `fetch` replaced
+    by `loopbackOnlyFetch` (127.0.0.1 only; anything else throws before a socket opens).
+    `fetch-guard.test.ts` proves it: `runCli` without a fetch override is refused and no socket
+    opens. Crawler tests still pass their own `fetch` and `outDir`.
+- **A raw `Location` header.** fetch exposes header bytes as Latin-1, one character per byte.
+  - Symptom: a redirect to an unencoded Greek path reads as mojibake, or a genuine Latin-1 byte
+    turns into U+FFFD, and the next hop requests a URL the server never sent.
+  - Fix: `repairLocation()` in `fetcher.ts` decodes the bytes as UTF-8 only when they are valid
+    UTF-8 (`TextDecoder` with `fatal: true`); otherwise each high byte stays that byte,
+    percent-encoded (0xE9 becomes `%E9`). Keep crawled URLs in Node; never pass them through a
+    shell.
+- **A run exits 3 without `crawl.json`.**
+  - Symptom: the run ends with exit code 3 and one of `STOPPED (max-minutes)`,
+    `STOPPED (max-requests)`, `STOPPED (failures)`, `STOPPED (retry): N URLs to retry` or
+    `STOPPED (seed-incomplete)`; wrappers such as `gates.sh run crawl` report a failure.
   - Fix: expected. Run the same command again until it prints `COMPLETE` and exits 0; only that
-    run writes `redirects/crawl.json`.
+    run writes `redirects/crawl.json`. `retry` means every URL was tried but some failed
+    (network error, timeout, 403, 429, 5xx) and still have runs left; `seed-incomplete` means a
+    robots.txt or sitemap request failed and the next run seeds again.
+- **`SEED INCOMPLETE:` lines.**
+  - Symptom: `SEED INCOMPLETE: <url> HTTP 503 (failed 1 of 3 seed attempts in a row)`, no page
+    request, no `state.json`.
+  - Fix: run again. A seed request that fails in 3 seed attempts in a row is accepted as failed
+    (a robots.txt as disallow-all for its host, a sitemap file as skipped) and named in a
+    `WARNING:` line on that run and every later one. A `WARNING:` line means `crawl.json` is
+    missing that host or that file's URLs; decide whether to rerun with `--fresh` later.
+- **A URL keeps failing.**
+  - Symptom: the same URLs appear in every run's requests and the run ends `STOPPED (retry)`.
+  - Fix: expected, and bounded. Each run tries the URLs it never tried first, then those that
+    failed in an earlier run. Only URLs that had not failed before count toward the brake of 20
+    failures in a row, so known-bad URLs cannot stop a run. After a URL has failed in 3 runs,
+    its last result is kept as final and goes into `crawl.json` with its status or error.
 - **An older `crawl.json` survives `--fresh`.**
   - Symptom: after `--fresh` and a stopped run, `redirects/crawl.json` is still the previous
     finished crawl.
   - Fix: expected; check its `crawledAt`. Only a run that finishes every URL replaces it.
 - **The crawl refuses a slow `Crawl-delay`.**
-  - Symptom: `crawl failed: robots.txt of <host> asks for Crawl-delay N s, ...`, exit 1, before
-    any sitemap or page request.
+  - Symptom: `crawl failed: robots.txt of <host> asks for Crawl-delay N s, ...`, exit 1. Every
+    host's robots.txt is read before any sitemap, so no sitemap or page has been requested on
+    any host.
   - Fix: the pause is fixed at 250 ms; changing `POLITENESS.gapMs` is a decision for the site
     owner, not a workaround.
 

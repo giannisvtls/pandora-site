@@ -5,31 +5,54 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { HOSTS, POLITENESS, USER_AGENT } from './config';
-import { runCrawl, type CrawlOptions } from './run';
+import { runCrawl, type CrawlOptions, type CrawlResult } from './run';
 
 export const EXIT_CODES = { complete: 0, error: 1, usage: 2, stopped: 3 } as const;
+
+const RUNS = String(POLITENESS.maxFailedRuns);
 
 export const USAGE = `Usage: npm run crawl -- [options]
 
 Read-only inventory of the live URLs of ${HOSTS.map((host) => host.origin).join(' and ')}:
 robots.txt, every sitemap URL, then one hop of internal page links. Writes redirects/crawl.json
-once every URL is done. Progress is kept in redirects/.crawl-cache/, so a stopped run resumes
-where it left off when started again; requests.jsonl there logs every request.
+once every URL has a final result. Progress is kept in redirects/.crawl-cache/, so a stopped run
+resumes where it left off when started again; requests.jsonl there logs every request.
 
 Options:
-  --max-minutes <n>   start no new URL after n minutes (URLs in flight finish)
+  --max-minutes <n>   stop after n minutes, seed included; requests still in flight are
+                      aborted and their URLs left for the next run
   --max-requests <n>  start no new URL after n HTTP requests in this run
-  --fresh             delete redirects/.crawl-cache/ and start over
+  --fresh             delete redirects/.crawl-cache/ (request log included) and start over
   -h, --help          print this help and exit (makes no request)
 
 Politeness: GET only, never a query-string URL; robots.txt "User-agent: *" rules obeyed;
 ${String(POLITENESS.concurrency)} requests in flight, ${String(POLITENESS.gapMs)} ms pause per slot, ${String(POLITENESS.timeoutMs / 1000)} s timeout, ${String(POLITENESS.retries)} retries with backoff on
-network errors and 5xx; up to ${String(POLITENESS.maxRedirects)} redirects followed per URL; stops after ${String(POLITENESS.maxConsecutiveFailures)} failures in a row,
-and before any page when a robots.txt Crawl-delay asks for a longer pause.
+network errors and 5xx; up to ${String(POLITENESS.maxRedirects)} redirects followed per URL; a run stops after ${String(POLITENESS.maxConsecutiveFailures)} URLs in a
+row fail that had not failed before, and before any sitemap when a robots.txt Crawl-delay asks
+for a longer pause.
 
-Exit codes: 0 complete (crawl.json written), 3 stopped early (run again to resume),
-2 bad arguments, 1 error.
+Retries across runs: a robots.txt or sitemap file that fails (network error, timeout, 429, 5xx;
+403 for a sitemap) leaves the seed incomplete and the next run seeds again; after ${RUNS} failed
+seeds in a row it is accepted as failed and named in a WARNING line. A URL that fails (network
+error, timeout, 403, 429, 5xx) is retried by later runs, after the untried URLs; its result is
+kept as final once it has failed in ${RUNS} runs.
+
+Exit codes: 0 complete (crawl.json written), 3 stopped early or URLs left to retry (run the
+same command again), 2 bad arguments or Node older than 24, 1 error.
 `;
+
+// The STOPPED line of a run that did not write crawl.json.
+function stoppedLine(result: Extract<CrawlResult, { complete: false }>): string {
+  const again = 'crawl.json was not written. Run the same command again';
+  if (result.remaining === null) {
+    const why = result.reason === 'seed-incomplete' ? 'the seed is incomplete' : 'during the seed';
+    return `STOPPED (${result.reason}): ${why}; ${again} to seed again.`;
+  }
+  const remaining = String(result.remaining);
+  return result.reason === 'retry'
+    ? `STOPPED (retry): ${remaining} URLs to retry; ${again} to retry them.`
+    : `STOPPED (${result.reason}): ${remaining} known URLs remaining; ${again} to resume.`;
+}
 
 export interface CliIo {
   readonly stdout: (text: string) => void;
@@ -132,11 +155,12 @@ export async function runCli(
     const result = await runCrawl(options);
     if (result.complete) {
       options.print(`COMPLETE: wrote ${result.outputPath} (${String(result.urls)} URLs)`);
+      for (const warning of result.warnings) {
+        options.print(`WARNING: ${warning}`);
+      }
       return EXIT_CODES.complete;
     }
-    options.print(
-      `STOPPED (${result.reason}): ${String(result.remaining)} known URLs remaining; crawl.json was not written. Run the same command again to resume.`,
-    );
+    options.print(stoppedLine(result));
     return EXIT_CODES.stopped;
   } catch (error) {
     io.stderr(`crawl failed: ${error instanceof Error ? error.message : String(error)}\n`);

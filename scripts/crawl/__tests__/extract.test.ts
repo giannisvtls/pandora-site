@@ -120,7 +120,20 @@ describe('decodeEntities', () => {
     ['&unknown; stays', '&unknown; stays'],
     ['&#0; stays', '&#0; stays'],
     ['no references', 'no references'],
+    // Object.prototype names are not entities.
+    ['&constructor; stays', '&constructor; stays'],
+    ['&__proto__; stays', '&__proto__; stays'],
+    ['&toString; &valueOf; &hasOwnProperty; stay', '&toString; &valueOf; &hasOwnProperty; stay'],
   ])('%s', (input, expected) => {
     expect(decodeEntities(input)).toBe(expected);
+  });
+
+  it('reads a title made of prototype names without throwing', () => {
+    const head = extractHead(
+      '<html><head><title>&constructor; &amp; &CONSTRUCTOR;</title></head></html>',
+      'https://invetec.eu/x/',
+    );
+
+    expect(head.title).toBe('&constructor; & &CONSTRUCTOR;');
   });
 });

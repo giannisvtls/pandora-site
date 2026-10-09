@@ -31,8 +31,12 @@ export interface Politeness {
   readonly backoffMs: number;
   // Redirects followed per URL; the next one is recorded but not followed.
   readonly maxRedirects: number;
-  // A run stops early after this many URLs in a row ended in a network error, 403, 429 or 5xx.
+  // A run stops early after this many URLs in a row ended in a network error, timeout, 403, 429
+  // or 5xx. Only URLs that had not failed in an earlier run count: it is an outage/WAF brake.
   readonly maxConsecutiveFailures: number;
+  // Runs in which a URL may end that way before its last result is kept as final; also the seed
+  // attempts in a row a robots.txt or sitemap file may fail before it is accepted as failed.
+  readonly maxFailedRuns: number;
 }
 
 export const POLITENESS: Politeness = {
@@ -43,6 +47,7 @@ export const POLITENESS: Politeness = {
   backoffMs: 1000,
   maxRedirects: 5,
   maxConsecutiveFailures: 20,
+  maxFailedRuns: 3,
 };
 
 // Fetched on every host besides the robots.txt `Sitemap:` lines (Yoast, then WordPress core).

@@ -174,19 +174,27 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
 301 map. The hosts, the politeness values and the User-Agent are constants in `config.ts`; no flag
 can point the crawler anywhere else.
 
-- **What it fetches, per host:** `robots.txt`; every sitemap reachable from its `Sitemap:` lines,
-  `/sitemap_index.xml` (Yoast) and `/wp-sitemap.xml` (WordPress core), indexes expanded
-  recursively; every sitemap URL; then, once, every same-host page link found on a sitemap page
-  that no sitemap lists (`source: "link"`; their own links are not followed).
+- **What it fetches:** first the `robots.txt` of both hosts; then, per host, every sitemap
+  reachable from its `Sitemap:` lines, `/sitemap_index.xml` (Yoast) and `/wp-sitemap.xml`
+  (WordPress core), indexes expanded recursively; every sitemap URL; then, once, every same-host
+  page link found on a sitemap page that no sitemap lists (`source: "link"`; their own links are
+  not followed).
 - **Safety:** GET only, never a URL with a query string, never a host other than the two;
-  `robots.txt` `User-agent: *` Allow/Disallow obeyed for every request (an unreachable
-  `robots.txt` means "disallow all"); 2 requests in flight, 250 ms pause per slot, 20 s timeout,
-  2 retries (1 s, then 2 s) on network errors and 5xx; redirects followed by hand, at most 5 per
-  URL, never to another site or a query string. A `robots.txt` `Crawl-delay` longer than 250 ms
-  stops the crawl before any page request. 20 URLs in a row ending in a network error, 403, 429
-  or 5xx stop the run. The one-hop filter drops fragments, query strings, `/wp-content/`,
-  `/wp-json/`, `/wp-admin/`, `/wp-includes/`, `wp-*.php`, `xmlrpc.php`, feeds and every file
-  extension but `.html`/`.htm`/`.php`; skipped links are counted, not listed.
+  `robots.txt` `User-agent: *` Allow/Disallow obeyed for every request (a 4xx other than 429
+  means no rules; 429, 5xx or a network error means "disallow all", RFC 9309); 2 requests in
+  flight, 250 ms pause per slot, 20 s timeout, 2 retries (1 s, then 2 s) on network errors and
+  5xx; redirects followed by hand, at most 5 per URL, never to another site or a query string. A
+  `robots.txt` `Crawl-delay` longer than 250 ms on either host stops the crawl (exit 1) before
+  any sitemap request. 20 URLs in a row ending in a network error, timeout, 403, 429 or 5xx stop
+  the run, counting only URLs that had not failed in an earlier run. The one-hop filter drops
+  fragments, query strings, `/wp-content/`, `/wp-json/`, `/wp-admin/`, `/wp-includes/`,
+  `wp-*.php`, `xmlrpc.php`, feeds and every file extension but `.html`/`.htm`/`.php`; skipped
+  links are counted, not listed.
+- **URL identity:** two URLs that differ only in the case of a percent-escape (`%ce%b5` and
+  `%CE%B5`, RFC 3986 6.2.2.1) are the same URL (`urlKey()` in `output.ts`): one sitemap entry
+  (the other counts as a duplicate), never a link-only URL when a sitemap lists it, one record.
+  Records keep the spelling the site used; a sitemap's spelling wins over a link's. Path case and
+  the trailing slash stay significant.
 - **Output:** `{ crawledAt, tool, hosts, robots, counts, urls }`, schema `crawlOutputSchema` in
   `output.ts`. `urls` is sorted by `url` (code-unit order) with one record per URL: `url`,
   `host`, `source` (`sitemap:<file name>` or `link`), `lastmod`, `status`, `redirectChain`
@@ -201,17 +209,43 @@ can point the crawler anywhere else.
   `<html lang>` (`en-US` -> `en`), else `pathLang`. `pageType` is `home` for `/` and a bare
   language root, `shop-system` for WooCommerce shop/cart/checkout/my-account pages, then the
   sitemap file's object type, then the URL pattern, else `other`.
-- **Resume and chunks:** `redirects/.crawl-cache/` (gitignored) holds `state.json` (robots and
-  sitemaps, read once), `pages.jsonl` (one finished URL per line) and `requests.jsonl` (every
-  request: `ts`, `method`, `url`, `status`, `attempt`, `robotsAllowed`, `error`). Running the same
-  command again resumes; `--fresh` deletes the cache. `--max-minutes <n>` / `--max-requests <n>`
-  stop starting new URLs, print the remaining count and exit 3. Results worth retrying (network
-  error, 403, 429, 5xx) stay out of the cache, so the next run fetches them again.
-  `crawl.json` is written (atomically) only by a run that finishes every URL; exit 0.
+- **Resume and chunks:** `redirects/.crawl-cache/` (gitignored; only `--fresh` deletes it) holds
+  `state.json` (the finished seed: robots, sitemaps, sitemap URLs, accepted seed failures),
+  `seed-failures.json` (until the seed finishes), `pages.jsonl` (one line per URL per run that
+  tried it: `record`, `links`, `failedRuns`, `isFinal`; the last line per URL wins) and
+  `requests.jsonl`. Running the same command again resumes. `--max-minutes <n>` is a hard bound,
+  seed included: at the deadline the requests in flight are aborted and their URLs left for the
+  next run (not failures, not cached). `--max-requests <n>` stops starting new URLs.
+- **Retries across runs:**
+  - Seed: a robots.txt or sitemap request that fails (network error, timeout, 429, 5xx; 403 too
+    for a sitemap file) leaves the seed incomplete: no `state.json`, a
+    `SEED INCOMPLETE: <url> <status or error> (failed N of 3 seed attempts in a row)` line per
+    failure, exit 3, and the next run seeds again. A robots.txt failure ends the attempt before
+    any sitemap request. After 3 failed seed attempts in a row the request is accepted as failed:
+    robots.txt as disallow-all for its host, a sitemap file as `skipped` with its status and a
+    note. Each accepted failure is printed as a `WARNING:` line by that run and every later one,
+    and again after `COMPLETE`. A sitemap 404/410 is "not present"; a robots.txt 4xx other than
+    429 means no rules.
+  - Pages: a URL that ends in a network error, timeout, 403, 429 or 5xx stays open. Each run
+    tries the URLs it never tried before those that failed in an earlier run. After a URL has
+    failed in 3 runs its last result is final and goes into `crawl.json` with its status or
+    error.
+- **Exit codes and the last lines:** `COMPLETE: wrote <path> (N URLs)`, exit 0, only when every
+  URL has a final result (the last progress line says `0 remaining`); `crawl.json` is written
+  atomically through `.crawl-cache/`. Otherwise exit 3 with `STOPPED (<reason>)`: `max-minutes`,
+  `max-requests`, `failures` (the brake), `retry` (`N URLs to retry`: every URL was tried, some
+  have runs left) or `seed-incomplete`. Exit 2 for bad arguments or a Node older than 24 (checked
+  before anything is loaded), exit 1 for an error (such as a long Crawl-delay).
+- **Request log:** `requests.jsonl` has a `sent` line just before each request goes out
+  (`event`, `seq`, `ts`, `method`, `url`, `attempt`, `robotsAllowed`) and a `done` line when it
+  ends (`event`, `seq`, `ts`, `url`, `status`, `error`, which can be `aborted`). Join them on
+  `seq`, which continues across runs; a `sent` line without a `done` line is a request cut by a
+  killed process. A robots-disallowed URL is never sent, so it is never logged.
 - **Tests** never touch the network: fixtures in `scripts/crawl/__fixtures__/` are synthetic
   Yoast/WordPress-core files, the unit and end-to-end tests use a fake `fetch`, the dry run serves
-  the fixtures from two local servers on 127.0.0.1, and the global `fetch` is replaced by a guard
-  that refuses any other host.
+  the fixtures from two local servers on 127.0.0.1. A Vitest setup file
+  (`scripts/crawl/__tests__/fetch-guard-setup.ts`, in `setupFiles`) replaces the global `fetch`
+  for every test file with a guard that refuses any host but 127.0.0.1.
 
 ## CI
 

@@ -10,6 +10,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { cachePaths, type CacheLine } from '../cache';
 import { EXIT_CODES, runCli } from '../cli';
 import { POLITENESS, USER_AGENT } from '../config';
+import type { RequestLogEntry } from '../fetcher';
 import { byCodeUnit, crawlOutputSchema } from '../output';
 import { loopbackOnlyFetch, temporaryDirectory, type FakeCall, type Route } from './helpers';
 import {
@@ -28,12 +29,8 @@ interface Hit {
   readonly userAgent: string;
 }
 
-// The request log as written, without the RequestLogEntry literal types.
-interface LoggedRequest {
-  readonly method: string;
-  readonly url: string;
-  readonly robotsAllowed: boolean;
-}
+type LoggedLine = RequestLogEntry;
+type LoggedRequest = Extract<RequestLogEntry, { event: 'sent' }>;
 
 function jsonLines<T>(text: string): T[] {
   return text
@@ -137,7 +134,9 @@ async function dryRun() {
     printed: printed.join(''),
     raw,
     output: crawlOutputSchema.parse(JSON.parse(raw)),
-    log: jsonLines<LoggedRequest>(requests),
+    log: jsonLines<LoggedLine>(requests).filter(
+      (line): line is LoggedRequest => line.event === 'sent',
+    ),
     cachedUrls: jsonLines<CacheLine>(pages).map((line) => line.record.url),
     remove,
   };
