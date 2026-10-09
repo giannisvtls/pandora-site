@@ -21,7 +21,8 @@ content-snapshot/     products.json: the snapshot content source (one product)
 docs/                 this brief, gotchas.md
 e2e/                  Playwright + axe specs, run against `astro preview`
 public/_redirects     root redirect for the static host: /  /en/  302
-redirects/            crawl.json (live URL inventory, written by `npm run crawl`); .crawl-cache/
+redirects/            crawl.json (live URL inventory, written by `npm run crawl`), CRAWL.md (its
+                      summary, written by `npm run crawl:summary`); .crawl-cache/ (gitignored)
 scripts/crawl/        read-only redirect crawler (run with tsx), __fixtures__/, __tests__/
 src/
   content/            contract.ts (Zod contract), loader.ts (Content Layer loader), __tests__/
@@ -47,6 +48,9 @@ src/
 - `scripts/crawl/crawl.ts` -- `npm run crawl` entry; `cli.ts` reads the flags, `run.ts` runs the
   phases, `fetcher.ts` is the only code that sends requests, `output.ts` holds the `crawl.json`
   schema
+- `scripts/crawl/summary.ts` -- `npm run crawl:summary` entry; `summary-cli.ts` checks
+  `crawl.json` and writes or `--check`s `CRAWL.md`, `summary-render.ts`, `summary-coverage.ts`
+  and `summary-open-items.ts` hold its sections
 
 ## Entry Points
 
@@ -54,7 +58,8 @@ src/
 - Content: `src/content.config.ts` -> `src/content/loader.ts` -> `content-snapshot/*.json`
 - Build output: `dist/` (`dist/en/index.html`, `dist/_redirects`)
 - CI: `.github/workflows/ci.yml`, `.github/workflows/pr-title.yml`
-- Crawl: `npm run crawl` -> `scripts/crawl/crawl.ts` -> `redirects/crawl.json`
+- Crawl: `npm run crawl` -> `scripts/crawl/crawl.ts` -> `redirects/crawl.json`; then
+  `npm run crawl:summary` -> `scripts/crawl/summary.ts` -> `redirects/CRAWL.md`
 
 ## Dependencies
 
@@ -105,6 +110,8 @@ avoids EBADENGINE warnings). npm scripts and Playwright's `webServer` run whiche
 | `npm run test:e2e`                 | Playwright: builds, starts `astro preview` on port 4321, runs `e2e/` in Chromium           |
 | `npm run crawl -- --help`          | Crawler usage; makes no request                                                            |
 | `npm run crawl -- --max-minutes 8` | Read-only crawl of the live sites, in a chunk; run it again to resume (see Redirect crawl) |
+| `npm run crawl:summary`            | Write `redirects/CRAWL.md` from `redirects/crawl.json` (no network)                        |
+| `npm run crawl:summary -- --check` | Fail when `CRAWL.md` does not match `crawl.json`; writes nothing                           |
 
 - First e2e run on a machine: `npx playwright install chromium`. Stop `npm run dev` (or any
   preview) first: the dev server, the preview and the e2e run all use port 4321.
@@ -246,6 +253,20 @@ can point the crawler anywhere else.
   ends (`event`, `seq`, `ts`, `url`, `status`, `error`, which can be `aborted`). Join them on
   `seq`, which continues across runs; a `sent` line without a `done` line is a request cut by a
   killed process. A robots-disallowed URL is never sent, so it is never logged.
+- **Summary:** `npm run crawl:summary` reads `crawl.json` (no network), validates it against
+  `crawlOutputSchema`, cross-checks its own counts (each sitemap file's URL count equals the
+  records with that `source`, per-host and link-only totals) and writes `CRAWL.md`: totals,
+  sitemaps and robots.txt, URLs by host x `lang` x `pageType`, final results with the non-200,
+  redirect-loop and redirect lists, robots meta and noindex pages, hreflang siblings of the Greek
+  pages, link-hop orphans, the roadmap's Open item 5 (language trees by path and `<html lang>`)
+  and Open item 6 (URL groups with no planned new home) and the `_redirects` rule-limit line for
+  Phase 7. It maps no URL to a new page. The Markdown goes through Prettier's API with the repo
+  config, so `format:check` agrees with it. `--check` writes nothing and exits 1, naming the
+  first differing line, when `CRAWL.md` is not exactly what `crawl.json` gives; the unit test
+  `the committed inventory` runs the same check, so CI fails on a hand edit or a stale summary.
+- **The committed inventory:** `crawl.json` and `CRAWL.md` hold the crawl of 2026-10-09: 4,639
+  URLs (invetec.eu 2,115, lenovo.invetec.eu 2,524; 4,146 from sitemaps, 493 from the link hop).
+  After a new crawl, run `npm run crawl:summary` and commit both files together.
 - **Tests** never touch the network: fixtures in `scripts/crawl/__fixtures__/` are synthetic
   Yoast/WordPress-core files, the unit and end-to-end tests use a fake `fetch`, the dry run serves
   the fixtures from two local servers on 127.0.0.1. A Vitest setup file
@@ -284,7 +305,7 @@ Phase 0 limits:
   comes with Phase 1.
 - The skip link text, "Skip to main content", is English on every locale until Phase 1's UI
   strings translate it.
-- `redirects/crawl.json` exists only once a crawl has finished; the crawler does not build the
-  redirect map itself.
+- `redirects/crawl.json` is the inventory, not the redirect map: the crawler and the summary map
+  no old URL to a new page (Phase 7 builds the map).
 
 Repo-specific traps and their fixes: `docs/gotchas.md`.

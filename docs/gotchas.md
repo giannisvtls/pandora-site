@@ -179,6 +179,46 @@ are about to touch. When you hit a new one, add it here in the same shape.
     any host.
   - Fix: the pause is fixed at 250 ms; changing `POLITENESS.gapMs` is a decision for the site
     owner, not a workaround.
+- **A full crawl is many chunks.** The live pages are slow (about 1-2 s each at 2 in flight).
+  - Symptom: a `--max-minutes 7` chunk finishes about 320-530 URLs; the full crawl of 4,639 URLs
+    took 12 chunks (about 87 minutes), the last ones in the link-hop phase.
+  - Fix: run the same command in the foreground until `COMPLETE`; never in the background with
+    polling, never through `| head`.
+- **`aborted`, `502` and `UND_ERR_SOCKET` lines in `requests.jsonl`.**
+  - Symptom: each chunk logs one or two `done` lines with `error: "aborted"`; a few lines show a
+    502 or a socket reset.
+  - Fix: expected. `aborted` is the `--max-minutes` deadline cutting the requests in flight (their
+    URLs are fetched again by the next chunk). A 5xx or network error is retried within the same
+    URL (attempts 2 and 3 in the log) before its result is recorded, so a failed request is not a
+    failed URL; `pages.jsonl` holds the URL results.
+- **Sitemap files that 404 or redirect on invetec.eu.** Its robots.txt lists
+  `/sitemap-index.xml` and `/sitemap-index-1.xml` (both 404), `/sitemap.xml` redirects to Yoast's
+  `/sitemap_index.xml`, and `/wp-sitemap.xml` 301s there too.
+  - Symptom: `skipped` entries with HTTP 404 or 301 in `crawl.json` `hosts[].sitemaps`.
+  - Fix: expected and not a `WARNING:` (a 404 means "not present"); the Yoast index lists every
+    sitemap URL. The CRAWL.md sitemap table shows each file.
+- **`<html lang>` that disagrees with the path.** lenovo.invetec.eu serves `<html lang="en-US">`
+  on every page, its Italian `/it/product/` pages included; invetec.eu's `/b2b/` pages sit under
+  the root (`pathLang` `el`) but declare `it-IT` (`/b2b/it/`) or `en-GB` (`/b2b/`).
+  - Symptom: lenovo.invetec.eu counts under `lang` `en` in CRAWL.md; `/b2b/` pages appear as
+    language-tree mismatches.
+  - Fix: expected; `lang` prefers `<html lang>`. Read `pathLang` for the path's language.
+- **Broken links on the live site reach the link hop.** Some invetec.eu pages link to two URLs
+  glued together (`/it/products-moto-protection-it/https://invetec.eu/...`), and the site
+  redirects them to a path with `https:/` before answering 404.
+  - Symptom: odd 404s, some after a 301, in CRAWL.md's "Not 200" list.
+  - Fix: expected; they are the site's own links, kept for Phase 7.
+- **`CRAWL.md` is generated.**
+  - Symptom: `npm run crawl:summary -- --check`, and the unit test `the committed inventory`,
+    fail after a new crawl or a hand edit, naming the first differing line.
+  - Fix: run `npm run crawl:summary` after every crawl and commit `crawl.json` and `CRAWL.md`
+    together; never edit `CRAWL.md` by hand. The generator refuses a `crawl.json` whose sitemap
+    counts do not equal its records, so a partial or edited `crawl.json` never gets a summary.
+- **Prettier pads Markdown table columns to the widest cell.**
+  - Symptom: a table of long percent-encoded Greek URLs becomes hundreds of characters wide.
+  - Fix: the summary lists URLs as bullets and keeps tables for counts; its Markdown goes through
+    Prettier's API (`formatSummary`), checked to be stable on a second pass, so `format:check`
+    and `--check` agree.
 
 ## Astro and content
 
