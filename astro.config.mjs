@@ -11,4 +11,7 @@ export default defineConfig({
     defaultLocale: 'el',
     routing: { prefixDefaultLocale: true, redirectToDefaultLocale: false },
   },
+  // `astro preview` must fail when 4321 is taken instead of moving to 4322, where Playwright's
+  // webServer never looks (it would time out after 120 s).
+  vite: { preview: { strictPort: true } },
 });

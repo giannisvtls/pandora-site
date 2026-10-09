@@ -23,8 +23,8 @@ public/_redirects     root redirect for the static host: /  /en/  302
 src/
   content/            contract.ts (Zod contract), loader.ts (Content Layer loader), __tests__/
   content.config.ts   the `products` collection
-  components/         ProductSummary.astro
-  layouts/            BaseLayout.astro (lang, title, skip link, main#main)
+  components/         ProductSummary.astro, __tests__/
+  layouts/            BaseLayout.astro (lang, title, skip link, main#main), __tests__/
   pages/[locale]/     index.astro, the only page (builds /en/ only)
   test/               setup.ts, redirects.test.ts, fixtures/ (a test-only Preact island)
 ```
@@ -115,7 +115,7 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
      requires `name` and `blurb` in the source language.
 2. **Loader** (`src/content/loader.ts`): `contentLoader(collection)` returns an Astro `Loader`.
    It reads `CONTENT_SOURCE` on every load:
-   - unset: `snapshot`. It reads `content-snapshot/<collection>.json` from the project root,
+   - unset or `snapshot`: the snapshot. It reads `content-snapshot/<collection>.json` from the project root,
      validates every item before touching the store (each error names the item id and the field
      path; a repeated id and invalid JSON are errors too), then `store.clear()` and one
      `store.set()` per item, by id.
@@ -131,9 +131,10 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
 
 - **The snapshot** (`content-snapshot/products.json`) holds one product, `camperv3`, with English
   text and the Greek blurb.
-- **The data store** lives in `node_modules/.astro/data-store.json`, not in `.astro/`. It persists
-  between builds; the loader clears it on every load, so a changed or removed item is never served
-  stale.
+- **The data store**: `astro build`, `sync` and `check` keep it in
+  `node_modules/.astro/data-store.json`; `astro dev` keeps its own in `.astro/data-store.json`. It
+  persists between runs; the loader clears it on every load, so a changed or removed item is never
+  served stale.
 - **`CONTENT_SOURCE` comes only from the process environment** (shell or CI). A `.env` entry is
   ignored, because Astro loads `.env` after the content sync. CI leaves it unset.
 - **Adding a collection:** its schema in `contract.ts`, an entry in the loader's `CONTRACTS` map,
@@ -156,8 +157,8 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
 
 ## CI
 
-- `ci.yml` runs on pull requests to `main` and pushes to `main`; a newer run cancels an older one
-  on the same ref. `permissions: contents: read`, `ASTRO_TELEMETRY_DISABLED: 1`, Node from
+- `ci.yml` runs on pull requests to `main` and pushes to `main`; a newer push to a PR cancels its
+  older run, while every commit on `main` keeps its own result. `permissions: contents: read`, `ASTRO_TELEMETRY_DISABLED: 1`, Node from
   `.nvmrc`, actions pinned to major tags.
   - **quality:** `npm ci`, `lint`, `format:check`, `typecheck`, `test`, `build`.
   - **e2e:** `npm ci`, `npx playwright install --with-deps chromium`, `test:e2e`; the

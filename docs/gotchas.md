@@ -14,7 +14,8 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Fix: put Node 24's `node` and `npm` first on PATH before any npm command or `git commit`.
     The hook's guard exists because lint-staged reverts the staged files when ESLint crashes.
 - **EBADENGINE warnings on an early Node 24.** eslint-plugin-astro 3.2.1 and astro-eslint-parser
-  3.2.0 declare Node `^24.16.0`; jsdom 30.1.2 declares `^24.15.0`.
+  3.2.0 declare Node `^24.16.0`; jsdom 30.1.2 and some of its dependencies (w3c-xmlserializer,
+  @asamuzakjp/\*) declare `^24.15.0`.
   - Symptom: `npm ci` prints EBADENGINE warnings; lint and tests still work.
   - Fix: use a current Node 24 (24.16 or newer). `engines` stays `>=24`.
 - **eslint-plugin-jsx-a11y peer-caps ESLint 9.** 6.10.2 declares a peer of `eslint ^9` but works
@@ -102,12 +103,13 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: items written with `store.set()` are never checked against `schema`.
   - Fix: the loader validates every item against the contract itself, before touching the
     store.
-- **The Content Layer data store persists between builds.** It lives in
-  `node_modules/.astro/data-store.json`.
+- **The Content Layer data store persists between runs.** `astro build`, `astro sync` and
+  `astro check` keep it in `node_modules/.astro/data-store.json`; `astro dev` keeps its own in
+  `.astro/data-store.json`.
   - Symptom: a loader that only adds entries keeps serving removed or changed items. Deleting
-    `.astro/` does not reset the store.
+    `.astro/` does not reset the build's store.
   - Fix: the loader calls `store.clear()` and re-sets every entry on each load. To reset by hand,
-    delete `node_modules/.astro/`.
+    delete `node_modules/.astro/` (builds) or `.astro/` (dev).
 - **`astro dev` does not watch the snapshot.** The loader has no `context.watcher`.
   - Symptom: after editing `content-snapshot/`, the dev server keeps showing the old content.
   - Fix: restart `npm run dev`. Builds always read the current snapshot.
@@ -119,15 +121,16 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: commits, typecheck and build fail with the `payload` or "Unknown CONTENT_SOURCE"
     error while the tests pass.
   - Fix: `unset CONTENT_SOURCE`.
-- **An empty `CONTENT_SOURCE` fails the build.** Only an unset variable means `snapshot`.
+- **An empty `CONTENT_SOURCE` fails the build.** Unset or `snapshot` selects the snapshot; the
+  match is exact and case-sensitive.
   - Symptom: `Unknown CONTENT_SOURCE "": allowed values are snapshot, payload`. A CI line such as
     `CONTENT_SOURCE: ${{ vars.CONTENT_SOURCE }}` produces exactly that when the variable is not
     defined.
   - Fix: leave `CONTENT_SOURCE` out of CI until a run really needs another source.
-- **A loader error on Windows ends in a libuv assertion.**
-  - Symptom: the loader's message is followed by
+- **A loader error on Windows can end in a libuv assertion.** It is intermittent.
+  - Symptom: the loader's message is sometimes followed by
     `Assertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\win\async.c, line 76` and
-    exit code 127. On Linux the same failure exits 1.
+    exit code 127 instead of 1. The build fails either way; on Linux it exits 1.
   - Fix: read the error printed above the assertion; the assertion itself is noise.
 - **The contract is lenient in a few places.**
   - Symptom: unknown top-level keys in a snapshot item are silently stripped (plain `z.object`);
@@ -197,10 +200,10 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Fix: stop `npm run dev` and any preview before `npm run test:e2e`, and check that nothing
     listens on 4321.
 - **Something on 4321 that does not answer `/en/`.**
-  - Symptom: `astro preview` silently moves to 4322 (Astro passes only host and port to Vite's
-    preview, so there is no strict port), Playwright keeps waiting on 4321 and times out after
-    120 s.
-  - Fix: free port 4321.
+  - Symptom: Playwright starts its own `astro preview`, which stops at once with
+    `Port 4321 is already in use` (`vite.preview.strictPort` is set in `astro.config.mjs`; without
+    it, preview silently moves to 4322 and Playwright times out after 120 s waiting on 4321).
+  - Fix: free port 4321. Keep `strictPort`.
 - **Orphaned servers.**
   - Symptom: stopping `astro dev` or `astro preview` from a wrapper script, or piping a test run
     through `head`, can leave the Node child alive and holding 4321.
