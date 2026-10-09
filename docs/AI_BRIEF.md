@@ -28,11 +28,12 @@ scripts/snapshot/     the one-time snapshot converter, the snapshot reader, __fi
 scripts/pricelist/    the pricelist check behind `npm run check:pricelist` (+ __tests__/)
 src/
   content/            contract/ (Zod contract; contract.ts re-exports it), loader.ts, hues.ts,
-                      routes.ts, rules.ts (+ completeness.ts), levels.ts, __tests__/
+                      routes.ts, rules.ts (+ completeness.ts), levels.ts, query.ts (+
+                      explainer.ts), media.ts, __tests__/
   content.config.ts   every registered collection
   components/         ProductSummary.astro, __tests__/
   layouts/            BaseLayout.astro (lang, title, skip link, main#main), __tests__/
-  pages/[locale]/     index.astro, the only page (builds /en/ only)
+  pages/[locale]/     index.astro, the only page (one per built language: /en/)
   test/               setup.ts, redirects.test.ts, fixtures/ (a test-only Preact island)
 ```
 
@@ -43,6 +44,9 @@ src/
 - `src/content/loader.ts` -- `contentLoader(name)`, the `CONTENT_SOURCE` switch
 - `src/content/routes.ts`, `rules.ts`, `levels.ts` -- the URL map, the publish rules and the level
   rule (spec §4), pure functions over content the caller passes in
+- `src/content/query.ts` -- the query module every page reads through (spec §5): `createQuery`
+  and the `siteQuery()` adapter, the only code that imports `astro:content`
+- `src/content/media.ts` -- the media resolver: a media id -> `ImageMetadata` + alt text
 - `src/content.config.ts` -- collections, each wired to `contentLoader`
 - `src/pages/[locale]/index.astro` -- the home page per locale
 - `eslint.config.js` -- typed and untyped lint layers, Astro, a11y, import, unicorn, sonarjs
@@ -195,9 +199,10 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
      would re-run the same contract.
 3. **Collection** (`src/content.config.ts`): one `defineCollection()` per registered name, with
    `loader: contentLoader(name)` and that name's schema.
-4. **Pages** call `getCollection('products')`. `ProductSummary` shows name, tag and blurb in the
-   page's locale only: a field missing in that locale renders nothing, and no price is shown
-   (prices belong on product pages).
+4. **Pages** read through the query module (`src/content/query.ts`, see Query module below),
+   never `astro:content` (a unit test fails when a page imports it). `ProductSummary` shows name,
+   tag and blurb in the page's locale only: a field missing in that locale renders nothing, and
+   no price is shown (prices belong on product pages).
 
 - **The snapshot** (`content-snapshot/`) has one file per collection or global, and it is the
   source of truth: content edits go into these files directly (decision P1-10).
@@ -268,11 +273,48 @@ types it; the snapshot readers in `scripts/` use the same type).
   Finder and the fixed-key sets; one error listing every missing path), `rootLanguage` /
   `rootRedirect(built)` (`/el/` 301 once Greek is built, else a 302 to the first built of en,
   it, sq), and the pages of a `Site` (`createSite(data, { preview })`): `pageUrl`, `hasPage`
-  (spec `pageExists`), `alternates` (with `x-default` -> el, else en), `sitemapEntries` and
-  `switcherTargets` (the page in each built language, else that language's home).
+  (spec `pageExists`), `pagesIn` (the pages of a type a language has), `alternates` (with
+  `x-default` -> el, else en), `sitemapEntries` and `switcherTargets` (the page in each built
+  language, else that language's home).
 - **`levels.ts`:** `levelOf(product, levels)` (P1-7): GPS included 3, immobilizer included 2,
   else 1; a system without a matrix takes the level that lists it, else 0. The pricelist check
   (`npm run check:pricelist`) uses the same function.
+
+## Query module
+
+Spec §5 (P1-1): the one way pages read content.
+
+- **`createQuery(data, { preview })`** (`query.ts`) is pure: tests call it on fixtures or on the
+  snapshot (`readSnapshot()`). Unless `preview`, it first runs `assertLanguageReady` for every
+  live language, so a live language with gaps throws one error listing every missing path; a
+  preview build shows all four languages without the check. It then answers for a built language
+  only (another one is an error), with the contract's types and the publish rules applied:
+  - `products(L)` (visible, each with `url` = its product page and `level` = `levelOf`),
+    `categories(L)` (in order), `accessories(L)` (`url` under `vehicles[0]`, none without a
+    vehicle), `posts(L)` (`url` with the slug in `L`), `navSections(L)` (in order, with `url`),
+    `siteCopy(L)` (the 12 groups by short name: `home`, `common`, ...), `finder(L)`;
+  - `explainer(L)` (`explainer.ts`): per feature key its texts in `L` and "on these systems" (a
+    matrix row: the products with 1 Included or 2 Optional; a key without a row: the products
+    that highlight it, Included); per level its texts and its products with the vehicle word of
+    their category (`common.vehicles.*.word`, the prototype's label there). Only products
+    visible in `L`, each with its URL. A text `L` lacks (preview only) is `undefined`;
+  - `image(id, L)` (`media.ts`): `{ src: ImageMetadata, alt }` for `<Image>`; an unknown id, an id
+    with no file and a missing alt are errors; a decorative image gets `alt=""`;
+  - `staticPaths(type)`: `{ params, props: { locale, page } }` per built language (and, for item
+    page types, per item visible there), the params read back from the page's URL
+    (`pathParams` in `routes.ts`), so they always match the links; a type not in
+    `BUILT_PAGE_TYPES` is an error;
+  - `pageUrl`, `alternates`, `switcherTargets`, `sitemapEntries`: the page rules over the build's
+    `Site`.
+  - Item links come from the query, never from a page: a product URL exists only for a product
+    visible in `L`. Product pages are built in Phase 2; until then the links 404.
+- **`siteQuery()`** is the adapter: on first use it loads every collection (`getCollection`) and
+  global (`getEntry(name, 'global')`) through a dynamic `import('astro:content')` and creates the
+  query (`preview: false`); every page shares that one promise, so the content is loaded and
+  checked once per build. Pages call it in `getStaticPaths` and in their body.
+- **`media.ts`:** `MEDIA_FILES` is an eager `import.meta.glob` over `src/assets/media/**` (minus
+  `manifest.json`), keyed by `mediaIdOf`; `createMediaResolver(media, files?)` binds it to the
+  media items.
 
 ## i18n routing
 
@@ -281,8 +323,10 @@ types it; the snapshot readers in `scripts/` use the same type).
   Greek included. `defaultLocale` exists only because Astro's routing requires one; English is
   the content source language.
 - Path segments stay English in every locale.
-- One page, `src/pages/[locale]/index.astro`. Its `getStaticPaths` returns only `en` in Phase 0,
-  so the build has `dist/en/index.html` and no other locale.
+- One page, `src/pages/[locale]/index.astro`. Its `getStaticPaths` is the query's
+  `staticPaths('home')`: one page per built (live) language, so the build has
+  `dist/en/index.html` and no other locale. Setting `languages.el.live` makes the build fail
+  until Greek is complete (the readiness check).
 - There is no `src/pages/index.astro`. The root `/` is line 1 of `public/_redirects`,
   `/  /en/  302`, applied by the static host. Astro's own `redirects` config would emit
   meta-refresh pages, not HTTP redirects.
@@ -415,13 +459,11 @@ Phase 0 limits:
 - No styling: `/en/` is plain semantic HTML. The design port comes in Phase 1.
 - No deploy: no hosting project, no `_headers`, no Functions. `public/_redirects` is the only
   host file.
-- `/en/` lists every product of the converted snapshot (16 systems), and only `/en/` is built.
+- `/en/` lists the products visible in English (all 16 systems), and only `/en/` is built.
 - No CMS yet: `CONTENT_SOURCE=payload` throws until Phase 5.
 - No 404 page yet (Phase 1, with a per-locale strategy).
 - No islands ship: the only Preact component is the test fixture
   `src/test/fixtures/FixtureToggle.tsx`, which no page imports.
-- `/en/` lists every product in the snapshot. The per-locale item rule (`showIn`, required text)
-  comes with Phase 1.
 - The skip link text, "Skip to main content", is English on every locale until Phase 1's UI
   strings translate it.
 - `redirects/crawl.json` is the inventory, not the redirect map: the crawler and the summary map

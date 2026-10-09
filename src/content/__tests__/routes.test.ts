@@ -18,6 +18,7 @@ import {
 import {
   accessoryPath,
   BUILT_PAGE_TYPES,
+  pathParams,
   postPath,
   productPath,
   ROUTE_PATHS,
@@ -197,6 +198,24 @@ describe('Site copy link targets', () => {
     expect(targetHref('en', { route: 'category', params: { vehicle: 'fleet' } })).toBe(
       '/en/systems/fleet/',
     );
+  });
+});
+
+describe('pathParams', () => {
+  it('reads back the parameters of every page type, named as the page files name them', () => {
+    for (const [route, params] of SPEC_TABLE) {
+      if (route === 'systems') continue;
+      const built = looseRoutePath('el', route, params);
+      expect(pathParams(route, built), route).toEqual({ locale: 'el', ...params });
+    }
+  });
+
+  it('refuses a path of another page type', () => {
+    expect(() => pathParams('product', '/en/systems/car/')).toThrow(
+      '"/en/systems/car/" is not a path of the page type "product"',
+    );
+    expect(() => pathParams('blog', '/en/news/')).toThrow('is not a path of the page type "blog"');
+    expect(() => pathParams('category', '/en/systems//')).toThrow('is not a path');
   });
 });
 

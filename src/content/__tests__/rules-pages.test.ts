@@ -8,6 +8,7 @@ import {
   alternates,
   createSite,
   hasPage,
+  pagesIn,
   pageUrl,
   rootLanguage,
   rootRedirect,
@@ -141,6 +142,13 @@ describe('English and Greek', () => {
     expect(pageUrl(site, { type: 'accessoriesVehicle', vehicle: 'moto' }, 'el')).toBe(
       '/el/accessories/moto/',
     );
+  });
+
+  it('lists the pages of a type that exist in a language', () => {
+    expect(pagesIn(site, 'product', 'el')).toEqual([{ type: 'product', id: 'elite' }]);
+    expect(pagesIn(site, 'accessory', 'en')).toEqual([{ type: 'accessory', id: 'd-061' }]);
+    expect(pagesIn(site, 'home', 'it')).toEqual([]);
+    expect(pagesIn(site, 'notFound', 'en')).toEqual([]);
   });
 
   it('gives an accessory with no vehicle no page yet (Phase 3)', () => {

@@ -266,7 +266,9 @@ are about to touch. When you hit a new one, add it here in the same shape.
 
 - **`satisfies GetStaticPaths` widens params to `string`.**
   - Symptom: `Astro.params.locale` typed as `string` fails `Locale`-typed props in `astro check`.
-  - Fix: return `'en' as const` from `getStaticPaths`, as `src/pages/[locale]/index.astro` does.
+  - Fix: return typed paths: the query module's `staticPaths()` declares `locale: Locale` (a
+    hand-written literal needs `'en' as const`), and the page reads them through
+    `InferGetStaticPropsType`, as `src/pages/[locale]/index.astro` does.
 - **A custom loader bypasses the collection `schema`.** Astro applies a collection's `schema`
   only inside `context.parseData`.
   - Symptom: items written with `store.set()` are never checked against `schema`.
@@ -279,9 +281,35 @@ are about to touch. When you hit a new one, add it here in the same shape.
     `.astro/` does not reset the build's store.
   - Fix: the loader calls `store.clear()` and re-sets every entry on each load. To reset by hand,
     delete `node_modules/.astro/` (builds) or `.astro/` (dev).
-- **`astro dev` does not watch the snapshot.** The loader has no `context.watcher`.
-  - Symptom: after editing `content-snapshot/`, the dev server keeps showing the old content.
+- **`astro dev` does not watch the snapshot.** The loader has no `context.watcher`, and the
+  query adapter (`siteQuery()`) keeps the content it loaded first, a failed readiness check
+  included.
+  - Symptom: after editing `content-snapshot/`, the dev server keeps showing the old content (or
+    the old readiness error).
   - Fix: restart `npm run dev`. Builds always read the current snapshot.
+- **`astro:content` in Vitest serves no entries.** The virtual module resolves through Astro's
+  Vite config, but the tests never run the loaders.
+  - Symptom: `getCollection('products')` returns `[]` in a unit test, so a test through the
+    adapter would pass on empty content.
+  - Fix: tests call `createQuery()` on fixtures or on `readSnapshot()`; `siteQuery()` imports
+    `astro:content` dynamically, so no test that imports `query.ts` loads it. The build and the
+    e2e cover the adapter.
+- **An empty collection warns on every build.** `installers` is empty until Phase 3 (P1-12).
+  - Symptom: `[WARN] [content] The collection "installers" does not exist or is empty` while
+    the build generates its routes (the query adapter loads every collection).
+  - Fix: expected; it goes away when the snapshot has an installer.
+- **Every media file lands in `dist/_astro/`.** `MEDIA_FILES` (`src/content/media.ts`) imports
+  every image under `src/assets/media/` eagerly, and Astro emits each imported image as a file;
+  it deletes an original only after `<Image>` optimized it and nothing used its raw `src`.
+  - Symptom: `dist/_astro/` holds all the media originals (about 5 MB) although no page shows
+    most of them.
+  - Fix: expected; visitors download only what a page references. A page that shows an image
+    goes through `<Image>` (A19), so its original is replaced by the optimized output.
+- **Image imports in Vitest are `ImageMetadata`.** Vitest runs through Astro's Vite config.
+  - Symptom: `src` is a dev-server URL (`/@fs/.../x.webp?origWidth=...`), not the build's
+    `/_astro/x.<hash>.webp`.
+  - Fix: assert `width`, `height` and `format`, and that `src` names the file; never the exact
+    `src`.
 - **`CONTENT_SOURCE` from `.env` is ignored.** Astro loads `.env` after the content sync.
   - Symptom: `CONTENT_SOURCE=payload` in `.env` has no effect.
   - Fix: only the process environment (shell or CI) selects the source.
@@ -381,9 +409,6 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Fix: write one `defineCollection` per name in `src/content.config.ts`; its
     `satisfies Record<ContentName, unknown>` fails the typecheck when a registered name is
     missing.
-- **`/en/` renders every product.** The per-locale item rule is not applied yet.
-  - Symptom: an item with no English text renders an empty `<article>`.
-  - Fix: until the rule exists, give every snapshot item an English `name`, `tag` and `blurb`.
 - **Astro's own `redirects` config.**
   - Symptom: it emits meta-refresh HTML pages, not HTTP redirects.
   - Fix: the root redirect lives in `public/_redirects` (`/  /en/  302`).

@@ -294,6 +294,12 @@ function pagesOf(type: PageType, content: ContentIn): Page[] {
   }
 }
 
+// Every page of `type` that exists in `locale`: the built pages a language has (the query
+// module's static paths). A 404 page is never listed (A18).
+export function pagesIn(site: Site, type: PageType, locale: Locale): Page[] {
+  return pagesOf(type, site.contentIn(locale)).filter((page) => hasPage(site, page, locale));
+}
+
 export interface SitemapEntry {
   readonly path: string;
   readonly alternates: readonly Alternate[];

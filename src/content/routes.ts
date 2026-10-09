@@ -107,6 +107,29 @@ export function routePath<K extends RouteKey>(
   return filledPath(locale, route, params);
 }
 
+// The parameters a path of page type `type` holds, named as its page file names them: `locale`
+// for `{L}` (`[locale]`), the others as ROUTE_PATHS does (`[vehicle]`, `[slug]`, `[id]`). The
+// inverse of routePath, for Astro's getStaticPaths: the params then always match the URL the
+// builders give. A path that is not of `type` is an error.
+export function pathParams(type: PageType, path: string): Readonly<Record<string, string>> {
+  const parts = ROUTE_PATHS[type].split('/');
+  const segments = path.split('/');
+  const params: Record<string, string> = {};
+  let isOfType = parts.length === segments.length;
+  for (const [index, part] of parts.entries()) {
+    const segment = segments[index] ?? '';
+    const name = /^\{(\w+)\}$/u.exec(part)?.[1];
+    if (name === undefined) {
+      isOfType &&= part === segment;
+    } else {
+      isOfType &&= segment !== '';
+      params[name === 'L' ? 'locale' : name] = segment;
+    }
+  }
+  if (!isOfType) throw new Error(`"${path}" is not a path of the page type "${type}"`);
+  return params;
+}
+
 // The href of a Site copy link target in `locale`: its path, plus `#hash` when it has one.
 export function targetHref(locale: Locale, target: RouteTarget): string {
   const path = filledPath(locale, target.route, target.params ?? {});
