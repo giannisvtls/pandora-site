@@ -1,8 +1,9 @@
 [
   {
     "id": "camperv3",
+    "slug": "camper-v3",
     "category": "camper",
-    "priceEur": 899,
+    "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {
       "en": "Camper V3"
@@ -13,6 +14,141 @@
     "blurb": {
       "en": "The first telemetric security system for recreational vehicles, with wireless sensors that detect every attempt.",
       "el": "Το Pandora Camper είναι το πρώτο τηλεμετρικό σύστημα ασφαλείας για οχήματα αναψυχής, με ασύρματους αισθητήρες που ανιχνεύουν κάθε απόπειρα."
-    }
+    },
+    "priceEur": 899,
+    "highlights": [
+      "lte",
+      "gps",
+      "app",
+      "jammer",
+      "hijack",
+      "immo",
+      "nodisarm",
+      "blackbox",
+      "accel",
+      "siren",
+      "start"
+    ],
+    "specGroups": [
+      {
+        "title": {
+          "en": "Control and connectivity"
+        },
+        "items": [
+          {
+            "en": "4G modem"
+          },
+          {
+            "en": "GPS/GLONASS satellite receiver"
+          },
+          {
+            "en": "Real-time location and movement tracking"
+          },
+          {
+            "en": "Bluetooth 5.0"
+          },
+          {
+            "en": "Free internet server and SelfCall Center"
+          },
+          {
+            "en": "Pandora Connect mobile app"
+          },
+          {
+            "en": "Control by factory key or smartphone"
+          },
+          {
+            "en": "Hands-free mode"
+          },
+          {
+            "en": "Mobile visualization info: voltage, fuel level, temperature, mileage"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Protection"
+        },
+        "items": [
+          {
+            "en": "Anti-jammer active security function"
+          },
+          {
+            "en": "Pandora Tag immobilizer and PIN code immobilizer"
+          },
+          {
+            "en": "Engine immobilizer and anti-hijack functions"
+          },
+          {
+            "en": "App-adjustable built-in shock/tilt/motion sensor"
+          },
+          {
+            "en": "Siren PS-330"
+          },
+          {
+            "en": "Two wireless DMS-100 BT sensors (pricelist comparison)"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Comfort"
+        },
+        "items": [
+          {
+            "en": "Remote engine start ready, with the «Start engine» button upgrade option"
+          },
+          {
+            "en": "Keyless bypass of a standard immobilizer"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Vehicle integration"
+        },
+        "items": [
+          {
+            "en": "CAN-bus and analog connection"
+          },
+          {
+            "en": "2× CAN, LIN and IMMO-key connections; 9 inputs / 11 outputs (pricelist comparison)"
+          }
+        ]
+      }
+    ],
+    "specSource": "pricelist",
+    "matrix": {
+      "accel": 1,
+      "siren": 1,
+      "immo": 1,
+      "bt": 1,
+      "pin": 1,
+      "smarttag": 1,
+      "nodisarm": 1,
+      "hijack": 1,
+      "jammer": 1,
+      "gps": 1,
+      "wifi": 0,
+      "lbs": 1,
+      "lte": 1,
+      "blackbox": 1,
+      "app": 1,
+      "push": 1,
+      "selfcall": 1,
+      "oem": 1,
+      "remote": 1,
+      "start": 2,
+      "keyless": 1,
+      "preheater": 1
+    },
+    "matrixNotes": {
+      "siren": "PS-330",
+      "bt": "BT-775",
+      "lte": "4G · BT 5.0",
+      "remote": "R-500 BT",
+      "start": "with RMD-5M"
+    },
+    "image": "pandora-camper-2",
+    "gallery": []
   }
 ]

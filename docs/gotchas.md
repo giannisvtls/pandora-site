@@ -293,11 +293,33 @@ are about to touch. When you hit a new one, add it here in the same shape.
     `Assertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\win\async.c, line 76` and
     exit code 127 instead of 1. The build fails either way; on Linux it exits 1.
   - Fix: read the error printed above the assertion; the assertion itself is noise.
-- **The contract is lenient in a few places.**
-  - Symptom: unknown top-level keys in a snapshot item are silently stripped (plain `z.object`);
-    `showIn` accepts duplicates; a whitespace-only string passes `min(1)`; an unknown language
-    key in a language map is reported at the field (`name`), not at the key (`name.fr`).
-  - Fix: review snapshot edits by eye; tighten the contract when the CMS source arrives.
+- **A second build on Windows can fail with EPERM on `dist/_astro`.** Astro empties `dist/`
+  with Node's `fs.rmSync`, which a just-written `dist/_astro` folder sometimes refuses.
+  - Symptom: `EPERM, Permission denied: \\?\...\dist\_astro` right after
+    `Collecting build info...`, often on every second build in a row, sometimes followed by the
+    libuv assertion above.
+  - Fix: delete `dist/` from the shell (`rm -rf dist`) and build again; it is not a code
+    problem.
+- **An unknown language key is reported at the field.** Every contract object is strict (an
+  unknown key is an error), `showIn` refuses a repeated language and text refuses empty,
+  whitespace-only or untrimmed values, but a language map's unknown key is zod's
+  `unrecognized_keys` issue on the map itself.
+  - Symptom: `{ "name": { "fr": "..." } }` fails as `field name: Unrecognized key: "fr"`, not
+    `name.fr`.
+  - Fix: read the key named in the message.
+- **zod 4 runs an object's refinement after issues that do not abort.** A failed `regex` or
+  `refine` on a property does not stop the object's own `superRefine` (a wrong type does).
+  - Symptom: a refinement that re-parses the object (the item schemas' source-language check)
+    reports the same property issue twice.
+  - Fix: pass `{ when: (payload) => payload.issues.length === 0 }` as the refinement's second
+    argument, as `itemSchema` in `src/content/contract/item.ts` does.
+- **A generic helper around `defineCollection` erases the entry type.**
+  - Symptom: when a generic `collection(name)` wraps `defineCollection` with the schema
+    `COLLECTIONS[name]`, `getCollection()` returns `data: unknown` and `astro check` fails where
+    a page uses the data.
+  - Fix: write one `defineCollection` per name in `src/content.config.ts`; its
+    `satisfies Record<ContentName, unknown>` fails the typecheck when a registered name is
+    missing.
 - **`/en/` renders every product.** The per-locale item rule is not applied yet.
   - Symptom: an item with no English text renders an empty `<article>`.
   - Fix: until the rule exists, give every snapshot item an English `name`, `tag` and `blurb`.

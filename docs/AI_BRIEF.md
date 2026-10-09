@@ -17,7 +17,7 @@ the live URLs for the future redirect map.
 ```
 .github/workflows/    ci.yml (quality + e2e jobs), pr-title.yml
 .husky/pre-commit     Node 24 guard -> astro sync -> lint-staged
-content-snapshot/     products.json: the snapshot content source (one product)
+content-snapshot/     one JSON file per collection: the snapshot content source
 docs/                 this brief, gotchas.md
 e2e/                  Playwright + axe specs, run against `astro preview`
 public/_redirects     root redirect for the static host: /  /en/  302
@@ -25,8 +25,8 @@ redirects/            crawl.json (live URL inventory, written by `npm run crawl`
                       summary, written by `npm run crawl:summary`); .crawl-cache/ (gitignored)
 scripts/crawl/        read-only redirect crawler (run with tsx), __fixtures__/, __tests__/
 src/
-  content/            contract.ts (Zod contract), loader.ts (Content Layer loader), __tests__/
-  content.config.ts   the `products` collection
+  content/            contract/ (Zod contract; contract.ts re-exports it), loader.ts, __tests__/
+  content.config.ts   every registered collection
   components/         ProductSummary.astro, __tests__/
   layouts/            BaseLayout.astro (lang, title, skip link, main#main), __tests__/
   pages/[locale]/     index.astro, the only page (builds /en/ only)
@@ -36,8 +36,8 @@ src/
 ## Key Files
 
 - `astro.config.mjs` -- static output, `site`, Preact integration, i18n routing
-- `src/content/contract.ts` -- the content contract: locales, language maps, `productSchema`
-- `src/content/loader.ts` -- `contentLoader(collection)`, the `CONTENT_SOURCE` switch
+- `src/content/contract.ts` -- the content contract (re-exports `src/content/contract/`)
+- `src/content/loader.ts` -- `contentLoader(name)`, the `CONTENT_SOURCE` switch
 - `src/content.config.ts` -- collections, each wired to `contentLoader`
 - `src/pages/[locale]/index.astro` -- the home page per locale
 - `eslint.config.js` -- typed and untyped lint layers, Astro, a11y, import, unicorn, sonarjs
@@ -124,40 +124,49 @@ avoids EBADENGINE warnings). npm scripts and Playwright's `webServer` run whiche
 
 Pages never read content files. Content flows contract -> loader -> `getCollection()`:
 
-1. **Contract** (`src/content/contract.ts`), plain `zod` (never the `z` re-exported by
-   `astro:content`), so the CMS can share the same schemas later.
-   - `LOCALES = ['en', 'el', 'it', 'sq']`. Localized text is one language map per field:
-     `localizedText = z.partialRecord(localeSchema, z.string().min(1))`. A language without a
-     translation has no key; there is never English filler in another language.
-   - `productSchema`: `id` (`[a-z0-9-]+`), `category`, `priceEur` (positive integer), `showIn`
-     (its first entry is the item's source language), `name`, `tag`, `blurb`. A `superRefine`
-     requires `name` and `blurb` in the source language.
-2. **Loader** (`src/content/loader.ts`): `contentLoader(collection)` returns an Astro `Loader`.
-   It reads `CONTENT_SOURCE` on every load:
-   - unset or `snapshot`: the snapshot. It reads `content-snapshot/<collection>.json` from the project root,
-     validates every item before touching the store (each error names the item id and the field
-     path; a repeated id and invalid JSON are errors too), then `store.clear()` and one
-     `store.set()` per item, by id.
+1. **Contract** (`src/content/contract/*.ts`, re-exported by `src/content/contract.ts`), plain
+   `zod` (never the `z` re-exported by `astro:content`), so the CMS can share the same schemas
+   later. Every schema of spec §2's collections (media, products, accessories, posts, faq,
+   installers, navSections) and fixed-key sets (categories, accessoryCards, accessoryGroups,
+   features, specRows, levels) is registered by name in `contract/registry.ts`.
+   - `LOCALES = ['en', 'el', 'it', 'sq']`. Localized text is one language map per field
+     (`localizedText`): a language without a translation has no key; there is never English
+     filler in another language. A value is never empty, whitespace-only or untrimmed.
+   - Every language map an item carries needs its source language: `showIn[0]` for items
+     (`itemSchema` in `contract/item.ts`), English for media, fixed-key sets and globals. Errors
+     name the path down to the locale (`name.en`, `specGroups.0.items.1.en`).
+   - Primitives (`contract/primitives.ts`): `template(placeholders)`, `plural`, `byCount`,
+     `heading`, `partialDate`, ids and slugs; rich text (`contract/rich-text.ts`); the fixed keys
+     (`contract/keys.ts`: categories, levels, the 22 spec rows, route keys).
+2. **Loader** (`src/content/loader.ts`): `contentLoader(name)` returns an Astro `Loader` for any
+   registered collection or global. It reads `CONTENT_SOURCE` on every load:
+   - unset or `snapshot`: the snapshot. It reads `content-snapshot/<name in kebab-case>.json`
+     (`navSections` -> `nav-sections.json`) from the project root and validates everything
+     before touching the store (each error names the item id, or `global`, and the field path; a
+     repeated id and invalid JSON are errors too), then `store.clear()` and one `store.set()` per
+     item, by id. A global's file holds one object, stored as the entry `global`.
    - `payload`: throws `CONTENT_SOURCE=payload is implemented in Phase 5`.
    - anything else, an empty string included: throws, naming the value and the allowed ones.
    - It does not call `context.parseData`: Astro applies a collection `schema` only there, and it
      would re-run the same contract.
-3. **Collection** (`src/content.config.ts`): `products` is `defineCollection()` with
-   `loader: contentLoader('products')` and `schema: productSchema`.
+3. **Collection** (`src/content.config.ts`): one `defineCollection()` per registered name, with
+   `loader: contentLoader(name)` and that name's schema.
 4. **Pages** call `getCollection('products')`. `ProductSummary` shows name, tag and blurb in the
    page's locale only: a field missing in that locale renders nothing, and no price is shown
    (prices belong on product pages).
 
-- **The snapshot** (`content-snapshot/products.json`) holds one product, `camperv3`, with English
-  text and the Greek blurb.
+- **The snapshot** (`content-snapshot/`) has one file per collection. `products.json` holds one
+  product, `camperv3` (English text and the Greek blurb), and `media.json` its package shot; the
+  other files are `[]` until the converter fills them.
 - **The data store**: `astro build`, `sync` and `check` keep it in
   `node_modules/.astro/data-store.json`; `astro dev` keeps its own in `.astro/data-store.json`. It
   persists between runs; the loader clears it on every load, so a changed or removed item is never
   served stale.
 - **`CONTENT_SOURCE` comes only from the process environment** (shell or CI). A `.env` entry is
   ignored, because Astro loads `.env` after the content sync. CI leaves it unset.
-- **Adding a collection:** its schema in `contract.ts`, an entry in the loader's `CONTRACTS` map,
-  `content-snapshot/<name>.json`, and a `defineCollection` in `content.config.ts`.
+- **Adding a collection or global:** its schema in `src/content/contract/`, an entry in
+  `COLLECTIONS` or `GLOBALS` (`contract/registry.ts`), `content-snapshot/<kebab-name>.json`, and
+  a `defineCollection` in `content.config.ts` (the typecheck fails until it is there).
 
 ## i18n routing
 
