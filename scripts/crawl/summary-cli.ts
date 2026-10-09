@@ -3,10 +3,11 @@
 // number edited by hand, or a crawl.json without a regenerated summary). The Markdown goes
 // through Prettier with the repo's config, so `format:check` and this check agree.
 import { readFile, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-import { format, resolveConfig } from 'prettier';
+import { type Config, format, resolveConfig } from 'prettier';
 
 import type { CliIo } from './cli';
 import { crawlOutputSchema, type CrawlOutput } from './output';
@@ -53,6 +54,31 @@ export const DEFAULT_SUMMARY_PATHS: SummaryPaths = {
   summary: fileURLToPath(new URL('../../redirects/CRAWL.md', import.meta.url)),
 };
 
+const sum = (values: readonly number[]): number =>
+  values.reduce((total, value) => total + value, 0);
+
+type HostCounts = NonNullable<CrawlOutput['counts']['byHost'][string]>;
+
+// Every <url> entry a host's sitemap files list is taken, a duplicate, or skipped; empty when the
+// numbers add up.
+function listedEntriesProblems(crawl: CrawlOutput, host: string, counts: HostCounts): string[] {
+  const files = crawl.hosts.find((summary) => summary.host === host)?.sitemaps ?? [];
+  const listed = sum(files.filter((file) => file.kind === 'urlset').map((file) => file.entries));
+  const skipped = counts.skippedSitemapEntries;
+  const accounted = sum([
+    ...Object.values(counts.sitemapEntries),
+    counts.duplicateSitemapEntries,
+    skipped.query,
+    skipped.offHost,
+    skipped.invalid,
+  ]);
+  return listed === accounted
+    ? []
+    : [
+        `${host}: its sitemap files list ${String(listed)} URLs, but ${String(accounted)} are taken, duplicates or skipped`,
+      ];
+}
+
 // Every way crawl.json can disagree with its own counts; empty when consistent.
 export function crossCheck(crawl: CrawlOutput): string[] {
   const problems: string[] = [];
@@ -93,6 +119,7 @@ export function crossCheck(crawl: CrawlOutput): string[] {
         `${host}: counts say ${String(counts.links.linkOnlyUrls)} link-only URLs, crawl.json has ${String(links)}`,
       );
     }
+    problems.push(...listedEntriesProblems(crawl, host, counts));
   }
   return problems;
 }
@@ -113,11 +140,23 @@ export function renderSummary(crawl: CrawlOutput): string {
   return `${sections.join('\n\n')}\n`;
 }
 
+// Prettier loads a plugin named by package from the current directory; resolved from this file,
+// the repo's plugins load wherever the summary is run from.
+const requireHere = createRequire(import.meta.url);
+
+type Plugins = NonNullable<Config['plugins']>;
+
+function pluginPaths(plugins: Plugins): Plugins {
+  return plugins.map((plugin) =>
+    typeof plugin === 'string' && !plugin.startsWith('.') ? requireHere.resolve(plugin) : plugin,
+  );
+}
+
 // Prettier with the repo's config for `filePath`, checked to be stable: a second pass must not
 // change the text, or the --check would flap.
 export async function formatSummary(markdown: string, filePath: string): Promise<string> {
   const config = (await resolveConfig(filePath, { editorconfig: true })) ?? {};
-  const options = { ...config, filepath: filePath };
+  const options = { ...config, plugins: pluginPaths(config.plugins ?? []), filepath: filePath };
   const once = await format(markdown, options);
   if ((await format(once, options)) !== once) {
     throw new Error('the summary is not stable under Prettier (a generator bug)');

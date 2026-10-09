@@ -158,24 +158,36 @@ function groupRow(crawl: Crawl, group: Group): string[] {
     types,
     String(records.length),
     String(records.filter((record) => isOk(record)).length),
+    String(records.filter((record) => isDirectPage(record)).length),
     langBreakdown(tally(records, (record) => record.lang)),
   ];
 }
 
+// The page types of `host` that no group lists, other than `other` (named on its own line).
+function ungroupedTypes(crawl: Crawl, host: string): Map<string, number> {
+  const grouped = new Set(
+    GROUPS.filter((group) => group.host === host).flatMap((group) => group.types),
+  );
+  const rest = recordsOf(crawl, host).filter(
+    (record) => !grouped.has(record.pageType) && record.pageType !== 'other',
+  );
+  return tally(rest, (record) => record.pageType);
+}
+
 export function renderOpenItem6(crawl: Crawl): string {
   const infotainment = crawl.urls.filter((record) => /infotainment/i.test(decodedPath(record.url)));
-  const align: Align[] = ['left', 'left', 'right', 'right', 'left'];
+  const align: Align[] = ['left', 'left', 'right', 'right', 'right', 'left'];
   const untyped = recordsOf(crawl, MAIN_HOST).filter((record) => record.pageType === 'other');
   const untypedLinks = untyped.filter((record) => record.source === 'link').length;
   return [
     '## Open item 6: URL groups with no planned new home',
-    `The roadmap's content model (section 4) has products (16 systems), accessories, ${String(PLANNED_POSTS)} posts, FAQ, installers and one site-copy global per page group; L1 Infotainment (Italian only) is outside the build scope. None of the groups below has a page type in that model; for posts the model holds ${String(PLANNED_POSTS)} against the count below. This section maps no URL to a new page: Phase 7 decides.`,
+    `The roadmap's content model (section 4) has products (16 systems), accessories, ${String(PLANNED_POSTS)} posts, FAQ, installers and one site-copy global per page group; L1 Infotainment (Italian only) is outside the build scope. Apart from posts (the model holds ${String(PLANNED_POSTS)}, against the count below), none of the groups below has a page type in that model. "Final 200": URLs that end in a 200, after any redirects; "200, no redirect": pages of their own. This section maps no URL to a new page: Phase 7 decides.`,
     table(
-      ['Group', 'Page types', 'URLs', 'Answer 200', 'Languages (`lang`)'],
+      ['Group', 'Page types', 'URLs', 'Final 200', '200, no redirect', 'Languages (`lang`)'],
       GROUPS.map((group) => groupRow(crawl, group)),
       align,
     ),
-    `Not grouped: ${plural(untyped.length, 'URL', 'URLs')} of ${MAIN_HOST} have page type \`other\` (${String(untypedLinks)} of them link-only, listed under Orphans); the crawl cannot tell whether they have a new home.`,
+    `Not grouped: ${plural(untyped.length, 'URL', 'URLs')} of ${MAIN_HOST} have page type \`other\` (${String(untypedLinks)} of them link-only, listed under Orphans); the crawl cannot tell whether they have a new home. Not in the table either: ${breakdown(ungroupedTypes(crawl, MAIN_HOST))} (page types of ${MAIN_HOST}, counted under "URLs by host, language and page type").`,
     `### URLs whose path mentions infotainment (${String(infotainment.length)})`,
     'The roadmap names `/it/infotainment-car-carplay-android-auto-universal-it/` as an example of an old URL with no new home.',
     bullets(

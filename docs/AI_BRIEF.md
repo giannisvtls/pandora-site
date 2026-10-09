@@ -255,15 +255,19 @@ can point the crawler anywhere else.
   killed process. A robots-disallowed URL is never sent, so it is never logged.
 - **Summary:** `npm run crawl:summary` reads `crawl.json` (no network), validates it against
   `crawlOutputSchema`, cross-checks its own counts (each sitemap file's URL count equals the
-  records with that `source`, per-host and link-only totals) and writes `CRAWL.md`: totals,
+  records with that `source`; every `<url>` entry a host's sitemap files list is taken, a
+  duplicate or skipped; per-host and link-only totals) and writes `CRAWL.md`: totals,
   sitemaps and robots.txt, URLs by host x `lang` x `pageType`, final results with the non-200,
-  redirect-loop and redirect lists, robots meta and noindex pages, hreflang siblings of the Greek
+  redirect-loop and redirect lists, robots meta and noindex pages (a "page" answered 200 without
+  a redirect; URLs that redirect to a noindex page are listed apart), hreflang siblings of the Greek
   pages, link-hop orphans, the roadmap's Open item 5 (language trees by path and `<html lang>`)
   and Open item 6 (URL groups with no planned new home) and the `_redirects` rule-limit line for
   Phase 7. It maps no URL to a new page. The Markdown goes through Prettier's API with the repo
   config, so `format:check` agrees with it. `--check` writes nothing and exits 1, naming the
   first differing line, when `CRAWL.md` is not exactly what `crawl.json` gives; the unit test
   `the committed inventory` runs the same check, so CI fails on a hand edit or a stale summary.
+  Like `crawl.ts`, `summary.ts` refuses a Node older than 24 (exit 2) before loading anything,
+  and it resolves the repo's Prettier plugins from the repo, so it runs from any directory.
 - **The committed inventory:** `crawl.json` and `CRAWL.md` hold the crawl of 2026-10-09: 4,639
   URLs (invetec.eu 2,115, lenovo.invetec.eu 2,524; 4,146 from sitemaps, 493 from the link hop).
   After a new crawl, run `npm run crawl:summary` and commit both files together.

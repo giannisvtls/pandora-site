@@ -185,7 +185,8 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Fix: run the same command in the foreground until `COMPLETE`; never in the background with
     polling, never through `| head`.
 - **`aborted`, `502` and `UND_ERR_SOCKET` lines in `requests.jsonl`.**
-  - Symptom: each chunk logs one or two `done` lines with `error: "aborted"`; a few lines show a
+  - Symptom: each chunk that stops at its deadline logs one or two `done` lines with
+    `error: "aborted"`; a few lines show a
     502 or a socket reset.
   - Fix: expected. `aborted` is the `--max-minutes` deadline cutting the requests in flight (their
     URLs are fetched again by the next chunk). A 5xx or network error is retried within the same

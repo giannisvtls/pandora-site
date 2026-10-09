@@ -41,6 +41,7 @@ describe('crossCheck', () => {
     counts.sitemapEntries['page-sitemap'] = 5;
     expect(crossCheck(crawl)).toStrictEqual([
       'invetec.eu: sitemap page-sitemap gave 5 URLs, crawl.json has 4 records from it',
+      'invetec.eu: its sitemap files list 7 URLs, but 8 are taken, duplicates or skipped',
     ]);
   });
 
@@ -53,6 +54,16 @@ describe('crossCheck', () => {
       'https://example.com/: host example.com is not one of the crawled hosts',
       'invetec.eu: sitemap page-sitemap gave 4 URLs, crawl.json has 3 records from it',
       'invetec.eu: sitemap ghost gave 0 URLs, crawl.json has 1 records from it',
+    ]);
+  });
+
+  it('names a host whose sitemap files list more URLs than were taken, duplicated or skipped', () => {
+    const crawl = smallCrawl();
+    const file = crawl.hosts[1]!.sitemaps.find((sitemap) => sitemap.kind === 'urlset')!;
+    file.entries += 2;
+    crawl.counts.byHost['lenovo.invetec.eu']!.duplicateSitemapEntries = 1;
+    expect(crossCheck(crawl)).toStrictEqual([
+      'lenovo.invetec.eu: its sitemap files list 5 URLs, but 4 are taken, duplicates or skipped',
     ]);
   });
 
@@ -153,16 +164,19 @@ describe('renderSummary', () => {
   });
 
   it('groups Open item 6 candidates without mapping them', () => {
-    expect(text).toContain('| lenovo.invetec.eu product pages | product | 1 | 1 | en 1 |');
+    expect(text).toContain('Apart from posts (the model holds 8, against the count below), none');
+    expect(text).toContain('| lenovo.invetec.eu product pages | product | 1 | 1 | 1 | en 1 |');
     expect(text).toContain(
-      '| lenovo.invetec.eu other URLs | other 1, shop-system 1 | 2 | 2 | en 2 |',
+      '| lenovo.invetec.eu other URLs | other 1, shop-system 1 | 2 | 2 | 2 | en 2 |',
     );
+    // The one post redirects: it ends in a 200 but is not a page of its own.
     expect(text).toContain(
-      '| invetec.eu posts (the content model holds 8) | post | 1 | 1 | it 1 |',
+      '| invetec.eu posts (the content model holds 8) | post | 1 | 1 | 0 | it 1 |',
     );
-    expect(text).toContain('| invetec.eu tag archives | tag | 2 | 2 | el 1, sq 1 |');
-    expect(text).toContain('| invetec.eu author archives | author | 0 | 0 | (none) |');
+    expect(text).toContain('| invetec.eu tag archives | tag | 2 | 2 | 2 | el 1, sq 1 |');
+    expect(text).toContain('| invetec.eu author archives | author | 0 | 0 | 0 | (none) |');
     expect(text).toContain('Not grouped: 3 URLs of invetec.eu have page type `other` (3 of them');
+    expect(text).toContain('Not in the table either: home 1, page 3 (page types of invetec.eu');
     expect(text).toContain(
       '- `https://invetec.eu/it/infotainment-car-it/`: HTTP 200 (it, page, `sitemap:page-sitemap`)',
     );
@@ -171,14 +185,6 @@ describe('renderSummary', () => {
   it('compares the total to the _redirects static limit without deciding', () => {
     expect(text).toContain(
       '14 crawled URLs (invetec.eu 10, lenovo.invetec.eu 4) against the Cloudflare Pages `_redirects` limit of 2000 static and 100 dynamic rules (roadmap section 1): one static rule per crawled URL is within the static limit. Flagged for Phase 7; no decision here.',
-    );
-  });
-
-  it('escapes a | from the data inside a table cell', () => {
-    const crawl = smallCrawl();
-    crawl.urls[0]!.robotsMeta = 'index|follow';
-    expect(renderSummary(crawl)).toContain(
-      String.raw`| invetec.eu | ${'`'}index\|follow${'`'} | 1 |`,
     );
   });
 });

@@ -8,9 +8,15 @@ export const NONE = '(none)';
 
 export type Align = 'left' | 'right';
 
+// Data on one line: a line break (a robots meta split over lines, say) would end a table row or a
+// list item early, and Prettier would keep the broken table.
+function oneLine(text: string): string {
+  return text.replaceAll(/\s+/g, ' ');
+}
+
 // A GFM table cell: a `|` would end the cell, so it is escaped (also inside a code span).
 function cell(text: string): string {
-  return text.replaceAll('|', String.raw`\|`);
+  return oneLine(text).replaceAll('|', String.raw`\|`);
 }
 
 function tableLine(cells: readonly string[]): string {
@@ -33,7 +39,8 @@ export function table(
 }
 
 // A code span that survives backticks in the text (a longer fence, padded when needed).
-export function code(text: string): string {
+export function code(raw: string): string {
+  const text = oneLine(raw);
   const runs = text.match(/`+/g) ?? [];
   const fence = '`'.repeat(Math.max(0, ...runs.map((run) => run.length)) + 1);
   const pad = text.startsWith('`') || text.endsWith('`') ? ' ' : '';

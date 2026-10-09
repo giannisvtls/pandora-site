@@ -79,7 +79,12 @@ function robotsLine(crawl: Crawl, host: string): string {
   }
   const list = (rules: readonly string[]) =>
     rules.length === 0 ? NONE : rules.map((rule) => code(rule)).join(', ');
-  const status = robots.status === null ? (robots.error ?? NONE) : `HTTP ${String(robots.status)}`;
+  // A refused robots.txt has both (`HTTP 301, redirect-off-site`): the host is disallow-all.
+  const result = [
+    robots.status === null ? null : `HTTP ${String(robots.status)}`,
+    robots.error,
+  ].filter((part) => part !== null);
+  const status = result.length === 0 ? NONE : result.join(', ');
   const delay = robots.crawlDelay === null ? NONE : `${String(robots.crawlDelay)} s`;
   return [
     `robots.txt (${code(robots.url)}): ${status}.`,
@@ -226,15 +231,27 @@ export function renderNoindex(crawl: Crawl): string {
       metaRows.push([host, meta === NONE ? NONE : code(meta), String(metas.get(meta) ?? 0)]);
     }
   }
-  const noindex = crawl.urls.filter((record) => /\bnoindex\b/i.test(record.robotsMeta ?? ''));
+  // `none` is `noindex, nofollow`.
+  const noindex = crawl.urls.filter((record) =>
+    /\b(?:noindex|none)\b/i.test(record.robotsMeta ?? ''),
+  );
+  const pages = noindex.filter((record) => isDirectPage(record));
+  const redirected = noindex.filter((record) => !isDirectPage(record));
   return [
-    `## noindex pages (${String(noindex.length)})`,
+    `## noindex pages (${String(pages.length)})`,
     '`<meta name="robots">` of the final page, per host (none: no tag, or the body was not read because the page did not answer 200 HTML):',
     table(['Host', 'Robots meta', 'URLs'], metaRows, ['left', 'left', 'right']),
     bullets(
-      noindex.map(
+      pages.map(
         (record) =>
           `${code(record.url)}: ${code(record.robotsMeta ?? '')} (${record.lang ?? NONE}, ${record.pageType})`,
+      ),
+    ),
+    `### URLs that redirect to a noindex page (${String(redirected.length)})`,
+    bullets(
+      redirected.map(
+        (record) =>
+          `${code(record.url)} → ${code(record.finalUrl)}: ${code(record.robotsMeta ?? '')}`,
       ),
     ),
   ].join('\n\n');

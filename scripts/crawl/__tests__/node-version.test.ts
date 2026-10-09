@@ -19,23 +19,33 @@ describe('nodeVersionProblem', () => {
     },
   );
 
+  it('names the command and what it did not do', () => {
+    expect(
+      nodeVersionProblem('20.19.5', 'npm run crawl:summary', 'nothing was read or written'),
+    ).toBe(
+      'npm run crawl:summary needs Node 24 or newer, this is Node 20.19.5; nothing was read or written.\n',
+    );
+  });
+
   it('asks for Node 24 and exits with the bad-arguments code', () => {
     expect(MIN_NODE_MAJOR).toBe(24);
     expect(UNSUPPORTED_NODE_EXIT_CODE).toBe(EXIT_CODES.usage);
   });
 });
 
-describe('crawl.ts', () => {
-  const source = readFileSync(new URL('../crawl.ts', import.meta.url), 'utf8');
+describe.each([
+  ['crawl.ts', "await import('./cli')"],
+  ['summary.ts', "await import('./summary-cli')"],
+])('%s', (file, load) => {
+  const source = readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
 
-  it('checks the Node version before it loads the crawler', () => {
+  it('checks the Node version before it loads anything else', () => {
     const staticImports = source.match(/^import .*$/gm) ?? [];
 
     expect(staticImports).toStrictEqual([
       "import { nodeVersionProblem, UNSUPPORTED_NODE_EXIT_CODE } from './node-version';",
     ]);
-    expect(source.indexOf('nodeVersionProblem(process.versions.node)')).toBeLessThan(
-      source.indexOf("await import('./cli')"),
-    );
+    expect(source.indexOf('nodeVersionProblem(')).toBeGreaterThan(-1);
+    expect(source.indexOf('nodeVersionProblem(')).toBeLessThan(source.indexOf(load));
   });
 });

@@ -234,7 +234,7 @@ Redirect statuses per hop, then the final result. Chains: 1 hop 114, 2 hops 5, 3
 - `https://invetec.eu/top-%cf%83%cf%85%ce%bd%ce%b1%ce%b3%ce%b5%cf%81%ce%bc%ce%bf%ce%af-%ce%b1%cf%85%cf%84%ce%bf%ce%ba%ce%b9%ce%bd%ce%ae%cf%84%ce%bf%cf%85/%ce%b1%ce%be%ce%b5%cf%83%ce%bf%cf%85%ce%ac%cf%81-%cf%84%cf%81%ce%bf%cf%87%cf%8c%cf%83%cf%80%ce%b9%cf%84%ce%bf%cf%85-pandora/` → `https://invetec.eu/%ce%b1%ce%be%ce%b5%cf%83%ce%bf%cf%85%ce%ac%cf%81-%cf%84%cf%81%ce%bf%cf%87%cf%8c%cf%83%cf%80%ce%b9%cf%84%ce%bf%cf%85-pandora/` (301; HTTP 200)
 - `https://lenovo.invetec.eu/checkout/` → `https://lenovo.invetec.eu/cart/` (302; HTTP 200)
 
-## noindex pages (30)
+## noindex pages (29)
 
 `<meta name="robots">` of the final page, per host (none: no tag, or the body was not read because the page did not answer 200 HTML):
 
@@ -276,9 +276,12 @@ Redirect statuses per hop, then the final result. Chains: 1 hop 114, 2 hops 5, 3
 - `https://invetec.eu/sq/category/produkte/makines/`: `noindex, follow` (sq, category)
 - `https://invetec.eu/sq/politika-e-privatesise/`: `noindex, nofollow` (sq, other)
 - `https://lenovo.invetec.eu/cart/`: `max-image-preview:large, noindex, follow` (en, shop-system)
-- `https://lenovo.invetec.eu/checkout/`: `max-image-preview:large, noindex, follow` (en, shop-system)
 - `https://lenovo.invetec.eu/my-account/`: `max-image-preview:large, noindex, follow` (en, shop-system)
 - `https://lenovo.invetec.eu/my-account/lost-password/`: `max-image-preview:large, noindex, follow` (en, other)
+
+### URLs that redirect to a noindex page (1)
+
+- `https://lenovo.invetec.eu/checkout/` → `https://lenovo.invetec.eu/cart/`: `max-image-preview:large, noindex, follow`
 
 ## hreflang coverage of Greek pages
 
@@ -834,21 +837,21 @@ For comparison (its paths have no root language): 2523 pages.
 
 ## Open item 6: URL groups with no planned new home
 
-The roadmap's content model (section 4) has products (16 systems), accessories, 8 posts, FAQ, installers and one site-copy global per page group; L1 Infotainment (Italian only) is outside the build scope. None of the groups below has a page type in that model; for posts the model holds 8 against the count below. This section maps no URL to a new page: Phase 7 decides.
+The roadmap's content model (section 4) has products (16 systems), accessories, 8 posts, FAQ, installers and one site-copy global per page group; L1 Infotainment (Italian only) is outside the build scope. Apart from posts (the model holds 8, against the count below), none of the groups below has a page type in that model. "Final 200": URLs that end in a 200, after any redirects; "200, no redirect": pages of their own. This section maps no URL to a new page: Phase 7 decides.
 
-| Group                                             | Page types                                                           | URLs | Answer 200 | Languages (`lang`)             |
-| ------------------------------------------------- | -------------------------------------------------------------------- | ---: | ---------: | ------------------------------ |
-| lenovo.invetec.eu product pages                   | product                                                              | 1819 |       1819 | en 1819                        |
-| lenovo.invetec.eu product categories              | product-category                                                     |  626 |        626 | en 626                         |
-| lenovo.invetec.eu product tags                    | product-tag                                                          |   63 |         63 | en 63                          |
-| lenovo.invetec.eu other URLs                      | author 1, category 1, home 1, other 7, page 1, post 1, shop-system 4 |   16 |         16 | en 16                          |
-| invetec.eu posts (the content model holds 8)      | post                                                                 |  505 |        505 | el 234, en 131, it 111, sq 29  |
-| invetec.eu tag archives                           | tag                                                                  | 1185 |       1185 | el 401, en 349, it 263, sq 172 |
-| invetec.eu category archives                      | category                                                             |   62 |         62 | el 21, en 17, it 14, sq 10     |
-| invetec.eu author archives                        | author                                                               |   15 |         15 | el 6, en 3, it 3, sq 3         |
-| invetec.eu shop, cart, checkout and account pages | shop-system                                                          |    4 |          4 | el 4                           |
+| Group                                             | Page types                                                           | URLs | Final 200 | 200, no redirect | Languages (`lang`)             |
+| ------------------------------------------------- | -------------------------------------------------------------------- | ---: | --------: | ---------------: | ------------------------------ |
+| lenovo.invetec.eu product pages                   | product                                                              | 1819 |      1819 |             1819 | en 1819                        |
+| lenovo.invetec.eu product categories              | product-category                                                     |  626 |       626 |              626 | en 626                         |
+| lenovo.invetec.eu product tags                    | product-tag                                                          |   63 |        63 |               63 | en 63                          |
+| lenovo.invetec.eu other URLs                      | author 1, category 1, home 1, other 7, page 1, post 1, shop-system 4 |   16 |        16 |               15 | en 16                          |
+| invetec.eu posts (the content model holds 8)      | post                                                                 |  505 |       505 |              485 | el 234, en 131, it 111, sq 29  |
+| invetec.eu tag archives                           | tag                                                                  | 1185 |      1185 |             1185 | el 401, en 349, it 263, sq 172 |
+| invetec.eu category archives                      | category                                                             |   62 |        62 |               62 | el 21, en 17, it 14, sq 10     |
+| invetec.eu author archives                        | author                                                               |   15 |        15 |               15 | el 6, en 3, it 3, sq 3         |
+| invetec.eu shop, cart, checkout and account pages | shop-system                                                          |    4 |         4 |                4 | el 4                           |
 
-Not grouped: 155 URLs of invetec.eu have page type `other` (155 of them link-only, listed under Orphans); the crawl cannot tell whether they have a new home.
+Not grouped: 155 URLs of invetec.eu have page type `other` (155 of them link-only, listed under Orphans); the crawl cannot tell whether they have a new home. Not in the table either: home 2, page 187 (page types of invetec.eu, counted under "URLs by host, language and page type").
 
 ### URLs whose path mentions infotainment (9)
 
