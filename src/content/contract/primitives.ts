@@ -208,10 +208,17 @@ export const mediaId = idSchema;
 // The id of a `products` item (that it exists is the snapshot integrity test's check).
 export const productId = idSchema;
 
+// A URL path segment: the one rule for every value that fills a path (spec §4). Slugs, the ids
+// that appear in a URL (an accessory's) and every route parameter src/content/routes.ts fills
+// follow it, so what the contract accepts the path builders accept too.
+export const URL_SEGMENT = /^[a-z\d]+(?:-[a-z\d]+)*$/u;
+export const URL_SEGMENT_RULE = 'lowercase words of a-z and 0-9 joined by single hyphens';
+
 // An ASCII kebab-case URL segment: `elite-v3`.
-export const slugSchema = z
-  .string()
-  .regex(/^[a-z\d]+(?:-[a-z\d]+)*$/u, 'Expected a slug: a-z and 0-9 words joined by -');
+export const slugSchema = z.string().regex(URL_SEGMENT, `Expected a slug: ${URL_SEGMENT_RULE}`);
+
+// An id that becomes a URL segment (an accessory's: `/{L}/accessories/{vehicle}/{id}/`): `d-061`.
+export const segmentIdSchema = z.string().regex(URL_SEGMENT, `Expected an id: ${URL_SEGMENT_RULE}`);
 
 // A position in a list.
 export const orderSchema = z.int().nonnegative();

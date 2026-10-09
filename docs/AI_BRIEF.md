@@ -244,8 +244,15 @@ types it; the snapshot readers in `scripts/` use the same type).
   `BUILT_PAGE_TYPES` (A18; `['home']` in Phase 1; `routes.test.ts` fails when it and the page
   files under `src/pages/` disagree). The parameters each route needs are one table,
   `ROUTE_PARAMS` in `contract/keys.ts`, which the Site copy `routeTarget` schema checks too
-  (`{ route: 'category' }` without a vehicle fails at `params.vehicle`). `systems` is the nav
-  key of the car category page.
+  (`{ route: 'category' }` without a vehicle fails at `params.vehicle`). Every value that fills a
+  path follows one rule, `URL_SEGMENT` (`contract/primitives.ts`: lowercase words of a-z and 0-9
+  joined by single hyphens), in the contract (slugs, an accessory's id, link target params) and
+  in the builders. `systems` is the nav key of the car category page.
+- **Site copy link targets** (`routeTarget`, the footer's links) name static and category pages
+  only. A target carries one slug or id for every language and nothing resolves it against the
+  item, so the item routes `product`, `accessory` and `post` fail at `route` (lead decision,
+  cycle 5); a later phase that needs such a link adds an id-based target resolved through the
+  page rules.
 - **The item rule (`completeness.ts`, re-exported by `rules.ts`):** `gapsIn(value, L, media)`
   lists what a value lacks in `L`: every language map with a value in the source language
   (`showIn[0]` for items, English otherwise) and none in `L`, found by walking the value (a

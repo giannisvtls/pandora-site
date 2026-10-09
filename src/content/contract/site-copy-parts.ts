@@ -3,7 +3,16 @@
 // demo) are plain strings shared by every language.
 import { z } from 'zod';
 
-import { categoryId, ROUTE_PARAM_NAMES, ROUTE_PARAMS, routeKey, type RouteParamName } from './keys';
+import {
+  categoryId,
+  ITEM_ROUTE_KEYS,
+  ROUTE_PARAM_NAMES,
+  ROUTE_PARAM_NOUNS,
+  ROUTE_PARAMS,
+  routeKey,
+  type RouteKey,
+  type RouteParamName,
+} from './keys';
 import {
   byCount,
   FIXED_SOURCE,
@@ -11,6 +20,7 @@ import {
   idSchema,
   plainText,
   plural,
+  segmentIdSchema,
   slugSchema,
   template,
   type ByCountKey,
@@ -50,17 +60,26 @@ export function isHttpsUrl(value: string): boolean {
 }
 export const httpsUrl = z.string().refine(isHttpsUrl, 'Expected an https:// URL');
 
-// A page of the site by its route key (spec §4), with exactly the parameters its path needs
-// (ROUTE_PARAMS: `{ route: 'category' }` needs a vehicle) and an optional `#hash`; routes.ts
-// builds the URL.
+const isItemRoute = (route: RouteKey): boolean =>
+  (ITEM_ROUTE_KEYS as readonly RouteKey[]).includes(route);
+
+// A static or category page of the site by its route key (spec §4), with exactly the parameters
+// its path needs (ROUTE_PARAMS: `{ route: 'category' }` needs a vehicle) and an optional `#hash`;
+// routes.ts builds the URL. Item routes (product, accessory, post) are refused (lead decision,
+// cycle 5): a target carries one slug or id for every language and nothing resolves it against
+// the item, so a later phase that needs such a link adds an id-based target resolved through the
+// page rules.
 export const routeTarget = z
   .strictObject({
-    route: routeKey,
+    route: routeKey.refine((route) => !isItemRoute(route), {
+      error: (issue) =>
+        `A Site copy link names a static or category page, not the item route "${String(issue.input)}"`,
+    }),
     params: z
       .strictObject({
         vehicle: categoryId.optional(),
         slug: slugSchema.optional(),
-        id: idSchema.optional(),
+        id: segmentIdSchema.optional(),
       })
       .optional(),
     hash: idSchema.optional(),
@@ -76,7 +95,7 @@ export const routeTarget = z
             path: ['params', name],
             message: isGiven
               ? `The route "${route}" takes no ${name}`
-              : `The route "${route}" needs a ${name}`,
+              : `The route "${route}" needs ${ROUTE_PARAM_NOUNS[name]}`,
           });
         }
       }

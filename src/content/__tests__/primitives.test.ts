@@ -13,10 +13,12 @@ import {
   partialDate,
   placeholdersOf,
   plural,
+  segmentIdSchema,
   showIn,
   slugSchema,
   template,
   text,
+  URL_SEGMENT,
 } from '../contract';
 
 // The paths of a failed parse, as `a.b.c` strings.
@@ -263,5 +265,17 @@ describe('ids and slugs', () => {
     expect(slugSchema.safeParse('smart-pro-v4-fd').success).toBe(true);
     expect(slugSchema.safeParse('-elite').success).toBe(false);
     expect(slugSchema.safeParse('elite--v3').success).toBe(false);
+  });
+
+  it('take one rule for a URL segment, slug or id', () => {
+    for (const value of ['d-061', 'r-387-r-389', 'elite-v3', 'x']) {
+      expect(URL_SEGMENT.test(value), value).toBe(true);
+      expect(segmentIdSchema.safeParse(value).success, value).toBe(true);
+    }
+    for (const value of ['a--b', '-x', 'x-', '', 'D-061', 'a_b']) {
+      expect(URL_SEGMENT.test(value), value).toBe(false);
+      expect(segmentIdSchema.safeParse(value).success, value).toBe(false);
+      expect(slugSchema.safeParse(value).success, value).toBe(false);
+    }
   });
 });

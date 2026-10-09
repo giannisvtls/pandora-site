@@ -4,7 +4,10 @@
 import {
   LOCALES,
   ROUTE_PARAM_NAMES,
+  ROUTE_PARAM_NOUNS,
   ROUTE_PARAMS,
+  URL_SEGMENT,
+  URL_SEGMENT_RULE,
   type Accessory,
   type CategoryId,
   type Locale,
@@ -55,10 +58,8 @@ export type RouteParams<K extends RouteKey> = {
 // Parameters as a link target or a test gives them, before they are checked.
 type RawParams = Readonly<Partial<Record<RouteParamName, string | undefined>>>;
 
-// A path segment a parameter can fill: an id, a slug or a category id.
-const SEGMENT = /^[a-z\d]+(?:-[a-z\d]+)*$/u;
-
-// The parameters `route` needs, checked: each one present and a path segment, no other one.
+// The parameters `route` needs, checked: each one present and a URL segment (the contract's one
+// rule, URL_SEGMENT), no other one.
 function checkedParams(
   route: RouteKey,
   params: RawParams,
@@ -70,9 +71,12 @@ function checkedParams(
     if (value !== undefined && !needed.includes(name)) {
       throw new Error(`The route "${route}" takes no ${name}`);
     }
-    if (needed.includes(name) && (value === undefined || !SEGMENT.test(value))) {
+    if (value === undefined && needed.includes(name)) {
+      throw new Error(`The route "${route}" needs ${ROUTE_PARAM_NOUNS[name]}`);
+    }
+    if (value !== undefined && !URL_SEGMENT.test(value)) {
       throw new Error(
-        `The route "${route}" needs a ${name} (a-z, 0-9 and -), not ${String(value)}`,
+        `The route "${route}" needs ${ROUTE_PARAM_NOUNS[name]}: ${URL_SEGMENT_RULE}, not "${value}"`,
       );
     }
     if (value !== undefined) values[name] = value;

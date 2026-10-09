@@ -335,12 +335,30 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Fix: expected. zod 4 passes on the issues of an option that failed only a check (a
     `refine`, a `regex`); a wrong type, enum value or key in every option becomes one
     `invalid_union` issue at the union. Read the message for the reason.
-- **A parameter a route does not expect is reported at `params`.** The Site copy `routeTarget`
-  checks its parameters against `ROUTE_PARAMS` (`contract/keys.ts`) in a refinement.
+- **A parameter a route does not expect is reported at `params.<name>`.** The Site copy
+  `routeTarget` checks its parameters against `ROUTE_PARAMS` (`contract/keys.ts`) in a
+  refinement.
   - Symptom: `{ route: 'category' }` fails at `target.params.vehicle` ("needs a vehicle"), and
     `{ route: 'contact', params: { vehicle: 'car' } }` at `target.params.vehicle` ("takes no
     vehicle"); `routePath` / `targetHref` throw the same messages.
   - Fix: give the route exactly the parameters its path has (spec §4 table).
+- **A Site copy link to a product, accessory or post fails at `route`.** A link target carries
+  one slug or id for every language, and nothing resolves it against the item (a post's slug
+  differs per language, an item can be hidden in a language), so `routeTarget` refuses the item
+  routes (lead decision, cycle 5).
+  - Symptom: `{ route: 'post', params: { slug: 'x' } }` fails at `target.route` ("A Site copy
+    link names a static or category page, not the item route "post"").
+  - Fix: link to a static or category page; a later phase that needs an item link adds an
+    id-based target resolved through the page rules.
+- **An id that is fine for the contract but not for a URL.** Ids follow `idSchema` (a-z, 0-9 and
+  `-`), which accepts `a--b`, `-x` and `x-`; a value that fills a path follows the stricter
+  `URL_SEGMENT` (`contract/primitives.ts`): lowercase words of a-z and 0-9 joined by single
+  hyphens.
+  - Symptom: for the id `a--b`, `routePath` throws "The route "accessory" needs an id: …", with
+    the rule and the value.
+  - Fix: every value that becomes a path segment uses the segment rule in the contract (slugs,
+    an accessory's `id` through `segmentIdSchema`, the link target `params`), so the snapshot
+    fails to load before the build gets there. Use it for any new id that appears in a URL.
 - **Optional zod fields are `T | undefined` under `exactOptionalPropertyTypes`.** The contract's
   inferred types keep `undefined` in every optional field.
   - Symptom: `astro check` reports ts2379 when a parsed value (a link target's `params`) goes

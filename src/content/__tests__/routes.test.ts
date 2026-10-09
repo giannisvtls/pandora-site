@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import {
+  linkItem,
   LOCALES,
   ROUTE_KEYS,
   ROUTE_PARAMS,
@@ -45,6 +46,13 @@ const SPEC_TABLE: readonly (readonly [RouteKey, Readonly<Record<string, string>>
   ['warranty', {}, '/en/warranty/'],
   ['notFound', {}, '/en/404.html'],
 ];
+
+// The URL segment rule, as the messages name it.
+const SEGMENT_RULE = 'lowercase words of a-z and 0-9 joined by single hyphens';
+
+// The item routes (lead decision, cycle 5: no Site copy link names one), and the others.
+const ITEM_ROUTES: ReadonlySet<RouteKey> = new Set(['product', 'accessory', 'post']);
+const LINK_ROUTES = ROUTE_KEYS.filter((route) => !ITEM_ROUTES.has(route));
 
 // Builds a route with loosely typed params (the tests break them on purpose).
 const looseRoutePath = (
@@ -87,10 +95,19 @@ describe('the route table', () => {
   it.each([
     ['a missing parameter', 'category', {}, 'The route "category" needs a vehicle'],
     ['an extra parameter', 'home', { vehicle: 'car' }, 'The route "home" takes no vehicle'],
-    ['a segment that is not kebab-case', 'post', { slug: '../admin' }, 'needs a slug'],
-    ['an empty segment', 'accessory', { vehicle: 'car', id: '' }, 'needs a id'],
+    ['a segment with a dot and a slash', 'post', { slug: '../admin' }, 'needs a slug'],
+    ['an empty segment', 'accessory', { vehicle: 'car', id: '' }, 'needs an id'],
+    ['a double hyphen', 'accessory', { vehicle: 'car', id: 'a--b' }, 'needs an id'],
+    ['a leading hyphen', 'accessory', { vehicle: 'car', id: '-x' }, 'needs an id'],
+    ['a trailing hyphen', 'product', { vehicle: 'car', slug: 'x-' }, 'needs a slug'],
   ])('refuses %s', (_what, route, params, message) => {
     expect(() => looseRoutePath('en', route as RouteKey, params)).toThrow(message);
+  });
+
+  it('names the segment rule and the value it refuses', () => {
+    expect(() => looseRoutePath('en', 'accessory', { vehicle: 'car', id: 'a--b' })).toThrow(
+      `The route "accessory" needs an id: ${SEGMENT_RULE}, not "a--b"`,
+    );
   });
 
   it('refuses a language the site does not have', () => {
@@ -108,9 +125,13 @@ function targetFor(route: RouteKey, without?: string): RouteTarget {
   return names.length === 0 ? { route } : { route, params };
 }
 
+// The paths of the issues `routeTarget` finds in `target`.
+const targetIssuePaths = (target: unknown) =>
+  (routeTarget.safeParse(target).error?.issues ?? []).map((issue) => issue.path.join('.'));
+
 describe('Site copy link targets', () => {
   it('take exactly the parameters the path builders need, from the same table', () => {
-    for (const route of ROUTE_KEYS) {
+    for (const route of LINK_ROUTES) {
       const target = targetFor(route);
       expect(routeTarget.safeParse(target).success, route).toBe(true);
       expect(targetHref('en', target), route).toBe(
@@ -119,14 +140,33 @@ describe('Site copy link targets', () => {
       const names = ROUTE_PARAMS[route];
       for (const name of names) {
         const broken = targetFor(route, name);
-        const issues = routeTarget.safeParse(broken).error?.issues ?? [];
-        expect(
-          issues.map((issue) => issue.path.join('.')),
-          route,
-        ).toEqual([`params.${name}`]);
+        expect(targetIssuePaths(broken), route).toEqual([`params.${name}`]);
         expect(() => targetHref('en', broken)).toThrow(`needs a ${name}`);
       }
     }
+  });
+
+  it('name static and category pages only: every item route fails at route', () => {
+    expect(LINK_ROUTES).toContain('category');
+    expect(LINK_ROUTES).toContain('accessoriesVehicle');
+    for (const route of ITEM_ROUTES) {
+      const result = routeTarget.safeParse(targetFor(route));
+
+      expect(result.error?.issues, route).toMatchObject([
+        {
+          path: ['route'],
+          message: `A Site copy link names a static or category page, not the item route "${route}"`,
+        },
+      ]);
+    }
+    expect(targetIssuePaths({ route: 'post', params: { slug: 'x' } })).toEqual(['route']);
+  });
+
+  it('report an item route at the route of a footer link', () => {
+    const link = { label: { en: 'News' }, target: { route: 'post', params: { slug: 'x' } } };
+    const issues = linkItem.safeParse(link).error?.issues ?? [];
+
+    expect(issues.map((issue) => issue.path.join('.'))).toEqual(['target.route']);
   });
 
   it('refuse a parameter the route does not take', () => {
@@ -135,6 +175,20 @@ describe('Site copy link targets', () => {
 
     expect(issues).toMatchObject([
       { path: ['params', 'vehicle'], message: 'The route "contact" takes no vehicle' },
+    ]);
+  });
+
+  it.each([
+    ['id', 'a--b', 'an id'],
+    ['id', '-x', 'an id'],
+    ['id', 'x-', 'an id'],
+    ['slug', 'a--b', 'a slug'],
+  ])('refuse the %s %s, which no path could hold', (name, value, noun) => {
+    const issues = routeTarget.safeParse({ route: 'contact', params: { [name]: value } }).error
+      ?.issues;
+
+    expect(issues).toMatchObject([
+      { path: ['params', name], message: `Expected ${noun}: ${SEGMENT_RULE}` },
     ]);
   });
 

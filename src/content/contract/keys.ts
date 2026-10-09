@@ -72,9 +72,20 @@ export const ROUTE_KEYS = [
 export const routeKey = z.enum(ROUTE_KEYS);
 export type RouteKey = z.infer<typeof routeKey>;
 
+// The routes of item pages: their slug or id differs per item (and a post's slug per language).
+export const ITEM_ROUTE_KEYS = ['product', 'accessory', 'post'] as const;
+export type ItemRouteKey = (typeof ITEM_ROUTE_KEYS)[number];
+
 // The parameters a route's path can take: a vehicle (a category id), a slug, an item id.
 export const ROUTE_PARAM_NAMES = ['vehicle', 'slug', 'id'] as const;
 export type RouteParamName = (typeof ROUTE_PARAM_NAMES)[number];
+
+// Each parameter as messages name it: "needs a vehicle", "needs an id".
+export const ROUTE_PARAM_NOUNS: Readonly<Record<RouteParamName, string>> = {
+  vehicle: 'a vehicle',
+  slug: 'a slug',
+  id: 'an id',
+};
 
 // The parameters each route's path needs, in path order: the one table behind the path builders
 // (src/content/routes.ts) and the Site copy link targets (`routeTarget`). `systems` needs none:

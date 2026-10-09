@@ -10,6 +10,7 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { byCodeUnit } from '../../../scripts/crawl/output';
 import { REPO_ROOT } from '../../../scripts/snapshot/paths';
 import {
   readSnapshot,
@@ -17,7 +18,7 @@ import {
   type SnapshotData,
 } from '../../../scripts/snapshot/read-snapshot';
 import { PRODUCT_HUES } from '../hues';
-import { integrityProblems, type IntegrityContext } from './integrity-checks';
+import { integrityProblems, mediaReferences, type IntegrityContext } from './integrity-checks';
 
 type Loose = Record<string, unknown>;
 
@@ -57,6 +58,46 @@ type Change = (copy: Copy) => void;
 describe('the committed snapshot', () => {
   it('has every reference resolved and every key set complete', () => {
     expect(integrityProblems(snapshot, committed)).toEqual([]);
+  });
+});
+
+// The category heads: the only decorative media (spec §3.1).
+const CATEGORY_HEADS = ['camper', 'car', 'fleet-final', 'motori', 'yaucht'];
+
+// Each image a product shows (image, gallery, install image) that is decorative: a product image
+// says what it shows, so none may be (the Smart V4 frame is also its install image, cycle 4).
+function decorativeProductMedia(s: SnapshotData): string[] {
+  const decorative = new Set(
+    s.media.filter((item) => item.decorative === true).map(({ id }) => id),
+  );
+  return mediaReferences(s)
+    .filter(([who, id]) => who.startsWith('product ') && decorative.has(id))
+    .map(([who, id]) => `${who}: media "${id}" is decorative`);
+}
+
+describe('the decorative media', () => {
+  it('are the five category heads, and no product shows one', () => {
+    const decorative = snapshot.media
+      .filter((item) => item.decorative === true)
+      .map(({ id }) => id);
+
+    expect(decorative.toSorted(byCodeUnit)).toEqual(CATEGORY_HEADS);
+    expect(snapshot.categories.map(({ image }) => image).toSorted(byCodeUnit)).toEqual(
+      CATEGORY_HEADS,
+    );
+    expect(decorativeProductMedia(snapshot)).toEqual([]);
+  });
+
+  it('name a product image turned decorative', () => {
+    const frame = changed((copy) => {
+      const item = itemOf(copy.media, 'pandora-smart-v4-homepage-frame');
+      delete item.alt;
+      item.decorative = true;
+    });
+
+    expect(decorativeProductMedia(frame)).toEqual([
+      'product smart installImage: media "pandora-smart-v4-homepage-frame" is decorative',
+    ]);
   });
 });
 

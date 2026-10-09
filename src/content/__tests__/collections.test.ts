@@ -206,6 +206,18 @@ describe('accessories', () => {
   it('accept no vehicle: the item is then listed only under All (user decision 2026-10-09)', () => {
     expect(pathsOf(accessorySchema, changed('accessories', { vehicles: [] }))).toEqual([]);
   });
+
+  // The id is a segment of the accessory's URL, so it follows the URL segment rule.
+  it.each(['a--b', '-x', 'x-'])('reject the id %s, which no URL could hold', (id) => {
+    const issues = accessorySchema.safeParse(changed('accessories', { id })).error?.issues;
+
+    expect(issues).toMatchObject([
+      {
+        path: ['id'],
+        message: 'Expected an id: lowercase words of a-z and 0-9 joined by single hyphens',
+      },
+    ]);
+  });
 });
 
 describe('media', () => {

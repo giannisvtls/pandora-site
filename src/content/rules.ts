@@ -14,6 +14,7 @@ import {
   type Finder,
   type GLOBALS,
   type GlobalName,
+  type ItemRouteKey,
   type Languages,
   type LevelId,
   type Locale,
@@ -130,7 +131,7 @@ export function assertLanguageReady(data: ContentData, locale: Locale): void {
   const gaps = languageGaps(data, locale);
   if (gaps.length > 0) {
     throw new Error(
-      `The language "${locale}" is not ready to build: ${String(gaps.length)} value(s) have no "${locale}" text:\n- ${gaps.join('\n- ')}`,
+      `The language "${locale}" is not ready to build: ${String(gaps.length)} value(s) have no "${locale}" text or alt:\n- ${gaps.join('\n- ')}`,
     );
   }
 }
@@ -157,7 +158,7 @@ export function rootRedirect(built: readonly Locale[]): RootRedirect {
   return { from: '/', to: routePath(locale, 'home', {}), status: locale === 'el' ? 301 : 302 };
 }
 
-type ItemPageType = 'product' | 'accessory' | 'post';
+type ItemPageType = ItemRouteKey;
 type VehiclePageType = 'category' | 'accessoriesVehicle';
 
 // A page: a static page by its type, a vehicle page by its vehicle, an item page by the item's

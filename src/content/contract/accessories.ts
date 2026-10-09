@@ -7,6 +7,7 @@ import {
   idSchema,
   mediaId,
   productId,
+  segmentIdSchema,
   showIn,
   text,
   textValue,
@@ -16,7 +17,8 @@ import {
 
 const accessoryShape = (source?: Locale) =>
   z.strictObject({
-    id: idSchema,
+    // A URL segment: the accessory's page is `/{L}/accessories/{vehicle}/{id}/`.
+    id: segmentIdSchema,
     code: textValue,
     showIn,
     name: text(source),

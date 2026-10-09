@@ -234,14 +234,26 @@ describe('builtLanguages', () => {
   });
 });
 
-describe('assertLanguageReady', () => {
-  // The fixture with Greek live and complete wherever English is (Languages kept as they are).
-  const ready = { ...withLanguage(fixtureContent(['en', 'el']), 'el'), languages: data.languages };
+// The fixed-key sets of spec §2, written out here rather than imported from rules.ts, so a set
+// dropped from the readiness check fails the test below.
+const FIXED_KEY_SETS = [
+  'categories',
+  'accessoryCards',
+  'accessoryGroups',
+  'features',
+  'specRows',
+  'levels',
+] as const;
 
-  it('passes for English on the snapshot and for a complete Greek', () => {
+describe('assertLanguageReady', () => {
+  // The fixture with Greek live and complete wherever English is.
+  const ready = withLanguage(fixtureContent(['en', 'el']), 'el');
+
+  it('passes for English on the snapshot and for a complete, live Greek', () => {
     expect(() => {
       assertLanguageReady(snapshot, 'en');
     }).not.toThrow();
+    expect(ready.languages.el.live).toBe(true);
     expect(languageGaps(ready, 'el')).toEqual([]);
   });
 
@@ -253,7 +265,7 @@ describe('assertLanguageReady', () => {
     expect(() => {
       assertLanguageReady(broken, 'el');
     }).toThrow(
-      'The language "el" is not ready to build: 1 value(s) have no "el" text:\n- siteCopyHome.hero.heading.payload',
+      'The language "el" is not ready to build: 1 value(s) have no "el" text or alt:\n- siteCopyHome.hero.heading.payload',
     );
   });
 
@@ -274,6 +286,21 @@ describe('assertLanguageReady', () => {
     expect(gaps).not.toContain('categories.camper.desc');
     expect(gaps).toContain('categories.car.desc');
     expect(gaps.filter((gap) => gap === 'media.car.alt')).toEqual([]);
+  });
+
+  // The snapshot has no Greek label, title or name in any fixed-key entry, so every entry of
+  // every set has a gap.
+  it.each(FIXED_KEY_SETS)('checks every entry of the fixed-key set %s', (name) => {
+    const gaps = languageGaps(snapshot, 'el');
+    const entries: readonly { readonly id: string }[] = snapshot[name];
+
+    expect(entries.length).toBeGreaterThan(0);
+    for (const { id } of entries) {
+      expect(
+        gaps.some((gap) => gap.startsWith(`${name}.${id}.`)),
+        `${name}.${id}`,
+      ).toBe(true);
+    }
   });
 
   it('skips the label of a nav section not shown in the language', () => {

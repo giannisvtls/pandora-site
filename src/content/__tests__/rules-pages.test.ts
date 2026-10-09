@@ -183,5 +183,7 @@ describe('the root without a built language', () => {
   it('prefers Greek, then English, Italian and Albanian', () => {
     expect(rootLanguage(['sq', 'it'])).toBe('it');
     expect(rootLanguage(['sq', 'en', 'el'])).toBe('el');
+    expect(rootLanguage(['it', 'en'])).toBe('en');
+    expect(rootRedirect(['en', 'it'])).toEqual({ from: '/', to: '/en/', status: 302 });
   });
 });
