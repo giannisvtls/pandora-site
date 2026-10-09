@@ -202,15 +202,18 @@
       "strong": {
         "en": "Same features"
       },
-      "rest": {
-        "en": "as {other}."
+      "asOne": {
+        "en": "as {name}."
       },
-      "partsDiffer": {
-        "en": "as {other}; the parts differ (turn on {toggle})."
+      "asOthers": {
+        "en": "as the others here."
+      },
+      "partsDifferOne": {
+        "en": "as {name}; the parts differ (turn on {toggle})."
+      },
+      "partsDifferOthers": {
+        "en": "as the others here; the parts differ (turn on {toggle})."
       }
-    },
-    "othersHere": {
-      "en": "the others here"
     }
   },
   "empty": {

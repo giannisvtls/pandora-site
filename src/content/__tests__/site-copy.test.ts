@@ -142,14 +142,18 @@ describe.each(NAMES)('%s', (name) => {
   });
 
   it('needs English for every text, reported at the locale', () => {
-    const [first] = maps;
-    const broken = structuredClone(snapshot);
-    const target = first?.path.split('.') ?? [];
-    let parent: Loose = broken;
-    for (const key of target) parent = parent[key] as Loose;
-    delete parent.en;
+    // Every language map the walk finds, one at a time. (A plural's `few` and `many` never need
+    // English; they hold none, so they are skipped. The committed English files have none.)
+    const english = maps.filter(({ map }) => map.en !== undefined);
+    expect(english.length).toBeGreaterThan(0);
+    for (const { path } of english) {
+      const broken = structuredClone(snapshot);
+      let parent: Loose = broken;
+      for (const key of path.split('.')) parent = parent[key] as Loose;
+      delete parent.en;
 
-    expect(pathsOf(schema, broken)).toEqual([`${first?.path ?? ''}.en`]);
+      expect(pathsOf(schema, broken), path).toEqual([`${path}.en`]);
+    }
   });
 
   it('rejects an unknown key', () => {
@@ -206,6 +210,49 @@ describe('the Site copy templates', () => {
   });
 });
 
+describe('plain text', () => {
+  // A plain text holding a placeholder would show the braces: `copy()` where a template was meant.
+  it.each([
+    ['seeSystem', 'x {name}'],
+    ['seeSystem', 'See {the system'],
+    ['vehicleTabsLabel', 'Vehicle }'],
+  ])('fails at the language when %s has a brace: %j', (field, value) => {
+    const common = snapshotOf('siteCopyCommon');
+    common[field] = { ...(common[field] as Loose), el: value };
+
+    expect(pathsOf(SITE_COPY.siteCopyCommon, common)).toEqual([`${field}.el`]);
+  });
+
+  it('includes headings', () => {
+    const compare = snapshotOf('siteCopyCompare');
+    compare.heading = { lead: { en: 'Compare' }, payload: { en: '{count} systems.' } };
+
+    expect(pathsOf(siteCopyCompareSchema, compare)).toEqual(['heading.payload.en']);
+  });
+
+  it('carries no placeholder declaration (the walk tells it from a template)', () => {
+    const maps = languageMapsIn(SITE_COPY.siteCopyCommon, snapshotOf('siteCopyCommon'));
+
+    expect(maps.find((entry) => entry.path === 'seeSystem')?.declared).toBeUndefined();
+  });
+});
+
+describe('the fixed key sets of Site copy', () => {
+  it('give every vehicle its names (without fleet it fails)', () => {
+    const common = snapshotOf('siteCopyCommon');
+    delete (common.vehicles as Loose).fleet;
+
+    expect(pathsOf(SITE_COPY.siteCopyCommon, common)).toEqual(['vehicles.fleet']);
+  });
+
+  it('let the installer finder know exactly GR, IT and AL (with FR it fails)', () => {
+    const installers = snapshotOf('siteCopyInstallers');
+    installers.countries = { ...(installers.countries as Loose), FR: { en: 'France' } };
+
+    expect(pathsOf(SITE_COPY.siteCopyInstallers, installers)).toEqual(['countries']);
+  });
+});
+
 describe('headings', () => {
   it('are valid without a payload (the picker heading has none)', () => {
     const home = snapshotOf('siteCopyHome');
@@ -259,6 +306,9 @@ describe('the footer', () => {
     [{ route: 'blog', href: 'https://www.example.com/' }, ''],
     [{ href: plainHttp('https://www.example.com/') }, '.href'],
     [{ href: '/en/contact/' }, '.href'],
+    // A hash is an element id, without the `#`.
+    [{ route: 'contact', hash: '#faq' }, '.hash'],
+    [{ route: 'contact', hash: 'FAQ' }, '.hash'],
   ])('rejects the link target %j', (target, field) => {
     expect(pathsOf(siteCopyFooterSchema, footerWithFirstLink({ label, target }))).toEqual([
       `columns.0.links.0.target${field}`,

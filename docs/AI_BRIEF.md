@@ -166,8 +166,9 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
      languages whose plural rules select them (the schema does not enforce this), and a renderer
      falls back to `other` when the selected form is absent.
    - Primitives (`contract/primitives.ts`): `template(placeholders)` (every value uses exactly
-     the declared `{name}` placeholders and no other `{` or `}`), `plural`, `byCount`, `heading`,
-     `partialDate`, ids and slugs; rich text (`contract/rich-text.ts`); the fixed keys
+     the declared `{name}` placeholders and no other `{` or `}`), `plainText` (no `{` or `}` at
+     all: every Site copy text that is not a template, headings included), `plural`, `byCount`,
+     `heading`, `partialDate`, ids and slugs; rich text (`contract/rich-text.ts`); the fixed keys
      (`contract/keys.ts`: categories, levels, the 22 spec rows, route keys).
 2. **Loader** (`src/content/loader.ts`): `contentLoader(name)` returns an Astro `Loader` for any
    registered collection or global. It reads `CONTENT_SOURCE` on every load:

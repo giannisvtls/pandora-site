@@ -27,14 +27,17 @@ const standout = z.strictObject({
   findsIt: z.strictObject({ strong: copy(), gps: copy(), gpsAndLte: copy() }),
   stopsEngine: strongLead(),
   missing: copyTemplate(['features']),
-  // `{other}` is the other system's name or `othersHere`; `{toggle}` is
-  // `tools.installerDetails`.
+  // `<strong>Same features</strong>` and one whole rest: as the one other system on screen
+  // (`{name}`, its name) or as the others here, with or without the note that the parts differ
+  // (`{toggle}` is `tools.installerDetails`). Whole sentences, because a name and "the others"
+  // take different articles and prepositions in Greek and Italian.
   sameFeatures: z.strictObject({
     strong: copy(),
-    rest: copyTemplate(['other']),
-    partsDiffer: copyTemplate(['other', 'toggle']),
+    asOne: copyTemplate(['name']),
+    asOthers: copy(),
+    partsDifferOne: copyTemplate(['name', 'toggle']),
+    partsDifferOthers: copyTemplate(['toggle']),
   }),
-  othersHere: copy(),
 });
 
 // Nothing selected: the Finder's picks for the vehicle (two or three), or its only system.

@@ -9,15 +9,16 @@ import {
   FIXED_SOURCE,
   heading,
   idSchema,
+  plainText,
   plural,
   slugSchema,
   template,
-  text,
   type ByCountKey,
 } from './primitives';
 
-// Localized text, English required.
-export const copy = () => text(FIXED_SOURCE);
+// Localized plain text, English required; a `{` or `}` in it fails (a sentence with a
+// placeholder is a `copyTemplate`).
+export const copy = () => plainText(FIXED_SOURCE);
 
 // A sentence with `{name}` placeholders, English required.
 export const copyTemplate = (placeholders: readonly string[]) =>

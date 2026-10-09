@@ -82,7 +82,11 @@ describe('a manifest record that no source lists', () => {
 
     const { options, lines } = optionsFor(root, site.origin, sourcesOf([`${site.origin}/a.webp`]));
 
-    await expect(runMediaFetch(options)).rejects.toThrow();
+    // The save fails on the planted directory itself, not on anything earlier.
+    await expect(runMediaFetch(options)).rejects.toMatchObject({
+      code: 'EISDIR',
+      path: path.join(root, `${MANIFEST_FILE}.partial`),
+    });
     expect(lines).not.toContain(DROPPED_LINE);
     expect(await filesOf(root)).toEqual([`${MEDIA_DIR}/a.webp`, `${MEDIA_DIR}/gone.webp`]);
   });

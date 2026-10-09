@@ -92,21 +92,32 @@ function placeholderProblem(declared: ReadonlySet<string>, value: string): strin
     : `Placeholders must be exactly ${describePlaceholders(declared)}: ${parts.join(', ')}`;
 }
 
+// The refinement that checks every language's value against the declared placeholders.
+function placeholderCheck(declared: ReadonlySet<string>) {
+  return (languages: Partial<Record<Locale, string>>, context: z.RefinementCtx): void => {
+    for (const [locale, value] of Object.entries(languages)) {
+      const problem = placeholderProblem(declared, value);
+      if (problem !== null) {
+        context.addIssue({ code: 'custom', path: [locale], message: problem });
+      }
+    }
+  };
+}
+
 // Localized text whose every value uses exactly the declared `{name}` placeholders: none missing,
 // none extra, no other brace (checked per language; one may repeat). The schema carries the
 // declared names as metadata (`declaredPlaceholders`), for tests and for the CMS later.
 export function template(placeholders: readonly string[], source?: Locale) {
-  const declared = new Set(placeholders);
   return text(source)
-    .superRefine((languages, context) => {
-      for (const [locale, value] of Object.entries(languages)) {
-        const problem = placeholderProblem(declared, value);
-        if (problem !== null) {
-          context.addIssue({ code: 'custom', path: [locale], message: problem });
-        }
-      }
-    })
+    .superRefine(placeholderCheck(new Set(placeholders)))
     .meta({ placeholders: [...placeholders] });
+}
+
+// Localized text that is not a template: the template check with no declared placeholder, so a
+// value with a `{name}` or any other `{` or `}` fails at its language (nothing would fill it, and
+// it would show as is). It carries no placeholder metadata.
+export function plainText(source?: Locale) {
+  return text(source).superRefine(placeholderCheck(new Set()));
 }
 
 // The placeholders a schema built by `template()` declares; undefined for any other schema.
@@ -158,9 +169,9 @@ export function byCount<const K extends readonly ByCountKey[] = typeof BY_COUNT_
   return z.strictObject(shape as Record<K[number], typeof variant>);
 }
 
-// An h1/h2: `lead <span class="b">payload</span>`; the payload is optional.
+// An h1/h2: `lead <span class="b">payload</span>`; the payload is optional. Both are plain text.
 export function heading(source?: Locale) {
-  return z.strictObject({ lead: text(source), payload: text(source).optional() });
+  return z.strictObject({ lead: plainText(source), payload: plainText(source).optional() });
 }
 
 // `YYYY`, `YYYY-MM` or `YYYY-MM-DD`, as precise as the source knows; a real calendar date.
