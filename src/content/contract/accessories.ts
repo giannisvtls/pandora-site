@@ -26,7 +26,9 @@ const accessoryShape = (source?: Locale) =>
     priceEur: z.int().positive(),
     // The products it fits; empty when it fits none of them.
     fits: uniqueList(productId),
-    vehicles: uniqueList(categoryId, 1),
+    // The vehicles it is listed under; empty when it suits none in particular (it is then listed
+    // only under "All", user decision 2026-10-09).
+    vehicles: uniqueList(categoryId),
     image: mediaId.optional(),
   });
 

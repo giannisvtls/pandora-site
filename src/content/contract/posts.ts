@@ -23,7 +23,9 @@ const postShape = (source?: Locale) =>
     category: z.enum(['news', 'tech']),
     date: partialDate,
     title: text(source),
-    excerpt: text(source),
+    // Absent when the post has none: the list row then shows the title alone (user decision
+    // 2026-10-09). When present it needs the source language like every text.
+    excerpt: text(source).optional(),
     body: localizedRichText(source),
     image: mediaId,
   });

@@ -1,1 +1,54 @@
-[]
+[
+  {
+    "id": "car",
+    "name": {
+      "en": "Accessories"
+    },
+    "tag": {
+      "en": "Sirens, sensors, tags and expansion modules"
+    },
+    "blurb": {
+      "en": "Official Pandora accessories from the 2026 pricelist: remotes, sirens, wireless sensors, relays and bypass modules."
+    },
+    "image": "pandora-accessories-sirens-pandora-ps-330-pandora-ps-331-bt-pandora-ps-332-bt"
+  },
+  {
+    "id": "moto",
+    "name": {
+      "en": "Moto Accessories"
+    },
+    "tag": {
+      "en": "Sirens, sensors and harnesses"
+    },
+    "blurb": {
+      "en": "Official accessories for Pandora motorcycle systems."
+    },
+    "image": "pandora-accessories-remote-controllers-pandora-r-468bt-pandora-r-500-bt"
+  },
+  {
+    "id": "camper",
+    "name": {
+      "en": "Camper Accessories"
+    },
+    "tag": {
+      "en": "Remotes, sensors and relays"
+    },
+    "blurb": {
+      "en": "Extend your camper system with official remotes, sensors and modules."
+    },
+    "image": "pandora-dms-100-bt-black"
+  },
+  {
+    "id": "marine",
+    "name": {
+      "en": "Marine Accessories"
+    },
+    "tag": {
+      "en": "Sensors, sirens and relays"
+    },
+    "blurb": {
+      "en": "Official accessories for Pandora Marine systems."
+    },
+    "image": "pandora-accessories-remote-controllers-pandora-r-468bt-pandora-r-500-bt"
+  }
+]

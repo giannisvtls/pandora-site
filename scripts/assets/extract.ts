@@ -48,8 +48,8 @@ export type PrototypeData = z.infer<typeof prototypeSchema>;
 const DATA_PREFIX = 'window.INVETEC_DATA=';
 
 // nightwatch-data.js is `window.INVETEC_DATA=<JSON>;` after a comment line; it is parsed as JSON,
-// never run.
-export function parsePrototypeData(text: string): PrototypeData {
+// never run. The snapshot converter reads the same file this way.
+export function prototypeJson(text: string): unknown {
   const start = text.indexOf(DATA_PREFIX);
   if (start === -1) {
     throw new Error(`${DESIGN_DATA_FILE}: no ${DATA_PREFIX} assignment`);
@@ -58,7 +58,11 @@ export function parsePrototypeData(text: string): PrototypeData {
     .slice(start + DATA_PREFIX.length)
     .trim()
     .replace(/;$/u, '');
-  return prototypeSchema.parse(JSON.parse(json));
+  return JSON.parse(json) as unknown;
+}
+
+export function parsePrototypeData(text: string): PrototypeData {
+  return prototypeSchema.parse(prototypeJson(text));
 }
 
 const REMOTE_URL = /^https?:\/\//u;

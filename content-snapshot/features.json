@@ -1,1 +1,341 @@
-[]
+[
+  {
+    "id": "app",
+    "title": {
+      "en": "Pandora Connect app"
+    },
+    "what": {
+      "en": "Arm, disarm and check the car from your phone. Every alarm event arrives as a push notification, SMS or email, with an event history and recorded routes."
+    },
+    "how": {
+      "en": "Nearby over Bluetooth 5.0 (about 50 m). Systems with a modem also work from anywhere through the free pandora-on.com web service, and the built-in Self Call-Center rings your phone on a breach with no third-party monitoring centre."
+    },
+    "needs": {
+      "en": "Light Pro V2 and Primo work over Bluetooth only (no modem). Immo uses the Pandect BT app. Light V3 has no app."
+    }
+  },
+  {
+    "id": "gps",
+    "title": {
+      "en": "GPS/GLONASS tracking"
+    },
+    "what": {
+      "en": "A satellite receiver (GPS, GLONASS, BeiDou) reports the car's position and movement on the map in the app and web service. Elite V3 adds Wi-Fi positioning for garages and underground car parks where satellites fail."
+    },
+    "how": {
+      "en": "Position is logged with every event. Black Box keeps the record inside the unit and syncs it when signal returns."
+    },
+    "needs": {
+      "en": "Smart V4 uses the external NAV-035 BT receiver in the box. Optional on Light Pro V2 and Primo with the NAV-X unit."
+    }
+  },
+  {
+    "id": "lte",
+    "title": {
+      "en": "LTE telemetry"
+    },
+    "what": {
+      "en": "A built-in 4G/3G/2G modem keeps the system connected to Pandora's servers, so alerts, location and remote commands work from anywhere, not just within remote range."
+    },
+    "how": {
+      "en": "Telemetry covers battery voltage, temperatures, EV battery level and trip routes. With Active Protection the server watches the link and notifies you if it is cut."
+    },
+    "needs": {
+      "en": "A SIM with a data plan."
+    }
+  },
+  {
+    "id": "bt",
+    "title": {
+      "en": "Bluetooth tags"
+    },
+    "what": {
+      "en": "BT-790 tags are small encrypted Bluetooth 5.0 transmitters you carry. With a tag near, the system disarms hands-free and lets the engine start. Without it: NO TAG, NO DRIVE."
+    },
+    "how": {
+      "en": "Two tags included on most systems, up to four supported. The tag also drives Prohibit disarming."
+    }
+  },
+  {
+    "id": "immo",
+    "title": {
+      "en": "Immobilizer"
+    },
+    "what": {
+      "en": "Blocks the engine unless the driver is recognised, by tag, by a PIN entered on the car's own buttons, or both. A copied key alone does not start the car."
+    },
+    "how": {
+      "en": "Works on the CAN-bus together with the IMO 10 blocking relay. PIN entry uses factory buttons, so no extra switch is visible."
+    }
+  },
+  {
+    "id": "hijack",
+    "title": {
+      "en": "Anti-hijack"
+    },
+    "what": {
+      "en": "If the car is taken by force, the system lets the thief drive for about a minute and then blocks the engine. The driver is already at a safe distance and the car cannot be restarted."
+    },
+    "how": {
+      "en": "Triggered when the owner's tag leaves the running car."
+    }
+  },
+  {
+    "id": "start",
+    "title": {
+      "en": "Remote engine start"
+    },
+    "what": {
+      "en": "Start the engine from the remote or app, or automatically by time, voltage or temperature, to warm or cool the cabin before you get in."
+    },
+    "how": {
+      "en": "Turbo timer and Ignition ON keep turbo engines running correctly with the alarm armed. An immobilizer-bypass algorithm avoids hiding a factory key in the cabin on most cars."
+    },
+    "needs": {
+      "en": "The optional RMD-5M relay module on the car and camper systems; vehicle support varies."
+    }
+  },
+  {
+    "id": "accel",
+    "title": {
+      "en": "3D accelerometer"
+    },
+    "what": {
+      "en": "A digital three-axis sensor with two shock zones plus tilt and lift detection. It tells a knock on the door from a jack under the car or a wheel being removed."
+    },
+    "how": {
+      "en": "Sensitivity is adjusted per zone from the app or remote; algorithms filter false alarms."
+    }
+  },
+  {
+    "id": "siren",
+    "title": {
+      "en": "Siren"
+    },
+    "what": {
+      "en": "A piezoelectric siren. PS-330 is wired; PS-331 BT and PS-332 BT connect over Bluetooth, so they need no wiring in the engine bay and can be hidden anywhere."
+    },
+    "how": {
+      "en": "The Bluetooth sirens are Jammer Ready: if contact with the unit is cut, the siren sounds on its own. PS-332 BT adds a backup battery. Output above 120 dB."
+    },
+    "needs": {
+      "en": "Every system except Immo ships with one; the model is listed per system."
+    }
+  },
+  {
+    "id": "nodisarm",
+    "title": {
+      "en": "Prohibit disarming"
+    },
+    "what": {
+      "en": "Even if thieves clone the key or relay its signal with a roll-jammer, the alarm stays armed and the engine stays locked unless the ID-tag is present."
+    },
+    "how": {
+      "en": "Uses the BT-790 tag's presence as the second factor."
+    }
+  },
+  {
+    "id": "jammer",
+    "title": {
+      "en": "Anti-jammer"
+    },
+    "what": {
+      "en": "With Active Protection the system stays connected to Pandora's servers. If a jammer blocks GSM or GPS, the server notices the gap and notifies you by push, email and app history."
+    },
+    "how": {
+      "en": "Bluetooth sirens and blockers react to lost contact on their own, so jamming the signal triggers the alarm instead of silencing it."
+    }
+  },
+  {
+    "id": "blackbox",
+    "title": {
+      "en": "Black Box"
+    },
+    "what": {
+      "en": "All location and event data is written to the central unit. If the mobile signal drops, nothing is lost: the record syncs to the cloud once the connection returns."
+    },
+    "how": {
+      "en": "Useful in car parks, low-coverage areas and during SIM problems."
+    }
+  },
+  {
+    "id": "twoway",
+    "title": {
+      "en": "Two-way remote"
+    },
+    "what": {
+      "en": "The OLED remote controls the alarm and receives alerts up to 1000 m away, readable in direct sunlight, with telemetry such as battery voltage, temperatures, fuel level and signal."
+    },
+    "how": {
+      "en": "Elite V3 and Professional V3 ship the Commander remote: vertical OLED, LoRa long range, Bluetooth 5.0, wireless charging and an SOS button."
+    }
+  },
+  {
+    "id": "aes",
+    "title": {
+      "en": "Encrypted 868 MHz link"
+    },
+    "what": {
+      "en": "Remote and unit talk over multi-channel 868 MHz with automatic channel hopping and AES-128 encryption, so codes cannot be captured and replayed."
+    }
+  },
+  {
+    "id": "can",
+    "title": {
+      "en": "CAN, CAN FD and LIN"
+    },
+    "what": {
+      "en": "Connects to the car's own networks to arm from the factory key, close windows, lock doors and read vehicle status. Analog inputs cover older cars without CAN."
+    },
+    "how": {
+      "en": "Dual high-speed CAN up to 1 Mbit/s plus LIN. Smart Pro V4 FD runs four CAN links, two of them CAN FD, for the newest EV, PHEV and hybrid platforms."
+    }
+  },
+  {
+    "id": "certs",
+    "title": {
+      "en": "Certifications"
+    },
+    "what": {
+      "en": "Pandora systems are certified to CE, E-mark, IATF 16949:2016 and Thatcham standards."
+    }
+  },
+  {
+    "id": "warranty",
+    "title": {
+      "en": "Lifetime warranty"
+    },
+    "what": {
+      "en": "Lifetime warranty with immediate replacement of the central unit, free annual software upgrades, and transfer to another car by software update."
+    },
+    "how": {
+      "en": "Activate it online after installation."
+    }
+  },
+  {
+    "id": "unit",
+    "title": {
+      "en": "Compact central unit"
+    },
+    "what": {
+      "en": "Small enough to hide in hard-to-reach places (Primo: 45 × 25 × 8 mm). Safe for the car's electronics and creates no diagnostic interference."
+    }
+  },
+  {
+    "id": "addons",
+    "title": {
+      "en": "Wireless accessories"
+    },
+    "what": {
+      "en": "Over 20 Bluetooth accessories: hidden engine blockers, OBD blocks, door blockers, motion sensors and GPS/GSM controllers, installed without wires and with encrypted links."
+    },
+    "how": {
+      "en": "Placed anywhere in the car, as hidden as possible."
+    }
+  },
+  {
+    "id": "pin",
+    "title": {
+      "en": "PIN code"
+    },
+    "what": {
+      "en": "Manual driver recognition: the engine starts only after the PIN is entered."
+    },
+    "how": {
+      "en": "The code is keyed on the car's own buttons, so no extra switch is visible."
+    }
+  },
+  {
+    "id": "smarttag",
+    "title": {
+      "en": "Smartphone as tag"
+    },
+    "what": {
+      "en": "Automatic driver recognition through your smartphone: the phone works as the authorisation tag."
+    }
+  },
+  {
+    "id": "wifi",
+    "title": {
+      "en": "Wi-Fi positioning"
+    },
+    "what": {
+      "en": "Locates the vehicle by nearby Wi-Fi networks, for underground and covered spaces where satellite positioning fails."
+    }
+  },
+  {
+    "id": "lbs",
+    "title": {
+      "en": "GSM-network positioning (LBS)"
+    },
+    "what": {
+      "en": "Locates the vehicle through the GSM mobile network instead of satellites."
+    }
+  },
+  {
+    "id": "push",
+    "title": {
+      "en": "Push notifications"
+    },
+    "what": {
+      "en": "Alerts reach your phone even when the Pandora Connect app is closed."
+    }
+  },
+  {
+    "id": "selfcall",
+    "title": {
+      "en": "SelfCall Center"
+    },
+    "what": {
+      "en": "On an alarm the system itself calls your phone, with no third-party monitoring centre."
+    },
+    "how": {
+      "en": "Includes the free online server pandora-on.com."
+    }
+  },
+  {
+    "id": "oem",
+    "title": {
+      "en": "Factory-key control"
+    },
+    "what": {
+      "en": "Arm and disarm the system with the car's own factory key."
+    }
+  },
+  {
+    "id": "remote",
+    "title": {
+      "en": "Remote in the box"
+    },
+    "what": {
+      "en": "The remote control supplied with the system; the model is listed per system."
+    },
+    "how": {
+      "en": "Two-way models with an OLED display (D-061, D-062, D-022, D-010) receive alerts and show the system's status. R-series remotes also work as the owner's authorisation tag."
+    }
+  },
+  {
+    "id": "keyless",
+    "title": {
+      "en": "Keyless start"
+    },
+    "what": {
+      "en": "Remote or automatic engine start on keyless cars, without leaving a factory key hidden in the cabin."
+    },
+    "how": {
+      "en": "An immobilizer-bypass algorithm stands in for the key."
+    },
+    "needs": {
+      "en": "Where a key is still needed, the DI-02, DI-03 or DI-04 bypass modules handle it."
+    }
+  },
+  {
+    "id": "preheater",
+    "title": {
+      "en": "Preheater control"
+    },
+    "what": {
+      "en": "Controls a Webasto or Eberspächer fuel preheater, or an analog heater, from the system."
+    }
+  }
+]

@@ -84,8 +84,9 @@ describe('contentLoader', () => {
 
     await contentLoader('products').load(context);
 
-    expect(calls).toStrictEqual(['clear', 'set:camperv3']);
-    expect([...entries]).toStrictEqual([['camperv3', snapshotProducts()[0]]]);
+    const products = snapshotProducts();
+    expect(calls).toStrictEqual(['clear', ...products.map(({ id }) => `set:${id}`)]);
+    expect([...entries]).toStrictEqual(products.map((product) => [product.id, product]));
   });
 
   it('names the item id and the field path when an item breaks the contract', async () => {
@@ -94,7 +95,7 @@ describe('contentLoader', () => {
     const { context, calls } = fakeContext(await rootWithProducts([item]));
 
     await expect(contentLoader('products').load(context)).rejects.toThrow(
-      /item "camperv3", field name\.en: Required in the source language "en"/,
+      /item "elite", field name\.en: Required in the source language "en"/,
     );
     // Validation runs before the store is touched.
     expect(calls).toStrictEqual([]);
@@ -105,7 +106,7 @@ describe('contentLoader', () => {
     const { context, calls } = fakeContext(await rootWithProducts([item, item]));
 
     await expect(contentLoader('products').load(context)).rejects.toThrow(
-      /item "camperv3": the id appears more than once/,
+      /item "elite": the id appears more than once/,
     );
     expect(calls).toStrictEqual([]);
   });

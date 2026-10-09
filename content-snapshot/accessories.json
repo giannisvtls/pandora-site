@@ -1,1 +1,739 @@
-[]
+[
+  {
+    "id": "d-061",
+    "code": "D-061",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "LoRa-Bluetooth remote control (Commander)"
+    },
+    "desc": {
+      "en": "The new Pandora Commander remote: LoRa 868 MHz for long range, wireless charging, an ergonomic design, an OLED display and Bluetooth 5.0 for a better connection.",
+      "el": "Το νέο τηλεχειριστήριο Pandora Commander: LoRa 868 MHz για μεγάλη εμβέλεια, ασύρματη φόρτιση, ανατομικός σχεδιασμός, οθόνη OLED, Bluetooth 5.0 για καλύτερη σύνδεση."
+    },
+    "group": "remotes",
+    "priceEur": 259,
+    "fits": ["elite", "smartpro", "smart", "primo"],
+    "vehicles": ["car"],
+    "image": "pricelist-acc-d-061"
+  },
+  {
+    "id": "d-061-camper",
+    "code": "D-061 Camper",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "LoRa-Bluetooth remote control"
+    },
+    "desc": {
+      "en": "The Commander remote with a special StayHome mode: LoRa 868 MHz for long range, wireless charging, an ergonomic design, an OLED display and Bluetooth 5.0.",
+      "el": "Special feature: λειτουργία “StayHome”. Το νέο τηλεχειριστήριο Pandora Commander: LoRa 868 MHz για μεγάλη εμβέλεια, ασύρματη φόρτιση, ανατομικός σχεδιασμός, οθόνη OLED, Bluetooth 5.0 για καλύτερη σύνδεση."
+    },
+    "group": "remotes",
+    "priceEur": 269,
+    "fits": ["camperpro"],
+    "vehicles": ["camper"],
+    "image": "pricelist-acc-d-061-camper"
+  },
+  {
+    "id": "d-062",
+    "code": "D-062",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "LoRa-Bluetooth remote control"
+    },
+    "desc": {
+      "en": "The new Pandora Commander remote: LoRa 868 MHz for long range, wireless charging, an ergonomic design, an OLED display and Bluetooth 5.0 for a better connection.",
+      "el": "Το νέο τηλεχειριστήριο Pandora Commander: LoRa 868 MHz για μεγάλη εμβέλεια, ασύρματη φόρτιση, ανατομικός σχεδιασμός, οθόνη OLED, Bluetooth 5.0 για καλύτερη σύνδεση."
+    },
+    "group": "remotes",
+    "priceEur": 199,
+    "fits": ["professional"],
+    "vehicles": ["car"],
+    "image": "pricelist-acc-d-062"
+  },
+  {
+    "id": "d-022-lora",
+    "code": "D-022 LoRa",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "2-way remote control"
+    },
+    "desc": {
+      "en": "Remote with an OLED display, three control buttons, a protected 868 MHz radio link, a battery and a USB port. Compatible with Pandora Light Pro.",
+      "el": "Τηλεχειριστήριο με οθόνη OLED, τρία πλήκτρα ελέγχου, προστατευμένη ραδιοσύνδεση 868 MHz, μπαταρία και θύρα USB. Συμβατό με Pandora Light Pro."
+    },
+    "group": "remotes",
+    "priceEur": 149,
+    "fits": ["lightpro"],
+    "vehicles": ["car"],
+    "image": "pricelist-acc-d-022-lora"
+  },
+  {
+    "id": "d-010",
+    "code": "D-010",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "2-way remote control"
+    },
+    "desc": {
+      "en": "Two-way remote with 10-zone security monitoring, an OLED display with vibration, a battery-level indicator and a range of up to 900 m.",
+      "el": "Αμφίδρομη επικοινωνία Bluetooth με παρακολούθηση 10 ζωνών ασφαλείας, οθόνη OLED με δόνηση, ένδειξη επιπέδου μπαταρίας και εμβέλεια έως 900 μέτρα για αυξημένη ασφάλεια."
+    },
+    "group": "remotes",
+    "priceEur": 89,
+    "fits": ["light", "motov2"],
+    "vehicles": ["car", "moto"],
+    "image": "pricelist-acc-d-010"
+  },
+  {
+    "id": "d-011",
+    "code": "D-011",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "2-way remote control"
+    },
+    "desc": {
+      "en": "Two-way remote for Pandora Light V2 with advanced control and security functions.",
+      "el": "Αμφίδρομο τηλεχειριστήριο για Pandora Light V2 με προηγμένες δυνατότητες ελέγχου και ασφάλειας."
+    },
+    "group": "remotes",
+    "priceEur": 89,
+    "fits": [],
+    "vehicles": ["car"],
+    "image": "pricelist-acc-d-011"
+  },
+  {
+    "id": "r-500-bt",
+    "code": "R-500 BT",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Remote control"
+    },
+    "desc": {
+      "en": "Wireless remote with a Bluetooth 5.0 interface. It also works as an authorisation tag; range up to 200 m.",
+      "el": "Ασύρματο τηλεχειριστήριο με διεπαφή Bluetooth 5.0, λειτουργεί ως ετικέτα εξουσιοδότησης, αυξημένη εμβέλεια έως 200 μέτρα."
+    },
+    "group": "remotes",
+    "priceEur": 139,
+    "fits": ["camperv3"],
+    "vehicles": ["camper"],
+    "image": "pricelist-acc-r-500-bt"
+  },
+  {
+    "id": "r-387-r-389",
+    "code": "R-387 / R-389",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Remote control"
+    },
+    "desc": {
+      "en": "Wireless remote that also works as the owner's identification tag; range up to 200 m.",
+      "el": "Ασύρματο τηλεχειριστήριο, λειτουργεί ως tag ταυτοποίησης του ιδιοκτήτη, αυξημένη εμβέλεια έως 200 μέτρα."
+    },
+    "group": "remotes",
+    "priceEur": 25,
+    "fits": ["light", "motov2"],
+    "vehicles": ["car", "moto"],
+    "image": "pricelist-acc-r-387-r-389"
+  },
+  {
+    "id": "band",
+    "code": "Band",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Watch-style remote control"
+    },
+    "desc": {
+      "en": "A watch-style gadget for controlling Pandora systems over Bluetooth 5.0, with an OLED display, a waterproof case, a replaceable strap and a built-in step counter.",
+      "el": "Το νέο gadget σε μορφή ρολογιού για τον έλεγχο των συστημάτων Pandora με Bluetooth 5.0. Με OLED, αδιάβροχη θήκη, αλλαξιέρα βραχιολιού και ενσωματωμένο βηματομετρητή."
+    },
+    "group": "remotes",
+    "priceEur": 75,
+    "fits": [],
+    "vehicles": [],
+    "image": "pricelist-acc-band"
+  },
+  {
+    "id": "ps-330",
+    "code": "PS-330",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Compact siren for cars & bikes"
+    },
+    "desc": {
+      "en": "Compact wired siren for cars and motorcycles.",
+      "el": "Σειρήνα ενσύρματη."
+    },
+    "group": "sirens",
+    "priceEur": 35,
+    "fits": ["smart", "lightpro", "light", "camperv3", "camperpro", "motoevo", "motov2", "truck"],
+    "vehicles": ["car", "moto", "camper", "fleet"],
+    "image": "pricelist-acc-ps-330"
+  },
+  {
+    "id": "ps-331-bt",
+    "code": "PS-331 BT",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Bluetooth siren"
+    },
+    "desc": {
+      "en": "Small, waterproof siren that connects wirelessly over Bluetooth and is easy to install.",
+      "el": "Μικρές, αδιάβροχες σειρήνες συνδέονται ασύρματα μέσω Bluetooth, εύκολες στην εγκατάσταση."
+    },
+    "group": "sirens",
+    "priceEur": 69,
+    "fits": ["smartpro", "primo", "marine"],
+    "vehicles": ["car", "marine"],
+    "image": "pricelist-acc-ps-331-bt"
+  },
+  {
+    "id": "ps-332-bt",
+    "code": "PS-332 BT",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Bluetooth siren with backup battery"
+    },
+    "desc": {
+      "en": "Small, waterproof siren that connects wirelessly over Bluetooth and is easy to install. PS-332 BT adds a backup battery.",
+      "el": "Μικρές, αδιάβροχες σειρήνες συνδέονται ασύρματα μέσω Bluetooth, εύκολες στην εγκατάσταση."
+    },
+    "group": "sirens",
+    "priceEur": 85,
+    "fits": ["elite", "professional"],
+    "vehicles": ["car"],
+    "image": "pricelist-acc-ps-332-bt"
+  },
+  {
+    "id": "ps-333",
+    "code": "PS-333",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Waterproof siren"
+    },
+    "desc": {
+      "en": "Ultra-compact, waterproof, lightweight piezoelectric siren. Small but powerful: it hides easily in cars and motorcycles and performs like larger models.",
+      "el": "Υπερσυμπαγής, αδιάβροχη, ελαφριά σειρήνα πιεζοηλεκτρικού τύπου. Μικρή αλλά ισχυρή, κρύβεται εύκολα σε αυτοκίνητα και μοτοσικλέτες, με απόδοση αντίστοιχη μεγαλύτερων μοντέλων."
+    },
+    "group": "sirens",
+    "priceEur": 39,
+    "fits": [],
+    "vehicles": ["car", "moto"],
+    "image": "pricelist-acc-ps-333"
+  },
+  {
+    "id": "vs-22d",
+    "code": "VS-22D",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Volume sensor"
+    },
+    "desc": {
+      "en": "Digital microwave sensor with low consumption (up to 2.5 mA), high sensitivity (50 levels) and a false-alarm avoidance algorithm. Adjusted remotely or with its buttons.",
+      "el": "Ψηφιακός μικροκυματικός αισθητήρας με χαμηλή κατανάλωση (έως 2.5 mA), υψηλή ευαισθησία (50 επίπεδα) και αλγόριθμο αποφυγής ψευδών συναγερμών. Ρυθμίζεται απομακρυσμένα ή μέσω κουμπιών."
+    },
+    "group": "sensors",
+    "priceEur": 59,
+    "fits": [
+      "elite",
+      "professional",
+      "smartpro",
+      "smart",
+      "lightpro",
+      "light",
+      "primo",
+      "camperv3",
+      "camperpro",
+      "motoevo",
+      "motov2",
+      "marine",
+      "truck"
+    ],
+    "vehicles": ["car", "moto", "camper", "marine", "fleet"],
+    "image": "pricelist-acc-vs-22d"
+  },
+  {
+    "id": "dms-100-bt",
+    "code": "DMS-100 BT",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Bluetooth sensor"
+    },
+    "desc": {
+      "en": "Wireless sensors that protect the vehicle by watching the garage door and nearby objects, with tamper alerts and a battery life of up to 3 years.",
+      "el": "Καινοτόμοι ασύρματοι αισθητήρες για την προστασία του οχήματος, ελέγχοντας την πόρτα γκαράζ και κοντινά αντικείμενα. Ενημέρωση για παραβίαση, διάρκεια μπαταρίας έως 3 έτη."
+    },
+    "group": "sensors",
+    "priceEur": 69,
+    "fits": [
+      "elite",
+      "professional",
+      "smartpro",
+      "smart",
+      "lightpro",
+      "primo",
+      "camperv3",
+      "camperpro",
+      "motoevo",
+      "marine",
+      "truck"
+    ],
+    "vehicles": ["car", "moto", "camper", "marine", "fleet"],
+    "image": "pricelist-acc-dms-100-bt"
+  },
+  {
+    "id": "dms-101-bt",
+    "code": "DMS-101 BT",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Bluetooth sensor"
+    },
+    "desc": {
+      "en": "A new-generation sensor for cars and caravans: more reliable, more compact, with Bluetooth 5.0 for better performance.",
+      "el": "Αισθητήρας νέας γενιάς για αυτοκίνητα και τροχόσπιτα, πιο αξιόπιστος, συμπαγής και με Bluetooth 5.0 για καλύτερη απόδοση."
+    },
+    "group": "sensors",
+    "priceEur": 69,
+    "fits": [
+      "elite",
+      "professional",
+      "smartpro",
+      "smart",
+      "lightpro",
+      "primo",
+      "camperv3",
+      "camperpro",
+      "motoevo",
+      "marine",
+      "truck"
+    ],
+    "vehicles": ["car", "moto", "camper", "marine", "fleet"],
+    "image": "pricelist-acc-dms-101-bt"
+  },
+  {
+    "id": "dms-105-bt",
+    "code": "DMS-105 BT",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Bluetooth sensor"
+    },
+    "desc": {
+      "en": "Wireless magnetic sensor with an accelerometer, leak detection and low consumption. UV resistant.",
+      "el": "Pandora DMS-105 BT: ασύρματος μαγνητικός αισθητήρας με επιταχυνσιόμετρο, ανίχνευση διαρροών, χαμηλή κατανάλωση. Ανθεκτικός στις UV."
+    },
+    "group": "sensors",
+    "priceEur": 149,
+    "fits": ["marine"],
+    "vehicles": ["marine"],
+    "image": "pricelist-acc-dms-105-bt"
+  },
+  {
+    "id": "pir-100-bt",
+    "code": "PIR-100 BT",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Bluetooth wireless sensor"
+    },
+    "desc": {
+      "en": "A new sensor for reliable interior protection, ideal for trucks and caravans. It detects unauthorised access and integrates DMS functions.",
+      "el": "Νέος αισθητήρας για αξιόπιστη εσωτερική προστασία. Ιδανικός για φορτηγά και τροχόσπιτα. Ανιχνεύει μη εξουσιοδοτημένη πρόσβαση και ενσωματώνει λειτουργίες DMS."
+    },
+    "group": "sensors",
+    "priceEur": 99,
+    "fits": [],
+    "vehicles": ["camper", "fleet"],
+    "image": "pricelist-acc-pir-100-bt"
+  },
+  {
+    "id": "pir-100-btm",
+    "code": "PIR-100 BTM",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Bluetooth wireless 3D sensor"
+    },
+    "desc": {
+      "en": "A new sensor for reliable interior protection, ideal for trucks and caravans. It detects unauthorised access and integrates DMS functions.",
+      "el": "Νέος αισθητήρας για αξιόπιστη εσωτερική προστασία. Ιδανικός για φορτηγά και τροχόσπιτα. Ανιχνεύει μη εξουσιοδοτημένη πρόσβαση και ενσωματώνει λειτουργίες DMS."
+    },
+    "group": "sensors",
+    "priceEur": 115,
+    "fits": [],
+    "vehicles": ["camper", "fleet"],
+    "image": "pricelist-acc-pir-100-btm"
+  },
+  {
+    "id": "bt-01",
+    "code": "BT-01",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Bluetooth micro relay"
+    },
+    "desc": {
+      "en": "A small wireless Bluetooth relay for Pandora systems. At 32 × 16 × 9 mm it hides easily in the vehicle's wiring, with no wires to the central unit.",
+      "el": "Ένα ασύρματο μικρό ρελέ Bluetooth, ιδανικό για τα συστήματα Pandora. Με διαστάσεις 32x16x9 mm, μπορεί να κρυφτεί εύκολα στο σύρμα του αυτοκινήτου χωρίς καλώδια που συνδέονται με την κεντρική μονάδα."
+    },
+    "group": "relays-bypass",
+    "priceEur": 47,
+    "fits": [
+      "elite",
+      "professional",
+      "smartpro",
+      "smart",
+      "lightpro",
+      "primo",
+      "camperv3",
+      "camperpro",
+      "motoevo",
+      "marine",
+      "truck"
+    ],
+    "vehicles": ["car", "moto", "camper", "marine", "fleet"],
+    "image": "pricelist-acc-bt-01"
+  },
+  {
+    "id": "bt-02",
+    "code": "BT-02",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Bluetooth micro relay"
+    },
+    "desc": {
+      "en": "A device for hidden installation that can block the radio, CAN, protect keys and control heaters. 34 × 16 × 9 mm; hides easily in the vehicle's wiring.",
+      "el": "Συσκευή για κρυφή εγκατάσταση με δυνατότητες μπλοκαρίσματος ραδιοφώνου, CAN, προστασίας κλειδιών και ελέγχου θερμαντήρων. Διαστάσεις 34x16x9 mm, κρύβεται εύκολα στο σύρμα του οχήματος."
+    },
+    "group": "relays-bypass",
+    "priceEur": 105,
+    "fits": [
+      "elite",
+      "professional",
+      "smartpro",
+      "smart",
+      "lightpro",
+      "primo",
+      "camperv3",
+      "camperpro",
+      "motoevo",
+      "marine",
+      "truck"
+    ],
+    "vehicles": ["car", "moto", "camper", "marine", "fleet"],
+    "image": "pricelist-acc-bt-02"
+  },
+  {
+    "id": "btr-101",
+    "code": "BTR-101",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Bluetooth radio relay"
+    },
+    "desc": {
+      "en": "Bluetooth 4.2 device with an accelerometer: it detects movement to block the engine and allows remote start. Controlled over a 2.4 GHz interface with Pandora immobilisers.",
+      "el": "Συσκευή με Bluetooth 4.2 και επιταχυνσιόμετρο, ανιχνεύει κίνηση για μπλοκάρισμα του κινητήρα και επιτρέπει απομακρυσμένη εκκίνηση. Ελέγχεται μέσω διεπαφής 2.4 GHz με Pandora Immobilisers."
+    },
+    "group": "relays-bypass",
+    "priceEur": 89,
+    "fits": [
+      "elite",
+      "professional",
+      "smartpro",
+      "smart",
+      "lightpro",
+      "primo",
+      "camperv3",
+      "camperpro",
+      "motoevo",
+      "marine",
+      "truck",
+      "immo"
+    ],
+    "vehicles": ["car", "moto", "camper", "marine", "fleet"],
+    "image": "pricelist-acc-btr-101"
+  },
+  {
+    "id": "rmd-5m",
+    "code": "RMD-5M",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Relay module"
+    },
+    "desc": {
+      "en": "Relay module for remote engine start with Pandora systems; connects to power lines up to 20 A.",
+      "el": "Μονάδα ρελέ για απομακρυσμένη εκκίνηση κινητήρα. Το RMD-5M επιτρέπει απομακρυσμένη εκκίνηση με συστήματα Pandora και σύνδεση σε γραμμές ισχύος έως 20A."
+    },
+    "group": "relays-bypass",
+    "priceEur": 49,
+    "fits": [
+      "elite",
+      "professional",
+      "smartpro",
+      "smart",
+      "lightpro",
+      "light",
+      "camperv3",
+      "camperpro"
+    ],
+    "vehicles": ["car", "camper"],
+    "image": "pricelist-acc-rmd-5m"
+  },
+  {
+    "id": "rmd-bmw-v2",
+    "code": "RMD-BMW v2",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Bypass unit for BMW"
+    },
+    "desc": {
+      "en": "Bypass unit for remote engine start on BMW E-series (E-xx) models.",
+      "el": "Μονάδα παρακάμπτησης Pandora RMD-BMW v2 για BMW γενιάς E-xx, για απομακρυσμένη εκκίνηση κινητήρα."
+    },
+    "group": "relays-bypass",
+    "priceEur": 279,
+    "fits": [],
+    "vehicles": ["car"],
+    "image": "pricelist-acc-rmd-bmw-v2"
+  },
+  {
+    "id": "di-02",
+    "code": "DI-02",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Bypass unit for remote start"
+    },
+    "desc": {
+      "en": "Switches that bypass the RFID immobiliser for automatic and remote engine start.",
+      "el": "Διακόπτες παρακάμπτουν Immobiliser RFID για αυτόματη και απομακρυσμένη εκκίνηση."
+    },
+    "group": "relays-bypass",
+    "priceEur": 29,
+    "fits": [
+      "elite",
+      "professional",
+      "smartpro",
+      "smart",
+      "lightpro",
+      "light",
+      "camperv3",
+      "camperpro"
+    ],
+    "vehicles": ["car", "camper"],
+    "image": "pricelist-acc-di-02"
+  },
+  {
+    "id": "di-03",
+    "code": "DI-03",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Immobiliser bypass for keyless cars"
+    },
+    "desc": {
+      "en": "Switches that bypass the RFID immobiliser for automatic and remote engine start.",
+      "el": "Διακόπτες παρακάμπτουν Immobiliser RFID για αυτόματη και απομακρυσμένη εκκίνηση."
+    },
+    "group": "relays-bypass",
+    "priceEur": 45,
+    "fits": ["elite", "professional", "smartpro", "smart", "lightpro", "light"],
+    "vehicles": ["car"],
+    "image": "pricelist-acc-di-03"
+  },
+  {
+    "id": "di-04",
+    "code": "DI-04",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Bluetooth immobiliser bypass"
+    },
+    "desc": {
+      "en": "Switches that bypass the RFID immobiliser for automatic and remote engine start.",
+      "el": "Διακόπτες παρακάμπτουν Immobiliser RFID για αυτόματη και απομακρυσμένη εκκίνηση."
+    },
+    "group": "relays-bypass",
+    "priceEur": 79,
+    "fits": ["elite", "professional", "smartpro", "smart", "lightpro", "camperv3", "camperpro"],
+    "vehicles": ["car", "camper"],
+    "image": "pricelist-acc-di-04"
+  },
+  {
+    "id": "bt-790",
+    "code": "BT-790",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Immobiliser tag"
+    },
+    "desc": {
+      "en": "Anti-hijack Bluetooth tag: the engine is blocked without it. 128-bit encryption and a built-in accelerometer; compatible with various Pandora systems.",
+      "el": "Anti-hijack Bluetooth Tag με μπλοκάρισμα κινητήρα χωρίς Tag, κρυπτογράφηση 128-bit και ενσωματωμένο επιταχυνσιόμετρο, συμβατό με διάφορα συστήματα Pandora για προστασία."
+    },
+    "group": "tags",
+    "priceEur": 59,
+    "fits": ["elite", "professional", "smartpro", "smart", "immo"],
+    "vehicles": ["car"],
+    "image": "pricelist-acc-bt-790"
+  },
+  {
+    "id": "nav-x",
+    "code": "NAV-X",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "GPS telemetry unit"
+    },
+    "desc": {
+      "en": "Extends Pandora systems over Bluetooth: control from your phone, voice and SMS alerts, location tracking and an autonomous warning if power is disconnected.",
+      "el": "Επέκταση λειτουργιών Pandora με Bluetooth. Ελέγχετε το σύστημα μέσω κινητού, με ειδοποιήσεις φωνής, SMS, παρακολούθηση τοποθεσίας και αυτόνομη προειδοποίηση για αποσύνδεση ενέργειας."
+    },
+    "group": "gps-telemetry",
+    "priceEur": 199,
+    "fits": ["lightpro", "primo"],
+    "vehicles": ["car"],
+    "image": "pricelist-acc-nav-x"
+  },
+  {
+    "id": "nav-035-bt",
+    "code": "NAV-035 BT",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "GPS/GLONASS receiver"
+    },
+    "desc": {
+      "en": "High-sensitivity GPS/GLONASS receiver for Pandora systems: small, low consumption, fast positioning and support for 2.4 GHz protocols.",
+      "el": "Δέκτης GPS/GLONASS υψηλής ευαισθησίας για συστήματα Pandora. Μικρό μέγεθος, χαμηλή κατανάλωση, γρήγορος εντοπισμός και υποστήριξη πρωτοκόλλων 2.4 GHz."
+    },
+    "group": "gps-telemetry",
+    "priceEur": 79,
+    "fits": ["smart"],
+    "vehicles": ["car"],
+    "image": "pricelist-acc-nav-035-bt"
+  },
+  {
+    "id": "powercab",
+    "code": "POWERCAB",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Cable harness for Pandora systems"
+    },
+    "desc": {
+      "en": "Cable harness for Pandora systems.",
+      "el": "Δέσμες καλωδίων για συστήματα Pandora."
+    },
+    "group": "harnesses-power-parts",
+    "priceEur": 19,
+    "fits": [],
+    "vehicles": [],
+    "image": "pricelist-acc-powercab"
+  },
+  {
+    "id": "moto-evo-harness",
+    "code": "Moto EVO harness",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Cable harness for Pandora Moto EVO"
+    },
+    "desc": {
+      "en": "Cable harness for Pandora Moto EVO.",
+      "el": "Δέσμες καλωδίων για συστήματα Pandora."
+    },
+    "group": "harnesses-power-parts",
+    "priceEur": 45,
+    "fits": ["motoevo"],
+    "vehicles": ["moto"]
+  },
+  {
+    "id": "led-valet-2",
+    "code": "LED/Valet 2",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "External Valet button"
+    },
+    "desc": {
+      "en": "Valet button with an LED indicator for Pandora systems.",
+      "el": "Κουμπί Valet με ένδειξη LED για συστήματα Pandora."
+    },
+    "group": "harnesses-power-parts",
+    "priceEur": 9,
+    "fits": [],
+    "vehicles": [],
+    "image": "pricelist-acc-led-valet-2"
+  },
+  {
+    "id": "zdr-gm-50",
+    "code": "ZDR GM 50",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Backup battery"
+    },
+    "desc": {
+      "en": "Backup battery for a car alarm, 12 V / 1.3 Ah.",
+      "el": "Εφεδρική μπαταρία για συναγερμό αυτοκινήτου 12V / 1.3Ah."
+    },
+    "group": "harnesses-power-parts",
+    "priceEur": 39,
+    "fits": [],
+    "vehicles": ["car"],
+    "image": "pricelist-acc-zdr-gm-50"
+  },
+  {
+    "id": "d-010-cover",
+    "code": "D-010 Cover",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Spare parts for remote control"
+    },
+    "desc": {
+      "en": "Plastic parts for the Pandora D-010 remote.",
+      "el": "Πλαστικά μέρη του τηλεχειριστηρίου Pandora D-010."
+    },
+    "group": "harnesses-power-parts",
+    "priceEur": 19,
+    "fits": ["light", "motov2"],
+    "vehicles": ["car", "moto"],
+    "image": "pricelist-acc-d-010-cover"
+  },
+  {
+    "id": "lc-d-010",
+    "code": "LC D-010",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Leather case for remote control"
+    },
+    "desc": {
+      "en": "Leather case for the Pandora D-010 remote.",
+      "el": "Δερμάτινη θήκη για το τηλεχειριστήριο Pandora D-010."
+    },
+    "group": "harnesses-power-parts",
+    "priceEur": 12,
+    "fits": ["light", "motov2"],
+    "vehicles": ["car", "moto"],
+    "image": "pricelist-acc-lc-d-010"
+  },
+  {
+    "id": "d-022-cover",
+    "code": "D-022 Cover",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Spare parts for remote control"
+    },
+    "desc": {
+      "en": "Plastic parts for the Pandora D-022 LoRa remote.",
+      "el": "Πλαστικά μέρη του τηλεχειριστηρίου Pandora D-022 LoRa."
+    },
+    "group": "harnesses-power-parts",
+    "priceEur": 29,
+    "fits": ["lightpro"],
+    "vehicles": ["car"],
+    "image": "pricelist-acc-d-022-cover"
+  },
+  {
+    "id": "alt-307",
+    "code": "ALT-307",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Car tester"
+    },
+    "desc": {
+      "en": "A multifunction car-electrician's tool with an ergonomic design, for finding signals easily and protecting the car from damage during installation.",
+      "el": "Πολυλειτουργική συσκευή ηλεκτρολόγου αυτοκινήτου με εργονομικό σχεδιασμό για εύκολη ανίχνευση σημάτων και προστασία από ζημιές κατά την εγκατάσταση."
+    },
+    "group": "installer-tools",
+    "priceEur": 249,
+    "fits": [],
+    "vehicles": []
+  }
+]

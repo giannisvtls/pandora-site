@@ -1,1 +1,249 @@
-[]
+[
+  {
+    "id": "motodays",
+    "showIn": ["en", "el", "it", "sq"],
+    "slug": {
+      "en": "pandora-at-motodays-2026"
+    },
+    "category": "news",
+    "date": "2026-02-11",
+    "title": {
+      "en": "Pandora at MotoDays 2026"
+    },
+    "excerpt": {
+      "en": "Pandora at MotoDays 2026, Fiera di Roma, 6–8 March: Moto V2 and Moto EVO live at Hall 3, Booth B9."
+    },
+    "body": {
+      "en": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "Pandora is taking part in MotoDays 2026 at Fiera di Roma (6–8 March 2026, Hall 3, Booth B9), one of the most important motorcycle exhibitions in Europe."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "A unique chance to meet the Pandora team in person and see the latest developments in motorcycle security systems: GNSS technology, A-GPS operation, CAN Bus FD specifications, and the alarm working live through the mobile app. Featured systems: Pandora Moto V2 and Pandora Moto EVO."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "We don't follow standards. We create them. Want to join the network? INVETEC works with 100+ partners in 5 countries."
+            }
+          ]
+        }
+      ]
+    },
+    "image": "20260218-motodays-2026-gr"
+  },
+  {
+    "id": "keycard",
+    "showIn": ["en", "el", "it", "sq"],
+    "slug": {
+      "en": "new-pandora-keycard"
+    },
+    "category": "news",
+    "date": "2026-01",
+    "title": {
+      "en": "New Pandora KeyCard"
+    },
+    "excerpt": {
+      "en": "Pandora's new digital anti-theft key."
+    },
+    "body": {
+      "en": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "Pandora introduces the KeyCard, a new digital anti-theft key."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "Ask your installer about compatibility with your system."
+            }
+          ]
+        }
+      ]
+    },
+    "image": "pandora-keycard-context"
+  },
+  {
+    "id": "repubblica",
+    "showIn": ["en", "el", "it", "sq"],
+    "slug": {
+      "en": "invetec-in-la-repubblicas-affari-finanza"
+    },
+    "category": "news",
+    "date": "2026-01-22",
+    "title": {
+      "en": "INVETEC in La Repubblica's Affari & Finanza"
+    },
+    "excerpt": {
+      "en": "INVETEC featured in the innovation and security special of Affari & Finanza."
+    },
+    "body": {
+      "en": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "La Repubblica's business supplement Affari & Finanza featured INVETEC in its special issue on innovation and security."
+            }
+          ]
+        }
+      ]
+    },
+    "image": "20260122-invetec-pandora-featured-on-affari-e-finanza-by-la-repubblica"
+  },
+  {
+    "id": "salone-camper",
+    "showIn": ["en", "el", "it", "sq"],
+    "slug": {
+      "en": "come-to-il-salone-del-camper-2025-and-get-15-off"
+    },
+    "category": "news",
+    "date": "2025",
+    "title": {
+      "en": "Come to Il Salone del Camper 2025 and get 15% off"
+    },
+    "excerpt": {
+      "en": "Il Salone del Camper 2025, Parma."
+    },
+    "body": {
+      "en": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "Visit INVETEC at Il Salone del Camper 2025 in Parma and get a 15% discount."
+            }
+          ]
+        }
+      ]
+    },
+    "image": "fleet-final"
+  },
+  {
+    "id": "charger",
+    "showIn": ["en", "el", "it", "sq"],
+    "slug": {
+      "en": "pandora-charger-smart-charger-maintainer-with-bluetooth"
+    },
+    "category": "tech",
+    "date": "2022-02-18",
+    "title": {
+      "en": "Pandora Charger: smart charger-maintainer with Bluetooth"
+    },
+    "body": {
+      "en": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "Full article on invetec.eu."
+            }
+          ]
+        }
+      ]
+    },
+    "image": "works-2024-pandora-smart-pro-v4-cupra-formentor-2025-fd-can"
+  },
+  {
+    "id": "remote-start-bmw-mini",
+    "showIn": ["en", "el", "it", "sq"],
+    "slug": {
+      "en": "remote-engine-start-for-bmw-and-mini"
+    },
+    "category": "tech",
+    "date": "2022-02-19",
+    "title": {
+      "en": "Remote engine start for BMW and MINI"
+    },
+    "body": {
+      "en": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "Full article on invetec.eu."
+            }
+          ]
+        }
+      ]
+    },
+    "image": "works-2025-pandora-elite-v3-audi-rs6"
+  },
+  {
+    "id": "electric-vehicles",
+    "showIn": ["en", "el", "it", "sq"],
+    "slug": {
+      "en": "pandora-and-electric-vehicles"
+    },
+    "category": "tech",
+    "date": "2022-03-01",
+    "title": {
+      "en": "Pandora and electric vehicles"
+    },
+    "body": {
+      "en": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "Full article on invetec.eu."
+            }
+          ]
+        }
+      ]
+    },
+    "image": "works-2024-pandora-smart-pro-v4-cupra-formentor-2025-fd-can"
+  },
+  {
+    "id": "alarm-studio",
+    "showIn": ["en", "el", "it", "sq"],
+    "slug": {
+      "en": "a-new-milestone-in-the-development-of-alarm-studio"
+    },
+    "category": "tech",
+    "date": "2022-03-01",
+    "title": {
+      "en": "A new milestone in the development of Alarm Studio"
+    },
+    "body": {
+      "en": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "text": "Full article on invetec.eu."
+            }
+          ]
+        }
+      ]
+    },
+    "image": "works-2025-pandora-elite-v3-audi-rs6"
+  }
+]

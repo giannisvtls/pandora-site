@@ -7,7 +7,12 @@ import { productSchema } from '../../content/contract';
 import ProductSummary from '../ProductSummary.astro';
 
 const SNAPSHOT = new URL('../../../content-snapshot/products.json', import.meta.url);
-const product = productSchema.parse((JSON.parse(readFileSync(SNAPSHOT, 'utf8')) as unknown[])[0]);
+// Camper V3: English text and a Greek blurb.
+const product = productSchema.parse(
+  (JSON.parse(readFileSync(SNAPSHOT, 'utf8')) as { id: string }[]).find(
+    ({ id }) => id === 'camperv3',
+  ),
+);
 const { name, tag, blurb } = product;
 
 describe('ProductSummary', () => {

@@ -1,0 +1,275 @@
+{
+  "features": {
+    "_source": "Test remark: left out.",
+    "gps": {
+      "title": "GPS tracking",
+      "what": "Test what gps.",
+      "how": "Test how gps.",
+      "needs": ""
+    },
+    "immo": {
+      "title": "Immobilizer",
+      "what": "Test what immo.",
+      "how": "",
+      "needs": "Test needs immo."
+    }
+  },
+  "productDetail": {
+    "_source": "Test remark: left out.",
+    "alpha": {
+      "price_eur": 1499,
+      "warranty": "Test warranty",
+      "highlights": ["gps", "immo"],
+      "specs": [["Protection", ["Test bullet 1", "Test bullet 2"]]],
+      "box": ["Central unit"],
+      "src": "invetec"
+    },
+    "beta": {
+      "price_eur": 195,
+      "src": "pricelist",
+      "highlights": ["gps"],
+      "specs": [["Tracking", ["Test bullet"]]]
+    }
+  },
+  "hues": {
+    "_source": "Test remark: left out.",
+    "alpha": { "light": ["#018BC9", "#012C55"], "dark": ["#34BFFE", "#0382FC"] },
+    "parked": { "light": ["#7CB000", "#425D00"], "dark": ["#C3FF33", "#B5FF00"] }
+  },
+  "cats": [
+    {
+      "id": "car",
+      "label": "For the car",
+      "title": "Car protection",
+      "desc": "Test car description."
+    },
+    {
+      "id": "camper",
+      "label": "For the camper",
+      "title": "Camper protection",
+      "desc": "Test camper description.",
+      "desc_el": "Test camper description (el)."
+    }
+  ],
+  "products": [
+    {
+      "id": "alpha",
+      "brand": "Pandora",
+      "name": "Alpha Pro V2",
+      "cat": "car",
+      "tag": "Test tag alpha",
+      "blurb": "Test blurb alpha.",
+      "blurb_el": "Test blurb alpha (el).",
+      "features": ["Dropped bullet"]
+    },
+    {
+      "id": "beta",
+      "brand": "Pandora",
+      "name": "Beta",
+      "cat": "camper",
+      "tag": "Test tag beta",
+      "blurb": "Test blurb beta.",
+      "features": ["Dropped bullet"]
+    },
+    {
+      "id": "car-acc",
+      "brand": "Pandora",
+      "name": "Accessories",
+      "cat": "car",
+      "tag": "Test tag accessories",
+      "blurb": "Test blurb accessories.",
+      "features": []
+    }
+  ],
+  "productImg": {
+    "alpha": "https://invetec.eu/test/alpha-package.webp",
+    "beta": "img/pricelist/beta.png",
+    "car-acc": "https://invetec.eu/test/accessories.webp"
+  },
+  "productGallery": {
+    "alpha": ["https://invetec.eu/test/ps-330.webp"]
+  },
+  "installImg": {
+    "alpha": "https://invetec.eu/test/install-alpha.jpg",
+    "beta": "https://invetec.eu/test/frame.webp"
+  },
+  "proofImg": {
+    "Test Car": "https://invetec.eu/test/install-alpha.jpg",
+    "Rail Car": "https://invetec.eu/test/rail.jpg"
+  },
+  "postImg": {
+    "_note": "Test remark: left out.",
+    "first": "https://invetec.eu/test/install-alpha.jpg",
+    "second": "https://invetec.eu/test/car.webp"
+  },
+  "catImg": {
+    "car": "https://invetec.eu/test/car.webp",
+    "camper": "https://invetec.eu/test/camper.webp"
+  },
+  "vehicles": [{ "car": "Test Car", "system": "Pandora Alpha" }],
+  "posts": [
+    {
+      "id": "first",
+      "cat": "News",
+      "date": "Jan 2026",
+      "title": "Pandora's First: Test & Post",
+      "imgLabel": "photo — dropped",
+      "excerpt": "Test excerpt.",
+      "body": ["Test paragraph one.", "Test paragraph two."]
+    },
+    {
+      "id": "second",
+      "cat": "Tech",
+      "date": "2025",
+      "title": "Second test post",
+      "imgLabel": "photo — dropped",
+      "excerpt": "",
+      "body": ["Test paragraph."]
+    }
+  ],
+  "specRows": [
+    { "key": "accel", "label": "Shock sensor" },
+    { "key": "siren", "label": "Siren" },
+    { "key": "immo", "label": "Immobilizer" },
+    { "key": "bt", "label": "Bluetooth tag" },
+    { "key": "pin", "label": "PIN code" },
+    { "key": "smarttag", "label": "Smartphone as tag" },
+    { "key": "nodisarm", "label": "Prohibit disarming" },
+    { "key": "hijack", "label": "Anti-hijack" },
+    { "key": "jammer", "label": "Anti-jammer" },
+    { "key": "gps", "label": "GPS" },
+    { "key": "wifi", "label": "Wi-Fi positioning" },
+    { "key": "lbs", "label": "LBS" },
+    { "key": "lte", "label": "4G telemetry" },
+    { "key": "blackbox", "label": "Black Box" },
+    { "key": "app", "label": "App" },
+    { "key": "push", "label": "Push notifications" },
+    { "key": "selfcall", "label": "SelfCall" },
+    { "key": "oem", "label": "Factory-key control" },
+    { "key": "remote", "label": "Remote" },
+    { "key": "start", "label": "Remote engine start" },
+    { "key": "keyless", "label": "Keyless start" },
+    { "key": "preheater", "label": "Preheater control" }
+  ],
+  "specs": {
+    "alpha": {
+      "accel": 1,
+      "siren": 1,
+      "immo": 1,
+      "bt": 1,
+      "pin": 1,
+      "smarttag": 1,
+      "nodisarm": 1,
+      "hijack": 1,
+      "jammer": 1,
+      "gps": 1,
+      "wifi": 1,
+      "lbs": 1,
+      "lte": 1,
+      "blackbox": 1,
+      "app": 1,
+      "push": 1,
+      "selfcall": 1,
+      "oem": 1,
+      "remote": 1,
+      "start": 2,
+      "keyless": 1,
+      "preheater": 0
+    }
+  },
+  "specNotes": {
+    "alpha": { "start": "with RMD-5M", "siren": "PS-332 BT" }
+  },
+  "finderMap": {
+    "car": {
+      "1": ["alpha", "Test reason car 1."],
+      "2": ["alpha", "Test reason car 2."],
+      "3": ["alpha", "Test reason car 3."]
+    },
+    "moto": {
+      "1": ["alpha", "Test reason moto 1."],
+      "2": ["alpha", "Test reason moto 2."],
+      "3": ["alpha", "Test reason moto 3."]
+    },
+    "camper": {
+      "1": ["beta", "Test reason camper 1."],
+      "2": ["beta", "Test reason camper 2."],
+      "3": ["beta", "Test reason camper 3."]
+    },
+    "marine": {
+      "1": ["alpha", "Test reason marine 1."],
+      "2": ["alpha", "Test reason marine 2."],
+      "3": ["alpha", "Test reason marine 3."]
+    },
+    "fleet": {
+      "1": ["beta", "Test reason fleet 1."],
+      "2": ["beta", "Test reason fleet 2."],
+      "3": ["beta", "Test reason fleet 3."]
+    }
+  },
+  "placeNote": {
+    "garage": "Test garage note.",
+    "shared": "Test shared note.",
+    "street": "Test street note.",
+    "varies": "Test varies note."
+  },
+  "tierData": [
+    {
+      "n": "1",
+      "title": "Detection",
+      "what": "Test what 1.",
+      "items": ["Test item 1"],
+      "stops": "Test stops 1.",
+      "ids": []
+    },
+    {
+      "n": "2",
+      "title": "Prevention",
+      "what": "Test what 2.",
+      "items": ["Test item 2"],
+      "stops": "Test stops 2.",
+      "ids": []
+    },
+    {
+      "n": "3",
+      "title": "Recovery",
+      "what": "Test what 3.",
+      "items": ["Test item 3a", "Test item 3b"],
+      "stops": "Test stops 3.",
+      "ids": ["alpha", "beta"]
+    }
+  ],
+  "faqData": [{ "q": "Test question?", "a": "Test answer." }],
+  "handed": "https://invetec.eu/test/handed.webp",
+  "smartFrame": "https://invetec.eu/test/frame.webp",
+  "U": "https://invetec.eu/wp-content/uploads/",
+  "dealers": [{ "_note": "Dropped." }],
+  "productColor": { "alpha": "#34BFFE" },
+  "accessories": [
+    {
+      "id": "d-061",
+      "code": "D-061",
+      "name": "Test remote",
+      "group": "Remotes",
+      "desc": "Test remote description.",
+      "desc_el": "Test remote description (el).",
+      "price_eur": 259,
+      "fits": ["alpha"],
+      "vehicles": ["car"],
+      "img": "img/pricelist/acc-d-061.png"
+    },
+    {
+      "id": "alt-307",
+      "code": "ALT-307",
+      "name": "Test tester",
+      "group": "Relays & bypass",
+      "desc": "Test tester description.",
+      "price_eur": 249,
+      "fits": [],
+      "vehicles": [],
+      "img": ""
+    }
+  ],
+  "accessoryGroups": ["Remotes", "Relays & bypass"],
+  "parked": { "products": [], "cats": [] }
+}

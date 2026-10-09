@@ -27,7 +27,7 @@ test.describe('/en/ home page', () => {
         exact: true,
       }),
     ).toBeVisible();
-    // The one product in content-snapshot/products.json (camperv3). `exact`: role names
+    // One of the 16 products in content-snapshot/products.json (camperv3). `exact`: role names
     // otherwise match case-insensitive substrings ("Camper V3 Pro" would pass).
     await expect(
       page.getByRole('heading', { level: 2, name: 'Camper V3', exact: true }),

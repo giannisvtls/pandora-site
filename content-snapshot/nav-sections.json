@@ -1,1 +1,56 @@
-[]
+[
+  {
+    "id": "systems",
+    "route": "systems",
+    "order": 1,
+    "showIn": ["en", "el", "it", "sq"],
+    "label": {
+      "en": "Systems"
+    }
+  },
+  {
+    "id": "compare",
+    "route": "compare",
+    "order": 2,
+    "showIn": ["en", "el", "it", "sq"],
+    "label": {
+      "en": "Compare"
+    }
+  },
+  {
+    "id": "installers",
+    "route": "installers",
+    "order": 3,
+    "showIn": ["en", "el", "it", "sq"],
+    "label": {
+      "en": "Find an installer"
+    }
+  },
+  {
+    "id": "blog",
+    "route": "blog",
+    "order": 4,
+    "showIn": ["en", "el", "it", "sq"],
+    "label": {
+      "en": "Blog"
+    }
+  },
+  {
+    "id": "partners",
+    "route": "partners",
+    "order": 5,
+    "showIn": ["en", "el", "it", "sq"],
+    "label": {
+      "en": "Partners"
+    }
+  },
+  {
+    "id": "contact",
+    "route": "contact",
+    "order": 6,
+    "showIn": ["en", "el", "it", "sq"],
+    "label": {
+      "en": "Contact"
+    }
+  }
+]

@@ -1,5 +1,4 @@
-// The Finder and Languages globals (spec §2). Languages is registered with its snapshot; the
-// Finder is a schema only until the snapshot converter registers it with its data.
+// The Finder and Languages globals (spec §2), each registered with its snapshot file.
 import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
@@ -71,8 +70,12 @@ describe('finder', () => {
     expect(finderSchema.parse(finder)).toStrictEqual(finder);
   });
 
-  it('is not registered yet (the converter registers it with its data)', () => {
-    expect(Object.keys(GLOBALS)).not.toContain('finder');
+  it('is registered, and the converted snapshot parses unchanged', () => {
+    const file = new URL('../../../content-snapshot/finder.json', import.meta.url);
+    const snapshot = JSON.parse(readFileSync(file, 'utf8')) as Loose;
+
+    expect(GLOBALS.finder).toBe(finderSchema);
+    expect(finderSchema.parse(snapshot)).toStrictEqual(snapshot);
   });
 
   it('needs every level of every vehicle', () => {

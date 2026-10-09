@@ -1,1 +1,58 @@
-[]
+[
+  {
+    "id": "remotes",
+    "order": 1,
+    "label": {
+      "en": "Remotes"
+    }
+  },
+  {
+    "id": "sirens",
+    "order": 2,
+    "label": {
+      "en": "Sirens"
+    }
+  },
+  {
+    "id": "sensors",
+    "order": 3,
+    "label": {
+      "en": "Sensors"
+    }
+  },
+  {
+    "id": "relays-bypass",
+    "order": 4,
+    "label": {
+      "en": "Relays & bypass"
+    }
+  },
+  {
+    "id": "tags",
+    "order": 5,
+    "label": {
+      "en": "Tags"
+    }
+  },
+  {
+    "id": "gps-telemetry",
+    "order": 6,
+    "label": {
+      "en": "GPS & telemetry"
+    }
+  },
+  {
+    "id": "harnesses-power-parts",
+    "order": 7,
+    "label": {
+      "en": "Harnesses, power & parts"
+    }
+  },
+  {
+    "id": "installer-tools",
+    "order": 8,
+    "label": {
+      "en": "Installer tools"
+    }
+  }
+]

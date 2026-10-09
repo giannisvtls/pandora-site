@@ -352,6 +352,35 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: Node globals type-check inside browser code too.
   - Fix: scope the types when islands grow.
 
+## Snapshot converter and checks
+
+- **Running `npm run snapshot:convert` again overwrites the snapshot.** It ran once (P1-10);
+  `content-snapshot/` is the source of truth since.
+  - Symptom: every hand edit of a converted file (and `src/content/hues.ts`) since the conversion
+    is gone; `git diff` shows them reverted to the prototype's data.
+  - Fix: do not run it on the real files. To exercise it, run its tests (they use a fixture in
+    a scratch folder) or pass a scratch copy of the repository as the root from code.
+- **zod output follows the schema, not the input.** A `z.strictObject` returns its keys in
+  shape order, and a `z.record` over an enum (the matrix) in the enum's order.
+  - Symptom: a check on parsed data cannot see how a file orders its keys (a matrix out of row
+    order still parses), and a test that compares key order against the file fails.
+  - Fix: read the raw JSON for order checks, as the integrity test does for the matrix.
+- **zod keeps a key whose value is `undefined`.** An optional field written as
+  `{ image: undefined }` parses, and the output still has the key.
+  - Symptom: the converted items compare unequal to the written file in tests
+    (`not.toHaveProperty('image')` fails), although `JSON.stringify` drops the key.
+  - Fix: build items without those keys (`withoutUndefined` in `scripts/snapshot/convert-text.ts`).
+- **Prettier's config is found from the path you pass.** `resolveConfig()` searches upward from
+  the file path; for a file outside the repository it finds no `.prettierrc.json`.
+  - Symptom: output written to a scratch folder (the converter's tests) comes out in Prettier's
+    defaults (double quotes, 80 columns), so it differs from what `format:check` expects.
+  - Fix: resolve the config from the file's repository path, whatever folder the text goes to
+    (`formatForRepo` in `scripts/snapshot/render.ts`).
+- **A white-on-transparent image.** `antijammer-primo.webp` (Primo's gallery) is a white line
+  icon on a transparent background.
+  - Symptom: on a white plate the image looks empty, in the browser and in an image viewer.
+  - Fix: show it on a dark surface, or view it composited on a dark background to check it.
+
 ## Unit tests (Vitest)
 
 - **No Vitest globals, so no automatic Preact Testing Library cleanup.**
@@ -429,7 +458,7 @@ are about to touch. When you hit a new one, add it here in the same shape.
     Chromium build is missing.
   - Fix: `npx playwright install chromium`. CI adds `--with-deps`, which also installs the Linux
     system libraries through the package manager; a workstation does not need it.
-- **The spec names the snapshot product.**
-  - Symptom: `e2e/home.spec.ts` expects the heading "Camper V3", so changing the snapshot breaks
-    it.
+- **The spec names a snapshot product.**
+  - Symptom: `e2e/home.spec.ts` expects the heading "Camper V3", so removing or renaming that
+    product breaks it.
   - Fix: update the spec together with `content-snapshot/products.json`.

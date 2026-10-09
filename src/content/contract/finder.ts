@@ -1,6 +1,6 @@
 // The Finder global (spec §2 "Globals"): per vehicle and level, the system the Finder suggests
-// and why, plus a note per parking place. English is the source language. Slice 4 converts the
-// prototype's data into it and registers it.
+// and why, plus a note per parking place. English is the source language. Converted from the
+// prototype's `finderMap` and `placeNote` (content-snapshot/finder.json).
 import { z } from 'zod';
 
 import { categoryId, levelId, placeKey } from './keys';

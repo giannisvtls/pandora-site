@@ -197,10 +197,13 @@ describe('accessories', () => {
   it.each([
     ['fits', ['elite', 'smart', 'elite'], 'fits.2'],
     ['vehicles', ['car', 'moto', 'car'], 'vehicles.2'],
-    ['vehicles', [], 'vehicles'],
     ['vehicles', ['truck'], 'vehicles.0'],
   ])('rejects %s = %j', (field, value, path) => {
     expect(pathsOf(accessorySchema, changed('accessories', { [field]: value }))).toEqual([path]);
+  });
+
+  it('accept no vehicle: the item is then listed only under All (user decision 2026-10-09)', () => {
+    expect(pathsOf(accessorySchema, changed('accessories', { vehicles: [] }))).toEqual([]);
   });
 });
 
@@ -249,6 +252,14 @@ describe('posts', () => {
 
     expect(pathsOf(postSchema, slug)).toEqual(['slug.en']);
     expect(pathsOf(postSchema, body)).toEqual(['body.en.0.type']);
+  });
+
+  it('take no excerpt: the list row then shows the title alone (user decision 2026-10-09)', () => {
+    const post = fixtures.posts();
+    delete post.excerpt;
+
+    expect(pathsOf(postSchema, post)).toEqual([]);
+    expect(pathsOf(postSchema, changed('posts', { excerpt: {} }))).toEqual(['excerpt.en']);
   });
 
   it.each(['news', 'tech'])('take the category %s', (category) => {

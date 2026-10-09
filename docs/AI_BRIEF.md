@@ -17,15 +17,18 @@ the live URLs for the future redirect map.
 ```
 .github/workflows/    ci.yml (quality + e2e jobs), pr-title.yml
 .husky/pre-commit     Node 24 guard -> astro sync -> lint-staged
-content-snapshot/     one JSON file per collection: the snapshot content source
+content-snapshot/     one JSON file per collection or global: the content source; PROVENANCE.md
 docs/                 this brief, gotchas.md
 e2e/                  Playwright + axe specs, run against `astro preview`
 public/_redirects     root redirect for the static host: /  /en/  302
 redirects/            crawl.json (live URL inventory, written by `npm run crawl`), CRAWL.md (its
                       summary, written by `npm run crawl:summary`); .crawl-cache/ (gitignored)
 scripts/crawl/        read-only redirect crawler (run with tsx), __fixtures__/, __tests__/
+scripts/snapshot/     the one-time snapshot converter, the snapshot reader, __fixtures__/, __tests__/
+scripts/pricelist/    the pricelist check behind `npm run check:pricelist` (+ __tests__/)
 src/
-  content/            contract/ (Zod contract; contract.ts re-exports it), loader.ts, __tests__/
+  content/            contract/ (Zod contract; contract.ts re-exports it), loader.ts, hues.ts,
+                      __tests__/
   content.config.ts   every registered collection
   components/         ProductSummary.astro, __tests__/
   layouts/            BaseLayout.astro (lang, title, skip link, main#main), __tests__/
@@ -51,6 +54,11 @@ src/
 - `scripts/crawl/summary.ts` -- `npm run crawl:summary` entry; `summary-cli.ts` checks
   `crawl.json` and writes or `--check`s `CRAWL.md`, `summary-render.ts`, `summary-coverage.ts`
   and `summary-open-items.ts` hold its sections
+- `scripts/snapshot/convert.ts` -- `npm run snapshot:convert` entry; `convert-cli.ts` reads and
+  writes the files, `convert-data.ts` (with `convert-items.ts`, `media-refs.ts`, `alt-text.ts`)
+  holds the rule; `read-snapshot.ts` reads the committed snapshot through the contract
+- `scripts/check-pricelist.ts` -- `npm run check:pricelist` entry; `scripts/pricelist/check.ts`
+  holds the transcription and the checks
 
 ## Entry Points
 
@@ -112,6 +120,8 @@ avoids EBADENGINE warnings). npm scripts and Playwright's `webServer` run whiche
 | `npm run crawl -- --max-minutes 8` | Read-only crawl of the live sites, in a chunk; run it again to resume (see Redirect crawl) |
 | `npm run crawl:summary`            | Write `redirects/CRAWL.md` from `redirects/crawl.json` (no network)                        |
 | `npm run crawl:summary -- --check` | Fail when `CRAWL.md` does not match `crawl.json`; writes nothing                           |
+| `npm run check:pricelist`          | Check the snapshot against PRICELIST 2026; prints `clean: ...` or every problem (exit 1)   |
+| `npm run snapshot:convert`         | The one-time prototype conversion (`-- --source <absolute path>`); see Content seam        |
 
 - First e2e run on a machine: `npx playwright install chromium`. Stop `npm run dev` (or any
   preview) first: the dev server, the preview and the e2e run all use port 4321.
@@ -129,8 +139,8 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
    later. Every schema of spec §2's collections (media, products, accessories, posts, faq,
    installers, navSections) and fixed-key sets (categories, accessoryCards, accessoryGroups,
    features, specRows, levels) is registered by name in `contract/registry.ts`, and so are the
-   globals: the twelve Site copy groups (`SITE_COPY`, `contract/site-copy-*.ts`) and `languages`.
-   The Finder schema (`contract/finder.ts`) is registered by the snapshot converter.
+   globals: the twelve Site copy groups (`SITE_COPY`, `contract/site-copy-*.ts`), `languages`
+   and `finder` (`contract/finder.ts`).
    - **Site copy** holds every visible UI string of the prototype that the site can show,
      English as the source language: one global per page group (`siteCopyHeader`,
      `siteCopyCommon` for strings several pages share, `siteCopyHome` … `siteCopyFooter`,
@@ -187,11 +197,26 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
    page's locale only: a field missing in that locale renders nothing, and no price is shown
    (prices belong on product pages).
 
-- **The snapshot** (`content-snapshot/`) has one file per collection or global. `products.json`
-  holds one product, `camperv3` (English text and the Greek blurb), and `media.json` its package
-  shot; the other collection files are `[]` until the converter fills them. The
-  `site-copy-*.json` files hold the prototype's English, transcribed once; `languages.json` has
-  `en` live and `el`, `it`, `sq` not live.
+- **The snapshot** (`content-snapshot/`) has one file per collection or global, and it is the
+  source of truth: content edits go into these files directly (decision P1-10).
+  - `npm run snapshot:convert -- --source <absolute path to nightwatch-data.js>`
+    (`scripts/snapshot/`) converted the prototype's data file into it once: every collection file,
+    `finder.json` and `src/content/hues.ts` (product hues are code, A7). It reads the file as
+    data, never runs it, and is deterministic: a second run on the same file writes the same
+    bytes. `PROVENANCE.md` records the source file name, its SHA-256 and the date. Running it
+    again would overwrite every edit made since; it is kept for the record and its tests.
+  - English everywhere; Greek only where the prototype had it (6 product blurbs, the 38 accessory
+    descriptions, the camper category description). Every item has `showIn` all four languages.
+  - Media: one item per file of `src/assets/media/` the content uses (92), its id the file path
+    without the extension, `/` as `-` (`pricelist-acc-band`). Alt text follows the patterns of
+    spec §3.1 or, where none fits the picture, `ALT_BY_MEDIA` in `scripts/snapshot/alt-text.ts`,
+    written after viewing each image; category heads and the hero poster are decorative.
+  - The `site-copy-*.json` files hold the prototype's English, transcribed once;
+    `languages.json` has `en` live and `el`, `it`, `sq` not live.
+  - Guards: the unit test `src/content/__tests__/integrity.test.ts` checks that every reference
+    across the snapshot resolves (A13); `npm run check:pricelist` checks the matrix, the prices,
+    the accessories, the Finder picks and the level lists against PRICELIST 2026 (constants in
+    `scripts/pricelist/check.ts`, shared with the framework tool until it retires).
 - **The data store**: `astro build`, `sync` and `check` keep it in
   `node_modules/.astro/data-store.json`; `astro dev` keeps its own in `.astro/data-store.json`. It
   persists between runs; the loader clears it on every load, so a changed or removed item is never
@@ -343,7 +368,7 @@ Phase 0 limits:
 - No styling: `/en/` is plain semantic HTML. The design port comes in Phase 1.
 - No deploy: no hosting project, no `_headers`, no Functions. `public/_redirects` is the only
   host file.
-- One product (`camperv3`) in the snapshot, and only `/en/` is built.
+- `/en/` lists every product of the converted snapshot (16 systems), and only `/en/` is built.
 - No CMS yet: `CONTENT_SOURCE=payload` throws until Phase 5.
 - No 404 page yet (Phase 1, with a per-locale strategy).
 - No islands ship: the only Preact component is the test fixture

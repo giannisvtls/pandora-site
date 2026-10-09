@@ -22,6 +22,8 @@
     "crawl:summary": "tsx scripts/crawl/summary.ts",
     "media:sources": "tsx scripts/assets/extract-sources.ts",
     "media:fetch": "tsx scripts/assets/fetch-media.ts",
+    "snapshot:convert": "tsx scripts/snapshot/convert.ts",
+    "check:pricelist": "tsx scripts/check-pricelist.ts",
     "prepare": "husky || true"
   },
   "lint-staged": {

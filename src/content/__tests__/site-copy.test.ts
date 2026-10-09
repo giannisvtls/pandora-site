@@ -184,7 +184,7 @@ describe('the Site copy groups', () => {
       'siteCopyNotFound',
     ]);
     expect(new Set(files)).toEqual(new Set(NAMES.map((name) => snapshotFileName(name))));
-    expect(Object.keys(GLOBALS)).toEqual([...NAMES, 'languages']);
+    expect(Object.keys(GLOBALS)).toEqual([...NAMES, 'languages', 'finder']);
   });
 });
 

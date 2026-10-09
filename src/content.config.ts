@@ -70,4 +70,5 @@ export const collections = {
     schema: G.siteCopyNotFound,
   }),
   languages: defineCollection({ loader: contentLoader('languages'), schema: G.languages }),
+  finder: defineCollection({ loader: contentLoader('finder'), schema: G.finder }),
 } satisfies Record<ContentName, unknown>;

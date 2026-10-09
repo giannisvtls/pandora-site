@@ -1,0 +1,118 @@
+{
+  "picks": {
+    "car": {
+      "1": {
+        "product": "light",
+        "reason": {
+          "en": "Detection and alerts for a car that lives in a controlled space."
+        }
+      },
+      "2": {
+        "product": "smartpro",
+        "reason": {
+          "en": "Alarm with a digital CAN-bus immobilizer — plus FD-CAN support for newer vehicles."
+        }
+      },
+      "3": {
+        "product": "elite",
+        "reason": {
+          "en": "The complete system: detection, immobilization and live position tracking."
+        }
+      }
+    },
+    "moto": {
+      "1": {
+        "product": "motov2",
+        "reason": {
+          "en": "868 MHz communication and a 3D accelerometer, built for two wheels."
+        }
+      },
+      "2": {
+        "product": "motoevo",
+        "reason": {
+          "en": "Control through Pandora Connect with energy-saving algorithms."
+        }
+      },
+      "3": {
+        "product": "motoevo",
+        "reason": {
+          "en": "For motorcycles, the Evo V2 is the highest level in the range."
+        }
+      }
+    },
+    "camper": {
+      "1": {
+        "product": "camperv3",
+        "reason": {
+          "en": "The first telemetric system for recreational vehicles, with wireless sensors that detect every attempt."
+        }
+      },
+      "2": {
+        "product": "camperv3",
+        "reason": {
+          "en": "Immobilizer and anti-hijack included, with two wireless DMS-100 BT sensors."
+        }
+      },
+      "3": {
+        "product": "camperpro",
+        "reason": {
+          "en": "The highest technology for caravans and camper vans: two GSM antennas, a LoRa remote and five wireless sensors."
+        }
+      }
+    },
+    "marine": {
+      "1": {
+        "product": "marine",
+        "reason": {
+          "en": "Marine-grade version, built for conditions on board."
+        }
+      },
+      "2": {
+        "product": "marine",
+        "reason": {
+          "en": "Marine-grade version with engine immobilization."
+        }
+      },
+      "3": {
+        "product": "marine",
+        "reason": {
+          "en": "With position tracking — the level that matters for a boat at anchor."
+        }
+      }
+    },
+    "fleet": {
+      "1": {
+        "product": "finder",
+        "reason": {
+          "en": "A miniature tracker on AAA batteries, up to three years between changes."
+        }
+      },
+      "2": {
+        "product": "tracer",
+        "reason": {
+          "en": "4G tracking with its own battery and an output for a blocking relay."
+        }
+      },
+      "3": {
+        "product": "truck",
+        "reason": {
+          "en": "Full security for commercial vehicles: 4G, GPS/GLONASS, engine blocking and fuel monitoring."
+        }
+      }
+    }
+  },
+  "placeNotes": {
+    "garage": {
+      "en": "In a closed garage the risk is lower — but theft by towing remains."
+    },
+    "shared": {
+      "en": "In a shared parking space access is easy and observation is high; immobilization is worth it."
+    },
+    "street": {
+      "en": "On the street, position tracking is the level that makes the biggest difference."
+    },
+    "varies": {
+      "en": "When the location keeps changing, tracking is the only level that doesn't depend on where you are."
+    }
+  }
+}

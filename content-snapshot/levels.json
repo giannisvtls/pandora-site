@@ -1,1 +1,86 @@
-[]
+[
+  {
+    "id": "1",
+    "title": {
+      "en": "Detection"
+    },
+    "what": {
+      "en": "Notices something is happening and tells you."
+    },
+    "items": [
+      {
+        "en": "Shock and tilt sensors"
+      },
+      {
+        "en": "Alert on your phone"
+      },
+      {
+        "en": "Siren"
+      }
+    ],
+    "stops": {
+      "en": "If the thief ignores the siren, the vehicle can still move."
+    },
+    "systems": ["motov2"]
+  },
+  {
+    "id": "2",
+    "title": {
+      "en": "Prevention"
+    },
+    "what": {
+      "en": "Stops the vehicle from moving, even if it has started."
+    },
+    "items": [
+      {
+        "en": "Everything in level 1"
+      },
+      {
+        "en": "Digital immobilizer on the CAN-bus"
+      },
+      {
+        "en": "Driver recognition by tag, card or PIN code"
+      }
+    ],
+    "stops": {
+      "en": "If the vehicle is towed, you don't know where it is."
+    },
+    "systems": ["lightpro", "light", "primo", "immo"]
+  },
+  {
+    "id": "3",
+    "title": {
+      "en": "Recovery"
+    },
+    "what": {
+      "en": "You know where the vehicle is after it's gone."
+    },
+    "items": [
+      {
+        "en": "Everything in level 2"
+      },
+      {
+        "en": "GPS / GLONASS tracking"
+      },
+      {
+        "en": "Independent battery and backup channel"
+      }
+    ],
+    "stops": {
+      "en": "Cost. This level makes sense for high-value vehicles."
+    },
+    "systems": [
+      "elite",
+      "professional",
+      "smartpro",
+      "smart",
+      "camperv3",
+      "camperpro",
+      "motoevo",
+      "marine",
+      "truck",
+      "finder",
+      "tracer"
+    ]
+  }
+]

@@ -5,6 +5,7 @@ import type { z } from 'zod';
 
 import { accessorySchema } from './accessories';
 import { faqSchema } from './faq';
+import { finderSchema } from './finder';
 import {
   accessoryCardSchema,
   accessoryGroupSchema,
@@ -57,7 +58,7 @@ export const COLLECTIONS = {
 export type CollectionName = keyof typeof COLLECTIONS;
 
 // Globals: one JSON object, stored as the single entry `global`. The Site copy groups (one per
-// page group, P1-4) and Languages; the Finder joins with the snapshot converter.
+// page group, P1-4), Languages and the Finder.
 export const SITE_COPY = {
   siteCopyHeader: siteCopyHeaderSchema,
   siteCopyCommon: siteCopyCommonSchema,
@@ -77,6 +78,7 @@ export type SiteCopyName = keyof typeof SITE_COPY;
 export const GLOBALS = {
   ...SITE_COPY,
   languages: languagesSchema,
+  finder: finderSchema,
 } as const satisfies Record<string, z.ZodType<Record<string, unknown>>>;
 export type GlobalName = keyof typeof GLOBALS;
 
