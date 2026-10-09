@@ -131,24 +131,40 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
    features, specRows, levels) is registered by name in `contract/registry.ts`, and so are the
    globals: the twelve Site copy groups (`SITE_COPY`, `contract/site-copy-*.ts`) and `languages`.
    The Finder schema (`contract/finder.ts`) is registered by the snapshot converter.
-   - **Site copy** holds every UI string of the prototype, English as the source language: one
-     global per page group (`siteCopyHeader`, `siteCopyCommon` for strings several pages share,
-     `siteCopyHome` … `siteCopyFooter`, `siteCopyNotFound`). Product, accessory, post, FAQ and
-     feature texts are collection data, not Site copy. A sentence is one value: what the
-     prototype builds by concatenation is a `template` with named placeholders, counts are
-     `plural` (Intl.PluralRules) or `byCount` ("Both / All three / All four"), and every h1/h2 is
-     a `heading` (`lead <span class="b">payload</span>`). Code fills placeholders; it never glues
-     copy fields together, because word order differs per language. Facts (the company name,
-     phone, email, postal code, a car in the proof rail) are plain strings shared by every
-     language.
+   - **Site copy** holds every visible UI string of the prototype that the site can show,
+     English as the source language: one global per page group (`siteCopyHeader`,
+     `siteCopyCommon` for strings several pages share, `siteCopyHome` … `siteCopyFooter`,
+     `siteCopyNotFound`). Prototype-only notes and strings no launch item can reach are left
+     out. Product, accessory, post, FAQ and feature texts are collection data, not Site copy.
+     What the prototype builds by concatenation is a `template` with named placeholders, counts
+     are `plural` (Intl.PluralRules) or `byCount` ("Both / All three / All four"), and every
+     h1/h2 is a `heading` (`lead <span class="b">payload</span>`). Code never builds a sentence
+     from fragments in its own word order, because word order differs per language. It joins
+     copy fields only where the contract defines the join, and the field's schema comment says
+     how:
+     - a `heading`'s lead and payload (and the home band's `headingEnd` line after it);
+     - a bold opening plus its rest, `<strong>strong</strong> rest` (`strongLead`, the compare
+       standouts, `findsIt`);
+     - a home log row's title and text, joined by a space, or by nothing when the text starts
+       with punctuation;
+     - two parts side by side with `·` (the product's full-spec summary, the compare extras
+       line);
+     - a sentence followed by a link or a value (`warrantyQuestion` + `warrantyLink`, a fold
+       label + its row labels, `noImmobilizer` / `noTracking*` + a level's "Where it stops"
+       text, the related heading's payload = the vehicle word).
+
+     Facts (the company name, phone, email, postal code, a car in the proof rail) are plain
+     strings shared by every language.
+
    - `LOCALES = ['en', 'el', 'it', 'sq']`. Localized text is one language map per field
      (`localizedText`): a language without a translation has no key; there is never English
      filler in another language. A value is never empty, whitespace-only or untrimmed.
    - Every language map an item carries needs its source language: `showIn[0]` for items
      (`itemSchema` in `contract/item.ts`), English for media, fixed-key sets and globals. Errors
      name the path down to the locale (`name.en`, `specGroups.0.items.1.en`). The one exception
-     is a `plural`'s optional `few` / `many`: they exist only in the languages whose plural rules
-     select them.
+     is a `plural`'s optional `few` / `many`: they never need English; add them only in the
+     languages whose plural rules select them (the schema does not enforce this), and a renderer
+     falls back to `other` when the selected form is absent.
    - Primitives (`contract/primitives.ts`): `template(placeholders)` (every value uses exactly
      the declared `{name}` placeholders and no other `{` or `}`), `plural`, `byCount`, `heading`,
      `partialDate`, ids and slugs; rich text (`contract/rich-text.ts`); the fixed keys
