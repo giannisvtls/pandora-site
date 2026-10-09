@@ -8,8 +8,9 @@ is a JSON snapshot in the repo, a CMS source arrives in Phase 5.
 ## Purpose
 
 The INVETEC / Pandora website (`https://invetec.eu`), rebuilt as a static Astro site. Phase 0 is
-groundwork: every quality gate (types, lint, format, unit tests, build, e2e + axe, CI) and a
-proven content seam that renders one product on `/en/`.
+groundwork: every quality gate (types, lint, format, unit tests, build, e2e + axe, CI), a
+proven content seam that renders one product on `/en/`, and a read-only crawler that inventories
+the live URLs for the future redirect map.
 
 ## Structure
 
@@ -20,6 +21,8 @@ content-snapshot/     products.json: the snapshot content source (one product)
 docs/                 this brief, gotchas.md
 e2e/                  Playwright + axe specs, run against `astro preview`
 public/_redirects     root redirect for the static host: /  /en/  302
+redirects/            crawl.json (live URL inventory, written by `npm run crawl`); .crawl-cache/
+scripts/crawl/        read-only redirect crawler (run with tsx), __fixtures__/, __tests__/
 src/
   content/            contract.ts (Zod contract), loader.ts (Content Layer loader), __tests__/
   content.config.ts   the `products` collection
@@ -40,6 +43,10 @@ src/
 - `vitest.config.ts` -- Vitest through Astro's `getViteConfig`
 - `playwright.config.ts` -- e2e against `npm run build && npm run preview` on port 4321
 - `.husky/pre-commit` -- refuses Node < 24, runs `astro sync`, then lint-staged
+- `scripts/crawl/config.ts` -- the crawl's fixed hosts, politeness values and User-Agent
+- `scripts/crawl/crawl.ts` -- `npm run crawl` entry; `cli.ts` reads the flags, `run.ts` runs the
+  phases, `fetcher.ts` is the only code that sends requests, `output.ts` holds the `crawl.json`
+  schema
 
 ## Entry Points
 
@@ -47,6 +54,7 @@ src/
 - Content: `src/content.config.ts` -> `src/content/loader.ts` -> `content-snapshot/*.json`
 - Build output: `dist/` (`dist/en/index.html`, `dist/_redirects`)
 - CI: `.github/workflows/ci.yml`, `.github/workflows/pr-title.yml`
+- Crawl: `npm run crawl` -> `scripts/crawl/crawl.ts` -> `redirects/crawl.json`
 
 ## Dependencies
 
@@ -64,6 +72,8 @@ is `24`.
 - **Unit tests:** vitest 5.0.3, jsdom 30.1.2, @testing-library/preact 3.2.4,
   @testing-library/jest-dom 7.0.1
 - **e2e:** @playwright/test 1.64.0, @axe-core/playwright 4.13.0
+- **Crawl:** tsx 4.23.15 (runs `scripts/crawl/crawl.ts`; brings esbuild). The crawler parses
+  sitemaps and HTML with its own small scanners, so it adds no parser dependency.
 
 Why some pins are held back:
 
@@ -81,18 +91,20 @@ Node 24 must be the first `node` and `npm` on PATH (`node -v` prints `v24.x`; 24
 avoids EBADENGINE warnings). npm scripts and Playwright's `webServer` run whichever `node` and
 `npm` PATH resolves; the pre-commit hook stops on Node < 24, where ESLint 10 crashes.
 
-| Command                           | What it does                                                                       |
-| --------------------------------- | ---------------------------------------------------------------------------------- |
-| `npm ci`                          | Install the locked dependencies (also installs the husky hook)                     |
-| `npm run dev`                     | Dev server on http://localhost:4321 (restart it after editing `content-snapshot/`) |
-| `npm run build`                   | Static build into `dist/`                                                          |
-| `npm run preview`                 | Serve `dist/` on http://localhost:4321 (does not apply `_redirects`)               |
-| `npm run typecheck`               | `astro check` over `.astro`, `.ts` and `.tsx`                                      |
-| `npm run lint` / `lint:fix`       | `astro sync && eslint .` (writes `.astro/`), with or without `--fix`               |
-| `npm run format` / `format:check` | Prettier write / check over the whole repo                                         |
-| `npm run test`                    | Vitest, once: `src/**/*.test.{ts,tsx}` and `scripts/**/*.test.ts`                  |
-| `npm run test -- <file>`          | One test file                                                                      |
-| `npm run test:e2e`                | Playwright: builds, starts `astro preview` on port 4321, runs `e2e/` in Chromium   |
+| Command                            | What it does                                                                               |
+| ---------------------------------- | ------------------------------------------------------------------------------------------ |
+| `npm ci`                           | Install the locked dependencies (also installs the husky hook)                             |
+| `npm run dev`                      | Dev server on http://localhost:4321 (restart it after editing `content-snapshot/`)         |
+| `npm run build`                    | Static build into `dist/`                                                                  |
+| `npm run preview`                  | Serve `dist/` on http://localhost:4321 (does not apply `_redirects`)                       |
+| `npm run typecheck`                | `astro check` over `.astro`, `.ts` and `.tsx`                                              |
+| `npm run lint` / `lint:fix`        | `astro sync && eslint .` (writes `.astro/`), with or without `--fix`                       |
+| `npm run format` / `format:check`  | Prettier write / check over the whole repo                                                 |
+| `npm run test`                     | Vitest, once: `src/**/*.test.{ts,tsx}` and `scripts/**/*.test.ts`                          |
+| `npm run test -- <file>`           | One test file                                                                              |
+| `npm run test:e2e`                 | Playwright: builds, starts `astro preview` on port 4321, runs `e2e/` in Chromium           |
+| `npm run crawl -- --help`          | Crawler usage; makes no request                                                            |
+| `npm run crawl -- --max-minutes 8` | Read-only crawl of the live sites, in a chunk; run it again to resume (see Redirect crawl) |
 
 - First e2e run on a machine: `npx playwright install chromium`. Stop `npm run dev` (or any
   preview) first: the dev server, the preview and the e2e run all use port 4321.
@@ -155,6 +167,52 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
 - `astro preview` does not apply `_redirects` (`/` is a 404 there), so a unit test
   (`src/test/redirects.test.ts`) checks the line, and the e2e server waits on `/en/`.
 
+## Redirect crawl
+
+`npm run crawl` (`scripts/crawl/`, Node + tsx, no browser) inventories the live URLs of
+`https://invetec.eu` and `https://lenovo.invetec.eu` into `redirects/crawl.json`, for the later
+301 map. The hosts, the politeness values and the User-Agent are constants in `config.ts`; no flag
+can point the crawler anywhere else.
+
+- **What it fetches, per host:** `robots.txt`; every sitemap reachable from its `Sitemap:` lines,
+  `/sitemap_index.xml` (Yoast) and `/wp-sitemap.xml` (WordPress core), indexes expanded
+  recursively; every sitemap URL; then, once, every same-host page link found on a sitemap page
+  that no sitemap lists (`source: "link"`; their own links are not followed).
+- **Safety:** GET only, never a URL with a query string, never a host other than the two;
+  `robots.txt` `User-agent: *` Allow/Disallow obeyed for every request (an unreachable
+  `robots.txt` means "disallow all"); 2 requests in flight, 250 ms pause per slot, 20 s timeout,
+  2 retries (1 s, then 2 s) on network errors and 5xx; redirects followed by hand, at most 5 per
+  URL, never to another site or a query string. A `robots.txt` `Crawl-delay` longer than 250 ms
+  stops the crawl before any page request. 20 URLs in a row ending in a network error, 403, 429
+  or 5xx stop the run. The one-hop filter drops fragments, query strings, `/wp-content/`,
+  `/wp-json/`, `/wp-admin/`, `/wp-includes/`, `wp-*.php`, `xmlrpc.php`, feeds and every file
+  extension but `.html`/`.htm`/`.php`; skipped links are counted, not listed.
+- **Output:** `{ crawledAt, tool, hosts, robots, counts, urls }`, schema `crawlOutputSchema` in
+  `output.ts`. `urls` is sorted by `url` (code-unit order) with one record per URL: `url`,
+  `host`, `source` (`sitemap:<file name>` or `link`), `lastmod`, `status`, `redirectChain`
+  (`{ url, status, location }` per hop), `finalUrl`, `contentType`, `htmlLang`, `pathLang`,
+  `lang`, `pageType`, `title`, `canonical`, `hreflang`, `robotsMeta`, and `error` (why no final
+  non-redirect response: `network: <code>`, `timeout`, `robots-disallowed`, `redirect-loop`,
+  `too-many-redirects`, `redirect-off-site`, `redirect-to-query`, `invalid-redirect`).
+  `status`, `finalUrl` and `contentType` describe the last response received. URLs keep their
+  percent-encoding exactly as the site wrote it.
+- **Languages and types:** `pathLang` is the `/en/`, `/it/` or `/sq/` prefix, else the host's
+  root language (`el` on invetec.eu, `null` on lenovo). `lang` is the primary subtag of
+  `<html lang>` (`en-US` -> `en`), else `pathLang`. `pageType` is `home` for `/` and a bare
+  language root, `shop-system` for WooCommerce shop/cart/checkout/my-account pages, then the
+  sitemap file's object type, then the URL pattern, else `other`.
+- **Resume and chunks:** `redirects/.crawl-cache/` (gitignored) holds `state.json` (robots and
+  sitemaps, read once), `pages.jsonl` (one finished URL per line) and `requests.jsonl` (every
+  request: `ts`, `method`, `url`, `status`, `attempt`, `robotsAllowed`, `error`). Running the same
+  command again resumes; `--fresh` deletes the cache. `--max-minutes <n>` / `--max-requests <n>`
+  stop starting new URLs, print the remaining count and exit 3. Results worth retrying (network
+  error, 403, 429, 5xx) stay out of the cache, so the next run fetches them again.
+  `crawl.json` is written (atomically) only by a run that finishes every URL; exit 0.
+- **Tests** never touch the network: fixtures in `scripts/crawl/__fixtures__/` are synthetic
+  Yoast/WordPress-core files, the unit and end-to-end tests use a fake `fetch`, the dry run serves
+  the fixtures from two local servers on 127.0.0.1, and the global `fetch` is replaced by a guard
+  that refuses any other host.
+
 ## CI
 
 - `ci.yml` runs on pull requests to `main` and pushes to `main`; a newer push to a PR cancels its
@@ -187,5 +245,7 @@ Phase 0 limits:
   comes with Phase 1.
 - The skip link text, "Skip to main content", is English on every locale until Phase 1's UI
   strings translate it.
+- `redirects/crawl.json` exists only once a crawl has finished; the crawler does not build the
+  redirect map itself.
 
 Repo-specific traps and their fixes: `docs/gotchas.md`.

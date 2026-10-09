@@ -5,3 +5,7 @@ coverage/
 playwright-report/
 test-results/
 package-lock.json
+
+# Byte-exact crawler fixtures and the generated crawl inventory
+scripts/crawl/__fixtures__/
+redirects/crawl.json

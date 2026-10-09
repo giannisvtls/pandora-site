@@ -92,6 +92,66 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: a broken but unstaged snapshot blocks a commit; a broken staged snapshot with a
     fixed working copy does not.
   - Fix: CI's build is the check for what was committed.
+- **unicorn 77 boolean names cover functions too.** `unicorn/consistent-boolean-name` checks
+  boolean variables and parameters, and also functions and callback parameters that return a
+  boolean.
+  - Symptom: lint errors on names such as `fresh`, `retryable`, `wantBody` or `sameHosts()`.
+  - Fix: start them with `is`, `are`, `has`, `have`, `can`, `should`, `was`, `were`, `did`,
+    `will` or `requires` (`shouldReset`, `shouldRetry`, `shouldReadBody`, `hasSameHosts()`).
+- **More unicorn 77 and sonarjs rules that bite in `scripts/`.**
+  - Symptom: `unicorn/prefer-https` and `sonarjs/no-clear-text-protocols` reject `http://` (and
+    `ftp://`) literals, `prefer-https` even in comments; `unicorn/consistent-class-member-order`
+    wants private methods before public ones; `unicorn/no-top-level-assignment-in-function`
+    rejects `beforeAll(async () => { value = ... })` on a module-level `let`;
+    `unicorn/require-array-sort-compare` and `sonarjs/no-alphabetical-sort` reject a bare
+    `toSorted()`.
+  - Fix: build a plain-HTTP test URL with `url.protocol = 'http:'`; order class members as
+    fields, constructor, private methods, public methods; in a test, top-level `await` a setup
+    function that returns everything (see `scripts/crawl/__tests__/dry-run.test.ts`); sort
+    strings with `byCodeUnit` from `scripts/crawl/output.ts` (code-unit order, the same on every
+    machine, unlike `localeCompare`).
+- **`../` and `./` imports form one import-x group.**
+  - Symptom: `There should be no empty line within import group` when a blank line separates
+    `from '../x'` and `from './y'`.
+  - Fix: no blank line between parent and sibling imports.
+- **Byte-exact fixtures.** Prettier formats `.html` files.
+  - Symptom: `prettier --write .` would reformat `scripts/crawl/__fixtures__/*.html` and break
+    the tests that compare bytes.
+  - Fix: `.prettierignore` lists `scripts/crawl/__fixtures__/`, and `redirects/crawl.json`
+    (generated).
+
+## Redirect crawler
+
+- **Non-ASCII in source files.** An escape such as `﻿` typed through an agent's file-writing
+  tool can land in the file as the literal character.
+  - Symptom: an invisible byte-order mark (or other raw character) inside a regex or string.
+  - Fix: write code points as `String.fromCodePoint(0xfe_ff)` and classes as `\p{ASCII}` or
+    `\p{Script=Greek}`; keep Greek in fixtures as real UTF-8 and check them with a byte dump
+    (lead bytes `ce`/`cf`).
+- **A test that forgets to inject `fetch` would crawl the live sites.** `runCli` and `runCrawl`
+  default to the real hosts, the real `fetch` and the repo's `redirects/` folder.
+  - Symptom: live requests and files written into `redirects/` from a test run.
+  - Fix: crawler tests call `useCrawlSandbox()` (`__tests__/run-helpers.ts`), which replaces the
+    global `fetch` with `loopbackOnlyFetch` (127.0.0.1 only), and always pass `fetch` and `outDir`.
+- **A raw UTF-8 `Location` header.** fetch exposes header bytes as Latin-1.
+  - Symptom: a redirect to an unencoded Greek path reads as mojibake and the next hop requests
+    the wrong URL.
+  - Fix: `repairLocation()` in `fetcher.ts` re-decodes a Latin-1-only value as UTF-8 before the
+    URL is resolved. Keep crawled URLs in Node; never pass them through a shell.
+- **A stopped run exits 3.**
+  - Symptom: `npm run crawl -- --max-minutes 8` ends with `STOPPED (max-minutes)` and exit code
+    3, which wrappers such as `gates.sh run crawl` report as a failure; no `crawl.json` appears.
+  - Fix: expected. Run the same command again until it prints `COMPLETE` and exits 0; only that
+    run writes `redirects/crawl.json`.
+- **An older `crawl.json` survives `--fresh`.**
+  - Symptom: after `--fresh` and a stopped run, `redirects/crawl.json` is still the previous
+    finished crawl.
+  - Fix: expected; check its `crawledAt`. Only a run that finishes every URL replaces it.
+- **The crawl refuses a slow `Crawl-delay`.**
+  - Symptom: `crawl failed: robots.txt of <host> asks for Crawl-delay N s, ...`, exit 1, before
+    any sitemap or page request.
+  - Fix: the pause is fixed at 250 ms; changing `POLITENESS.gapMs` is a decision for the site
+    owner, not a workaround.
 
 ## Astro and content
 
