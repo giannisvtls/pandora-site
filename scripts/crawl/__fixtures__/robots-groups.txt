@@ -1,0 +1,24 @@
+# Groups for other crawlers must not apply to the crawl.
+User-agent: Googlebot
+Disallow: /only-for-googlebot/
+
+# Two User-agent lines in a row share one group.
+User-agent: Bingbot
+User-agent: *
+Disallow: /private/
+Allow: /private/public-note/
+Disallow: /*.pdf$
+Disallow: /search*results
+Disallow: /%CE%B1%CF%81%CF%87%CE%B5%CE%AF%CE%BF/
+Disallow: /πρόχειρο/
+
+User-agent: AdsBot-Google
+Disallow: /
+
+# A second `*` group is merged with the first.
+User-agent: *
+Disallow: /tmp-preview/  # trailing comment
+Disallow:
+
+Sitemap: https://invetec.eu/sitemap_index.xml
+sitemap: https://invetec.eu/extra-sitemap.xml

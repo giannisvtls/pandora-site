@@ -1,0 +1,18 @@
+[
+  {
+    "id": "camperv3",
+    "category": "camper",
+    "priceEur": 899,
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Camper V3"
+    },
+    "tag": {
+      "en": "The first telemetric system for recreational vehicles"
+    },
+    "blurb": {
+      "en": "The first telemetric security system for recreational vehicles, with wireless sensors that detect every attempt.",
+      "el": "Το Pandora Camper είναι το πρώτο τηλεμετρικό σύστημα ασφαλείας για οχήματα αναψυχής, με ασύρματους αισθητήρες που ανιχνεύουν κάθε απόπειρα."
+    }
+  }
+]

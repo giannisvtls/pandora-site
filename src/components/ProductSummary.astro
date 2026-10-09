@@ -1,0 +1,21 @@
+---
+import type { Locale, Product } from '../content/contract';
+
+interface Props {
+  product: Product;
+  locale: Locale;
+}
+
+const { product, locale } = Astro.props;
+// Only the given language: a field with no value in it renders nothing (never English filler).
+// No price here; prices show on product pages only.
+const name = product.name[locale];
+const tag = product.tag[locale];
+const blurb = product.blurb[locale];
+---
+
+<article>
+  {name && <h2>{name}</h2>}
+  {tag && <p>{tag}</p>}
+  {blurb && <p>{blurb}</p>}
+</article>

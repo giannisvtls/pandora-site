@@ -1,0 +1,366 @@
+# pandora-site -- Gotchas
+
+Traps this repo has already hit, each with its symptom and fix. Read the section for the area you
+are about to touch. When you hit a new one, add it here in the same shape.
+
+## Runtime and install
+
+- **Node older than 24 on PATH.** The repo needs Node 24 (`engines`, `.nvmrc`), and every npm
+  script, git hook and Playwright's `webServer` uses whichever `node` and `npm` PATH resolves
+  first.
+  - Symptom: ESLint 10 crashes (eslint-plugin-unicorn) on Node 20; the pre-commit hook stops with
+    `pre-commit: Node 24+ is required`; when Node 24 is not first on PATH, Playwright's
+    `webServer` (`npm run build && npm run preview`) can quietly build on the older Node.
+  - Fix: put Node 24's `node` and `npm` first on PATH before any npm command or `git commit`.
+    The hook's guard exists because lint-staged reverts the staged files when ESLint crashes.
+- **EBADENGINE warnings on an early Node 24.** eslint-plugin-astro 3.2.1 and astro-eslint-parser
+  3.2.0 declare Node `^24.16.0`; jsdom 30.1.2 and some of its dependencies (w3c-xmlserializer,
+  @asamuzakjp/\*) declare `^24.15.0`.
+  - Symptom: `npm ci` prints EBADENGINE warnings; lint and tests still work.
+  - Fix: use a current Node 24 (24.16 or newer). `engines` stays `>=24`.
+- **eslint-plugin-jsx-a11y peer-caps ESLint 9.** 6.10.2 declares a peer of `eslint ^9` but works
+  on ESLint 10, and eslint-plugin-astro's a11y configs need it.
+  - Symptom: without the override, `npm ci` / `npm install` fails with ERESOLVE.
+  - Fix: the `package.json` `overrides` entry
+    `{ "eslint-plugin-jsx-a11y": { "eslint": "$eslint" } }`. Never add `legacy-peer-deps=true` to
+    an `.npmrc`: it turns off peer checks for every package and hides real conflicts. Resolve any
+    future peer conflict the same way: one exact `overrides` entry, recorded here.
+- **eslint-plugin-react on ESLint 10.**
+  - Symptom: the plugin crashes on ESLint 10 (it calls the removed `context.getFilename`).
+  - Fix: do not add it. It only targets React anyway; Preact files get jsx-a11y.
+- **TypeScript 7.** 7.x is the native compiler with no JS API.
+  - Symptom: `@astrojs/check` and typescript-eslint reject it.
+  - Fix: keep `typescript` pinned to 6.0.3; decline TS 7 bumps until both tools support it.
+- **Lockfile noise.**
+  - Symptom: `npm ls` prints `@img/sharp-wasm32 extraneous`.
+  - Fix: nothing; it is an npm optional-platform quirk, not drift. Never run
+    `npm install --package-lock-only` to "sync" the lockfile (an `engines` change needs no
+    lockfile change). The lockfile was written by npm 10; CI's Node 24 ships npm 11, which reads
+    the same lockfile v3. If CI's `npm ci` ever reports the lockfile out of sync, regenerate it
+    with `npm install` on Node 24's npm and commit it on its own.
+- **Line endings.** Prettier enforces `endOfLine: lf`.
+  - Symptom: without `.gitattributes`, a Windows clone (git `autocrlf`) checks files out with
+    CRLF and `npm run format:check` fails on every file.
+  - Fix: keep `.gitattributes` (`* text=auto eol=lf`).
+
+## Lint and format
+
+- **Type-aware lint covers only `src/**/*.{ts,tsx}` and `scripts/**/*.ts`.** `.astro`
+  frontmatter gets the untyped strict rules, and `.astro` client `<script>`s get no type-aware
+  rules.
+  - Symptom: an unsafe `any` or a floating promise in `.astro` frontmatter passes lint.
+  - Fix: keep frontmatter thin; put logic in `.ts` modules under `src/`.
+- **`import-x/no-cycle` cannot see `.astro` files.** import-x loads parsers with `require()`, and
+  astro-eslint-parser is ESM-only, so `.astro` is left out of its dependency graph.
+  - Symptom: an import cycle that passes through an `.astro` file is not reported.
+  - Fix: keep shared logic in `.ts` modules, where cycles are caught.
+- **`./x.js` specifiers that point at `./x.ts`.**
+  - Symptom: without the resolver's `extensionAlias`, `no-cycle` misses cycles written with
+    Node-ESM `.js` specifiers.
+  - Fix: keep `extensionAlias` in the import-x resolver settings of `eslint.config.js`.
+- **Typed lint needs `.astro/types.d.ts`.** It is generated and gitignored; files that import
+  `astro:content` resolve their types through it.
+  - Symptom: on a fresh clone, a bare `eslint` reports `no-unsafe-*` errors on `astro:content`
+    importers.
+  - Fix: lint through `npm run lint`, which runs `astro sync` first (so lint also writes
+    `.astro/`). The pre-commit hook runs `astro sync` before lint-staged for the same reason.
+- **The first lint after `npm ci` is slow.**
+  - Symptom: 60-230 s for the first typed lint on a cold install (about 10 s warm). It is not
+    hung.
+  - Fix: wait.
+- **Preact labels.** jsx-a11y's label rule only recognises `htmlFor`.
+  - Symptom: a Preact `<label for="...">` is reported as an unassociated label.
+  - Fix: write `htmlFor`.
+- **No global `declare module '*.astro'`.**
+  - Symptom: with such a wildcard, `astro check` stops reporting a missing or misspelt `.astro`
+    import (ts2307).
+  - Fix: there is none on purpose. Tests that pass `.astro` components to the Container API turn
+    off `@typescript-eslint/no-unsafe-argument` instead (typed ESLint sees `.astro` imports as
+    error types).
+- **unicorn style rules.**
+  - Symptom: `unicorn/single-line-block-comment-style` rejects a one-line `/** ... */`;
+    `unicorn/filename-case` rejects names that are neither kebab-case nor PascalCase.
+  - Fix: use `//` for one-line comments. `[param].astro` routes are exempt from `filename-case`,
+    and `__tests__`/`__fixtures__` directory names are too, but file names inside them are still
+    checked.
+- **Prettier and lint-staged.**
+  - Symptom: a path listed in `.prettierignore` is skipped even when lint-staged passes it to
+    Prettier.
+  - Fix: a generated file only needs a `.prettierignore` line, not a lint-staged exclusion.
+- **The pre-commit hook checks the working tree, not the staged blob.** `astro sync` runs the
+  content loader over the snapshot on disk (adding about 6 s per commit).
+  - Symptom: a broken but unstaged snapshot blocks a commit; a broken staged snapshot with a
+    fixed working copy does not.
+  - Fix: CI's build is the check for what was committed.
+- **unicorn 77 boolean names cover functions too.** `unicorn/consistent-boolean-name` checks
+  boolean variables and parameters, and also functions and callback parameters that return a
+  boolean.
+  - Symptom: lint errors on names such as `fresh`, `retryable`, `wantBody` or `sameHosts()`.
+  - Fix: start them with `is`, `are`, `has`, `have`, `can`, `should`, `was`, `were`, `did`,
+    `will` or `requires` (`shouldReset`, `shouldRetry`, `shouldReadBody`, `hasSameHosts()`).
+- **More unicorn 77 and sonarjs rules that bite in `scripts/`.**
+  - Symptom: `unicorn/prefer-https` and `sonarjs/no-clear-text-protocols` reject `http://` (and
+    `ftp://`) literals, `prefer-https` even in comments; `unicorn/consistent-class-member-order`
+    wants private methods before public ones; `unicorn/no-top-level-assignment-in-function`
+    rejects `beforeAll(async () => { value = ... })` on a module-level `let`;
+    `unicorn/require-array-sort-compare` and `sonarjs/no-alphabetical-sort` reject a bare
+    `toSorted()`.
+  - Fix: build a plain-HTTP test URL with `url.protocol = 'http:'`; order class members as
+    fields, constructor, private methods, public methods; in a test, top-level `await` a setup
+    function that returns everything (see `scripts/crawl/__tests__/dry-run.test.ts`); sort
+    strings with `byCodeUnit` from `scripts/crawl/output.ts` (code-unit order, the same on every
+    machine, unlike `localeCompare`).
+- **`../` and `./` imports form one import-x group.**
+  - Symptom: `There should be no empty line within import group` when a blank line separates
+    `from '../x'` and `from './y'`.
+  - Fix: no blank line between parent and sibling imports.
+- **Byte-exact fixtures.** Prettier formats `.html` files.
+  - Symptom: `prettier --write .` would reformat `scripts/crawl/__fixtures__/*.html` and break
+    the tests that compare bytes.
+  - Fix: `.prettierignore` lists `scripts/crawl/__fixtures__/`, and `redirects/crawl.json`
+    (generated).
+
+## Redirect crawler
+
+- **Non-ASCII in source files.** A Unicode escape typed through an agent's file-writing tool
+  (for example one for U+FEFF, the byte-order mark) can land in the file as the literal character.
+  - Symptom: an invisible byte-order mark (or other raw character) inside a regex or string.
+  - Fix: write code points as `String.fromCodePoint(0xfe_ff)` and classes as `\p{ASCII}` or
+    `\p{Script=Greek}`; keep Greek in fixtures as real UTF-8 and check them with a byte dump
+    (lead bytes `ce`/`cf`).
+- **A test that forgets to inject `fetch` would crawl the live sites.** `runCli` defaults to the
+  real hosts, the global `fetch` and the repo's `redirects/` folder (`runCrawl` has no defaults;
+  its caller passes everything).
+  - Symptom: live requests and files written into `redirects/` from a test run.
+  - Fix: `vitest.config.ts` lists `scripts/crawl/__tests__/fetch-guard-setup.ts` in
+    `setupFiles`, so every test file, site tests included, runs with the global `fetch` replaced
+    by `loopbackOnlyFetch` (127.0.0.1 only; anything else throws before a socket opens). It can
+    check only the first URL, so it makes fetch fail on any redirect unless the caller asked for
+    `redirect: 'manual'` and sends each hop through the guard again, as the crawler does.
+    `fetch-guard.test.ts` proves it: `runCli` without a fetch override is refused and no socket
+    opens. Crawler tests still pass their own `fetch` and `outDir`.
+- **A raw `Location` header.** fetch exposes header bytes as Latin-1, one character per byte.
+  - Symptom: a redirect to an unencoded Greek path reads as mojibake, or a genuine Latin-1 byte
+    turns into U+FFFD, and the next hop requests a URL the server never sent.
+  - Fix: `repairLocation()` in `fetcher.ts` decodes the bytes as UTF-8 only when they are valid
+    UTF-8 (`TextDecoder` with `fatal: true`); otherwise each high byte stays that byte,
+    percent-encoded (0xE9 becomes `%E9`). Keep crawled URLs in Node; never pass them through a
+    shell.
+- **A run exits 3 without `crawl.json`.**
+  - Symptom: the run ends with exit code 3 and one of `STOPPED (max-minutes)`,
+    `STOPPED (max-requests)`, `STOPPED (failures)`, `STOPPED (retry): N URLs to retry` or
+    `STOPPED (seed-incomplete)`; wrappers such as `gates.sh run crawl` report a failure.
+  - Fix: expected. Run the same command again until it prints `COMPLETE` and exits 0; only that
+    run writes `redirects/crawl.json`. `retry` means every URL was tried but some failed
+    (network error, timeout, 403, 429, 5xx) and still have runs left; `seed-incomplete` means a
+    robots.txt or sitemap request failed and the next run seeds again.
+- **`SEED INCOMPLETE:` lines.**
+  - Symptom: `SEED INCOMPLETE: <url> HTTP 503 (failed 1 of 3 seed attempts in a row)`, no page
+    request, no `state.json`.
+  - Fix: run again. A seed request that fails in 3 seed attempts in a row is accepted as failed
+    (a robots.txt as disallow-all for its host, a sitemap file as skipped) and named in a
+    `WARNING:` line on that run and every later one. A robots.txt that redirects to another site
+    or another path is disallow-all at once and gets the same line. A `WARNING:` line means
+    `crawl.json` is missing that host or that file's URLs; decide whether to rerun with `--fresh`
+    later.
+- **A URL keeps failing.**
+  - Symptom: the same URLs appear in every run's requests and the run ends `STOPPED (retry)`.
+  - Fix: expected, and bounded. Each run tries the URLs it never tried first, then those that
+    failed in an earlier run. Only URLs that had not failed before count toward the brake of 20
+    failures in a row, so known-bad URLs cannot stop a run. After a URL has failed in 3 runs,
+    its last result is kept as final and goes into `crawl.json` with its status or error.
+- **An older `crawl.json` survives `--fresh`.**
+  - Symptom: after `--fresh` and a stopped run, `redirects/crawl.json` is still the previous
+    finished crawl.
+  - Fix: expected; check its `crawledAt`. Only a run that finishes every URL replaces it.
+- **The crawl refuses a slow `Crawl-delay`.**
+  - Symptom: `crawl failed: robots.txt of <host> asks for Crawl-delay N s, ...`, exit 1. Every
+    host's robots.txt is read before any sitemap, so no sitemap or page has been requested on
+    any host.
+  - Fix: the pause is fixed at 250 ms; changing `POLITENESS.gapMs` is a decision for the site
+    owner, not a workaround.
+- **A full crawl is many chunks.** The live pages are slow (about 1-2 s each at 2 in flight).
+  - Symptom: a `--max-minutes 7` chunk finishes about 320-530 URLs; the full crawl of 4,639 URLs
+    took 12 chunks (about 87 minutes), the last ones in the link-hop phase.
+  - Fix: run the same command in the foreground until `COMPLETE`; never in the background with
+    polling, never through `| head`.
+- **`aborted`, `502` and `UND_ERR_SOCKET` lines in `requests.jsonl`.**
+  - Symptom: each chunk that stops at its deadline logs one or two `done` lines with
+    `error: "aborted"`; a few lines show a
+    502 or a socket reset.
+  - Fix: expected. `aborted` is the `--max-minutes` deadline cutting the requests in flight (their
+    URLs are fetched again by the next chunk). A 5xx or network error is retried within the same
+    URL (attempts 2 and 3 in the log) before its result is recorded, so a failed request is not a
+    failed URL; `pages.jsonl` holds the URL results.
+- **Sitemap files that 404 or redirect on invetec.eu.** Its robots.txt lists
+  `/sitemap-index.xml` and `/sitemap-index-1.xml` (both 404), `/sitemap.xml` redirects to Yoast's
+  `/sitemap_index.xml`, and `/wp-sitemap.xml` 301s there too.
+  - Symptom: `skipped` entries with HTTP 404 or 301 in `crawl.json` `hosts[].sitemaps`.
+  - Fix: expected and not a `WARNING:` (a 404 means "not present"); the Yoast index lists every
+    sitemap URL. The CRAWL.md sitemap table shows each file.
+- **`<html lang>` that disagrees with the path.** lenovo.invetec.eu serves `<html lang="en-US">`
+  on every page, its Italian `/it/product/` pages included; invetec.eu's `/b2b/` pages sit under
+  the root (`pathLang` `el`) but declare `it-IT` (`/b2b/it/`) or `en-GB` (`/b2b/`).
+  - Symptom: lenovo.invetec.eu counts under `lang` `en` in CRAWL.md; `/b2b/` pages appear as
+    language-tree mismatches.
+  - Fix: expected; `lang` prefers `<html lang>`. Read `pathLang` for the path's language.
+- **Broken links on the live site reach the link hop.** Some invetec.eu pages link to two URLs
+  glued together (`/it/products-moto-protection-it/https://invetec.eu/...`), and the site
+  redirects them to a path with `https:/` before answering 404.
+  - Symptom: odd 404s, some after a 301, in CRAWL.md's "Not 200" list.
+  - Fix: expected; they are the site's own links, kept for Phase 7.
+- **`CRAWL.md` is generated.**
+  - Symptom: `npm run crawl:summary -- --check`, and the unit test `the committed inventory`,
+    fail after a new crawl or a hand edit, naming the first differing line.
+  - Fix: run `npm run crawl:summary` after every crawl and commit `crawl.json` and `CRAWL.md`
+    together; never edit `CRAWL.md` by hand. The generator refuses a `crawl.json` whose sitemap
+    counts do not equal its records, so a partial or edited `crawl.json` never gets a summary.
+- **Prettier pads Markdown table columns to the widest cell.**
+  - Symptom: a table of long percent-encoded Greek URLs becomes hundreds of characters wide.
+  - Fix: the summary lists URLs as bullets and keeps tables for counts; its Markdown goes through
+    Prettier's API (`formatSummary`), checked to be stable on a second pass, so `format:check`
+    and `--check` agree.
+
+## Astro and content
+
+- **`satisfies GetStaticPaths` widens params to `string`.**
+  - Symptom: `Astro.params.locale` typed as `string` fails `Locale`-typed props in `astro check`.
+  - Fix: return `'en' as const` from `getStaticPaths`, as `src/pages/[locale]/index.astro` does.
+- **A custom loader bypasses the collection `schema`.** Astro applies a collection's `schema`
+  only inside `context.parseData`.
+  - Symptom: items written with `store.set()` are never checked against `schema`.
+  - Fix: the loader validates every item against the contract itself, before touching the
+    store.
+- **The Content Layer data store persists between runs.** `astro build`, `astro sync` and
+  `astro check` keep it in `node_modules/.astro/data-store.json`; `astro dev` keeps its own in
+  `.astro/data-store.json`.
+  - Symptom: a loader that only adds entries keeps serving removed or changed items. Deleting
+    `.astro/` does not reset the build's store.
+  - Fix: the loader calls `store.clear()` and re-sets every entry on each load. To reset by hand,
+    delete `node_modules/.astro/` (builds) or `.astro/` (dev).
+- **`astro dev` does not watch the snapshot.** The loader has no `context.watcher`.
+  - Symptom: after editing `content-snapshot/`, the dev server keeps showing the old content.
+  - Fix: restart `npm run dev`. Builds always read the current snapshot.
+- **`CONTENT_SOURCE` from `.env` is ignored.** Astro loads `.env` after the content sync.
+  - Symptom: `CONTENT_SOURCE=payload` in `.env` has no effect.
+  - Fix: only the process environment (shell or CI) selects the source.
+- **A `CONTENT_SOURCE` exported in your shell leaks into everything.** It reaches the pre-commit
+  hook (`astro sync`), `astro check` and `astro build`, but not Vitest (the tests stub it).
+  - Symptom: commits, typecheck and build fail with the `payload` or "Unknown CONTENT_SOURCE"
+    error while the tests pass.
+  - Fix: `unset CONTENT_SOURCE`.
+- **An empty `CONTENT_SOURCE` fails the build.** Unset or `snapshot` selects the snapshot; the
+  match is exact and case-sensitive.
+  - Symptom: `Unknown CONTENT_SOURCE "": allowed values are snapshot, payload`. A CI line such as
+    `CONTENT_SOURCE: ${{ vars.CONTENT_SOURCE }}` produces exactly that when the variable is not
+    defined.
+  - Fix: leave `CONTENT_SOURCE` out of CI until a run really needs another source.
+- **A loader error on Windows can end in a libuv assertion.** It is intermittent.
+  - Symptom: the loader's message is sometimes followed by
+    `Assertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\win\async.c, line 76` and
+    exit code 127 instead of 1. The build fails either way; on Linux it exits 1.
+  - Fix: read the error printed above the assertion; the assertion itself is noise.
+- **The contract is lenient in a few places.**
+  - Symptom: unknown top-level keys in a snapshot item are silently stripped (plain `z.object`);
+    `showIn` accepts duplicates; a whitespace-only string passes `min(1)`; an unknown language
+    key in a language map is reported at the field (`name`), not at the key (`name.fr`).
+  - Fix: review snapshot edits by eye; tighten the contract when the CMS source arrives.
+- **`/en/` renders every product.** The per-locale item rule is not applied yet.
+  - Symptom: an item with no English text renders an empty `<article>`.
+  - Fix: until the rule exists, give every snapshot item an English `name`, `tag` and `blurb`.
+- **Astro's own `redirects` config.**
+  - Symptom: it emits meta-refresh HTML pages, not HTTP redirects.
+  - Fix: the root redirect lives in `public/_redirects` (`/  /en/  302`).
+- **`_redirects` is not served by `astro preview`.**
+  - Symptom: locally `/` returns 404 and `/_redirects` is served as a plain file.
+  - Fix: expected. The root redirect is covered by `src/test/redirects.test.ts`, and the e2e
+    server waits on `/en/`, not `/`.
+- **`dist/_astro` contains Preact runtime chunks.**
+  - Symptom: JS files in `dist/_astro` although no page has a `<script>`.
+  - Fix: expected from the Preact integration; nothing reaches the browser. Recheck once real
+    islands exist.
+- **`@types/node` is global** (no `types` list in `tsconfig.json`).
+  - Symptom: Node globals type-check inside browser code too.
+  - Fix: scope the types when islands grow.
+
+## Unit tests (Vitest)
+
+- **No Vitest globals, so no automatic Preact Testing Library cleanup.**
+  - Symptom: a second `render()` in the same file also finds the first component (two buttons).
+  - Fix: `src/test/setup.ts` registers `afterEach(cleanup)`. Keep it.
+- **The environment is per file.** The default is `node` (right for the Astro Container API).
+  - Symptom: DOM APIs are missing in a Preact test.
+  - Fix: start the test file with a `// @vitest-environment jsdom` docblock.
+- **Vitest picks up `*.spec.ts`.**
+  - Symptom: with a wider `include`, Vitest tries to run the Playwright specs in `e2e/`.
+  - Fix: keep `include` scoped to `src/**/*.test.{ts,tsx}` and `scripts/**/*.test.ts`.
+- **`astro check` and `vitest.config.ts`.**
+  - Symptom: without `/// <reference types="vitest/config" />`, `astro check` rejects the `test`
+    key passed to `getViteConfig`.
+  - Fix: keep the reference line.
+- **The Container API is loosely typed.**
+  - Symptom: `props` is `Record<string, unknown>`, so wrong props in a test are not type errors;
+    the rendered output has no doctype.
+  - Fix: assert on the rendered output, and leave the doctype to the build and e2e.
+- **Two copies of `@testing-library/dom`** (jest-dom's and Preact Testing Library's).
+  - Symptom: `configure()` from Preact Testing Library does not reach jest-dom's copy.
+  - Fix: harmless today; configure each copy where it is used if that ever matters.
+- **Testing an unset environment variable.**
+  - Symptom: setting it to `''` is not the same as unset.
+  - Fix: `vi.stubEnv('CONTENT_SOURCE', undefined)` deletes the variable; restore with
+    `vi.unstubAllEnvs()`.
+- **Symlinked or junction paths.**
+  - Symptom: run through a symlink or Windows junction, Vitest can fail to resolve its `/@fs/`
+    setup-file path.
+  - Fix: run it from the repository's real path.
+- **jsdom workers under load.**
+  - Symptom: jsdom test workers time out on a machine busy with other test runs.
+  - Fix: `npm run test -- --maxWorkers=1`.
+
+## e2e (Playwright + axe)
+
+- **Port 4321 is shared.** `npm run dev`, `npm run preview` and the e2e `webServer` all use it,
+  and locally (`reuseExistingServer: !process.env.CI`) Playwright reuses whatever answers `/en/`
+  there.
+  - Symptom: a stale or orphaned preview, or another checkout's server, is tested instead of
+    this build, and passes on outdated output. A reused `astro dev` is caught: the 200 test fails
+    because the page loads the Vite client.
+  - Fix: stop `npm run dev` and any preview before `npm run test:e2e`, and check that nothing
+    listens on 4321.
+- **Something on 4321 that does not answer `/en/`.**
+  - Symptom: Playwright starts its own `astro preview`, which stops at once with
+    `Port 4321 is already in use` (`vite.preview.strictPort` is set in `astro.config.mjs`; without
+    it, preview silently moves to 4322 and Playwright times out after 120 s waiting on 4321).
+  - Fix: free port 4321. Keep `strictPort`.
+- **Orphaned servers.**
+  - Symptom: stopping `astro dev` or `astro preview` from a wrapper script, or piping a test run
+    through `head`, can leave the Node child alive and holding 4321.
+  - Fix: kill by port. Windows: `netstat -ano | findstr :4321`, then `taskkill /PID <pid> /F`.
+    macOS/Linux: `lsof -ti :4321 | xargs kill`. Never pipe a long test run through `head`.
+- **The html reporter's default.**
+  - Symptom: on a failure it serves the report and the run never exits.
+  - Fix: keep `open: 'never'` in `playwright.config.ts`.
+- **The skip link needs `tabindex="-1"` on `<main>`.**
+  - Symptom: without it, Chromium does not move focus to `main` after the skip link, and the
+    skip-link test fails.
+  - Fix: keep `<main id="main" tabindex="-1">` in `BaseLayout.astro`.
+- **Loose locators and redirects.**
+  - Symptom: `getByRole(..., { name })` matches case-insensitive substrings ("Camper V3 Pro"
+    passes for "Camper V3"); `page.goto()` returns the last response of a redirect chain.
+  - Fix: pass `exact: true`, and assert `response.request().redirectedFrom()` is null when the
+    status matters.
+- **What axe checks.** The tag set is WCAG 2.0-2.2 A/AA (`wcag2a`, `wcag2aa`, `wcag21a`,
+  `wcag21aa`, `wcag22aa`; axe-core 4.13 has no `wcag22a` tag).
+  - Symptom: best-practice rules (`region`, `landmark-one-main`, `heading-order`,
+    `page-has-heading-one`, `skip-link`) never run, so page structure is not checked by axe.
+  - Fix: review structure in code review, or add those rules deliberately.
+- **Browsers live outside the repo.** `npm ci` does not install them; on Windows they go to
+  `%LOCALAPPDATA%\ms-playwright`.
+  - Symptom: on a new machine, or after a `@playwright/test` bump, e2e fails because the matching
+    Chromium build is missing.
+  - Fix: `npx playwright install chromium`. CI adds `--with-deps`, which also installs the Linux
+    system libraries through the package manager; a workstation does not need it.
+- **The spec names the snapshot product.**
+  - Symptom: `e2e/home.spec.ts` expects the heading "Camper V3", so changing the snapshot breaks
+    it.
+  - Fix: update the spec together with `content-snapshot/products.json`.

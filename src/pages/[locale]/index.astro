@@ -1,0 +1,25 @@
+---
+import type { GetStaticPaths, InferGetStaticParamsType } from 'astro';
+import { getCollection } from 'astro:content';
+
+import ProductSummary from '../../components/ProductSummary.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Phase 0 builds only the English tree; the other locales are added when their content exists.
+// `as const` keeps the param a literal, so the Locale-typed props below check it.
+export const getStaticPaths = (() => [
+  { params: { locale: 'en' as const } },
+]) satisfies GetStaticPaths;
+
+type Params = InferGetStaticParamsType<typeof getStaticPaths>;
+
+const { locale } = Astro.params as Params;
+const products = await getCollection('products');
+---
+
+<BaseLayout lang={locale} title="INVETEC — Pandora vehicle security">
+  <h1>Your car is not going anywhere without you.</h1>
+  {products.map(({ data }) => (
+    <ProductSummary product={data} locale={locale} />
+  ))}
+</BaseLayout>
