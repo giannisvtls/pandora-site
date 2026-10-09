@@ -5,9 +5,8 @@
 // Each request is logged just before it is sent and again when it ends, so a killed run never
 // leaves a sent request out of the log. The run's abort signal (the --max-minutes deadline)
 // cancels the requests in flight and refuses new ones.
-import { Buffer } from 'node:buffer';
-
 import type { Politeness } from './config';
+import { repairLocation } from './location';
 
 export type FetchLike = (url: string, init: RequestInit) => Promise<Response>;
 export type Sleep = (ms: number) => Promise<void>;
@@ -111,32 +110,6 @@ export function createLimiter(
       waiting.shift()?.();
     }
   };
-}
-
-const UTF8 = new TextDecoder('utf-8', { fatal: true });
-
-function percentEncodeHighBytes(location: string): string {
-  return location.replaceAll(
-    /[^\p{ASCII}]/gu,
-    (char) => `%${(char.codePointAt(0) ?? 0).toString(16).toUpperCase()}`,
-  );
-}
-
-// fetch exposes header bytes as Latin-1, one character per byte. A Location that is valid UTF-8
-// (raw UTF-8 bytes, as some servers send) is decoded back to text. Any other high byte (a genuine
-// Latin-1 header, or UTF-8 mixed with a stray byte) stays that byte, percent-encoded, so the URL
-// followed is the one the server sent; passing it on raw would re-encode 0xE9 as UTF-8 %C3%A9.
-export function repairLocation(location: string): string {
-  const hasHighBytes = /[^\p{ASCII}]/u.test(location);
-  const isByteString = Buffer.from(location, 'latin1').toString('latin1') === location;
-  if (!hasHighBytes || !isByteString) {
-    return location;
-  }
-  try {
-    return UTF8.decode(Buffer.from(location, 'latin1'));
-  } catch {
-    return percentEncodeHighBytes(location);
-  }
 }
 
 function describeError(error: unknown, hasTimedOut: boolean): string {
@@ -260,6 +233,11 @@ export function createHttp(deps: HttpDeps) {
     for (let index = 0; index <= politeness.retries; index += 1) {
       if (index > 0) {
         await deps.sleep(politeness.backoffMs * 2 ** (index - 1));
+      }
+      // Checked before the limiter too: once the run is stopping, a queued request (a sitemap
+      // file late in the seed, say) must not wait out its slot's gap first.
+      if (deps.signal.aborted) {
+        return { ok: false, error: ABORTED };
       }
       outcome = await limit(() => attempt(url, shouldReadBody, index + 1, isRobotsAllowed));
       // An aborted request is not retried: the run is stopping.

@@ -213,9 +213,12 @@ can point the crawler anywhere else.
   `state.json` (the finished seed: robots, sitemaps, sitemap URLs, accepted seed failures),
   `seed-failures.json` (until the seed finishes), `pages.jsonl` (one line per URL per run that
   tried it: `record`, `links`, `failedRuns`, `isFinal`; the last line per URL wins) and
-  `requests.jsonl`. Running the same command again resumes. `--max-minutes <n>` is a hard bound,
+  `requests.jsonl`. Running the same command again resumes. `--max-minutes <n>` bounds the run,
   seed included: at the deadline the requests in flight are aborted and their URLs left for the
-  next run (not failures, not cached). `--max-requests <n>` stops starting new URLs.
+  next run (not failures, not cached), and queued requests end without waiting. A retry backoff
+  already sleeping (up to 2 s) or a slot pause (250 ms) still runs out, so a run can end about
+  2-3 s after the deadline. `--max-requests <n>` stops starting new URLs; it does not stop the
+  seed.
 - **Retries across runs:**
   - Seed: a robots.txt or sitemap request that fails (network error, timeout, 429, 5xx; 403 too
     for a sitemap file) leaves the seed incomplete: no `state.json`, a
@@ -225,7 +228,9 @@ can point the crawler anywhere else.
     robots.txt as disallow-all for its host, a sitemap file as `skipped` with its status and a
     note. Each accepted failure is printed as a `WARNING:` line by that run and every later one,
     and again after `COMPLETE`. A sitemap 404/410 is "not present"; a robots.txt 4xx other than
-    429 means no rules.
+    429 means no rules. A robots.txt that redirects to another site, or to another path on its
+    host, is final: its host is disallow-all at once (no redirect is followed for robots.txt
+    except to `/robots.txt` on the same host) and gets the same `WARNING:` line.
   - Pages: a URL that ends in a network error, timeout, 403, 429 or 5xx stays open. Each run
     tries the URLs it never tried before those that failed in an earlier run. After a URL has
     failed in 3 runs its last result is final and goes into `crawl.json` with its status or

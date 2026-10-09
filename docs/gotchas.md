@@ -134,7 +134,9 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: live requests and files written into `redirects/` from a test run.
   - Fix: `vitest.config.ts` lists `scripts/crawl/__tests__/fetch-guard-setup.ts` in
     `setupFiles`, so every test file, site tests included, runs with the global `fetch` replaced
-    by `loopbackOnlyFetch` (127.0.0.1 only; anything else throws before a socket opens).
+    by `loopbackOnlyFetch` (127.0.0.1 only; anything else throws before a socket opens). It can
+    check only the first URL, so it makes fetch fail on any redirect unless the caller asked for
+    `redirect: 'manual'` and sends each hop through the guard again, as the crawler does.
     `fetch-guard.test.ts` proves it: `runCli` without a fetch override is refused and no socket
     opens. Crawler tests still pass their own `fetch` and `outDir`.
 - **A raw `Location` header.** fetch exposes header bytes as Latin-1, one character per byte.
@@ -157,8 +159,10 @@ are about to touch. When you hit a new one, add it here in the same shape.
     request, no `state.json`.
   - Fix: run again. A seed request that fails in 3 seed attempts in a row is accepted as failed
     (a robots.txt as disallow-all for its host, a sitemap file as skipped) and named in a
-    `WARNING:` line on that run and every later one. A `WARNING:` line means `crawl.json` is
-    missing that host or that file's URLs; decide whether to rerun with `--fresh` later.
+    `WARNING:` line on that run and every later one. A robots.txt that redirects to another site
+    or another path is disallow-all at once and gets the same line. A `WARNING:` line means
+    `crawl.json` is missing that host or that file's URLs; decide whether to rerun with `--fresh`
+    later.
 - **A URL keeps failing.**
   - Symptom: the same URLs appear in every run's requests and the run ends `STOPPED (retry)`.
   - Fix: expected, and bounded. Each run tries the URLs it never tried first, then those that

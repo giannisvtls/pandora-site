@@ -4,7 +4,8 @@ import { Buffer } from 'node:buffer';
 
 import { describe, expect, it } from 'vitest';
 
-import { fetchFollowing, repairLocation, type RequestLogEntry } from '../fetcher';
+import { fetchFollowing, type RequestLogEntry } from '../fetcher';
+import { repairLocation } from '../location';
 import { html, redirect } from './helpers';
 import { follow, logRows, ORIGIN, setup } from './http-setup';
 
@@ -92,6 +93,23 @@ describe('createHttp: run abort signal', () => {
     expect(outcome).toStrictEqual({ ok: false, error: 'aborted' });
     expect(site.calls).toHaveLength(0);
     expect(log).toStrictEqual([]);
+  });
+
+  it('does not wait out the slot gap for a request queued after the abort', async () => {
+    const controller = new AbortController();
+    const { site, clock, http } = setup(
+      { [`${ORIGIN}/a/`]: html('ok') },
+      { signal: controller.signal, politeness: { concurrency: 1 } },
+    );
+    await http.get(new URL(`${ORIGIN}/a/`), () => true);
+    controller.abort();
+
+    const outcome = await http.get(new URL(`${ORIGIN}/b/`), () => true);
+
+    expect(outcome).toStrictEqual({ ok: false, error: 'aborted' });
+    expect(site.calls).toHaveLength(1);
+    // The 250 ms gap after /a/ is never slept: every queued request ends at once.
+    expect(clock.sleeps).toStrictEqual([]);
   });
 });
 

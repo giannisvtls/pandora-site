@@ -30,21 +30,26 @@ export interface TransientSeedRequest {
 
 const isSuccess = (status: number) => status >= 200 && status < 300;
 
-// 2xx: its `User-agent: *` rules. Any other 4xx but 429: no rules (RFC 9309: "unavailable").
-// 429, 5xx, network errors and broken redirects: disallow everything (RFC 9309: "unreachable").
-export function robotsRulesOf({
-  status,
-  body,
-  error,
-}: Pick<FetchTrace, 'status' | 'body' | 'error'>): RobotsRules {
+type RobotsTrace = Pick<FetchTrace, 'status' | 'body' | 'error'>;
+
+// RFC 9309 "unreachable": 429, 5xx, a network error, or a redirect the crawl refused or could not
+// finish (to another site, say). Any 4xx but 429 is "unavailable" instead: no rules.
+export function isRobotsUnreachable({ status, body, error }: RobotsTrace): boolean {
   if (status === null || error !== null) {
+    return true;
+  }
+  const isRead = body !== undefined && isSuccess(status);
+  const isUnavailable = status >= 400 && status < 500 && status !== 429;
+  return !isRead && !isUnavailable;
+}
+
+// 2xx: its `User-agent: *` rules. Unreachable: disallow everything. Unavailable: no rules.
+export function robotsRulesOf(trace: RobotsTrace): RobotsRules {
+  if (isRobotsUnreachable(trace)) {
     return DISALLOW_ALL;
   }
-  if (body !== undefined && isSuccess(status)) {
-    return parseRobots(body);
-  }
-  const isUnavailable = status >= 400 && status < 500 && status !== 429;
-  return isUnavailable ? NO_RULES : DISALLOW_ALL;
+  const { status, body } = trace;
+  return body !== undefined && status !== null && isSuccess(status) ? parseRobots(body) : NO_RULES;
 }
 
 // Network error, timeout, 429 or 5xx; for a sitemap file also 403, as for pages. A robots.txt 403

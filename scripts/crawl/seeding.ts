@@ -4,7 +4,8 @@
 // makes the seed incomplete: state.json is not written, the run prints SEED INCOMPLETE lines and
 // stops, and the next run seeds again. A request that failed in `maxFailedRuns` seed attempts in
 // a row is accepted as failed instead: a robots.txt as disallow-all for its host (RFC 9309), a
-// sitemap file as skipped. Each accepted failure is kept in state.json as a warning.
+// sitemap file as skipped. Each accepted failure is kept in state.json as a warning, and so is a
+// host whose robots.txt makes it disallow-all for a final reason (a refused redirect, say).
 import {
   loadSeedFailures,
   saveSeedFailures,
@@ -19,6 +20,7 @@ import type { RobotsRules } from './robots';
 import {
   discoverSitemaps,
   fetchRobots,
+  isRobotsUnreachable,
   isTransientSeed,
   type Discovery,
   type SeedContext,
@@ -48,6 +50,9 @@ interface HostRobots {
   readonly name: string;
   readonly rules: RobotsRules;
   readonly summary: RobotsSummary;
+  // Why the host is disallow-all when that is a final answer (a refused redirect, say), not a
+  // transient failure; null otherwise.
+  readonly refused: string | null;
 }
 
 function describe(status: number | null, error: string | null): string {
@@ -120,11 +125,14 @@ async function robotsStage(
       return null;
     }
     assertCrawlDelay(name, rules, options.politeness);
-    if (isTransientSeed(trace, 'robots')) {
+    const isTransient = isTransientSeed(trace, 'robots');
+    if (isTransient) {
       attempt.add('robots', { url: summary.url, status: trace.status, error: trace.error });
     }
+    const refused =
+      !isTransient && isRobotsUnreachable(trace) ? describe(trace.status, trace.error) : null;
     options.print(`seed ${name}: robots.txt ${describe(trace.status, trace.error)}`);
-    robots.push({ config, name, rules, summary });
+    robots.push({ config, name, rules, summary, refused });
   }
   return robots;
 }
@@ -165,6 +173,16 @@ function noteAccepted(files: readonly SitemapFile[], attempt: SeedAttempt): Site
   });
 }
 
+// A host disallow-all for a final reason still yields no URL: say so on every run, as for an
+// accepted failure.
+function refusedWarnings(robots: readonly HostRobots[]): string[] {
+  return robots.flatMap((host) =>
+    host.refused === null
+      ? []
+      : `${host.summary.url} ended in ${host.refused}; its host is treated as disallow-all (RFC 9309), so none of its URLs is crawled`,
+  );
+}
+
 function buildState(
   options: SeedOptions,
   robots: readonly HostRobots[],
@@ -193,7 +211,7 @@ function buildState(
       ]),
     ),
     entries: discoveries.flatMap((discovery) => discovery.entries),
-    warnings: attempt.warnings(),
+    warnings: [...attempt.warnings(), ...refusedWarnings(robots)],
   };
 }
 

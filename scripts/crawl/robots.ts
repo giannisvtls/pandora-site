@@ -102,22 +102,42 @@ function normalizePath(path: string): string {
 interface CompiledRule {
   readonly length: number;
   readonly isAllow: boolean;
-  readonly pattern: RegExp;
+  // The rule split at its `*`s: the first part is a prefix, the rest follow in order.
+  readonly parts: readonly string[];
+  readonly isAnchored: boolean;
 }
 
 function compileRule(rule: string, isAllow: boolean): CompiledRule {
   const normalized = normalizePath(rule);
   const isAnchored = normalized.endsWith('$');
   const body = isAnchored ? normalized.slice(0, -1) : normalized;
-  const source = body
-    .split('*')
-    .map((part) => part.replaceAll(/[$()+.?[\\\]^{|}]/g, String.raw`\$&`))
-    .join('.*');
-  return {
-    length: normalized.length,
-    isAllow,
-    pattern: new RegExp(`^${source}${isAnchored ? '$' : ''}`),
-  };
+  return { length: normalized.length, isAllow, parts: body.split('*'), isAnchored };
+}
+
+// Matched without a RegExp: a rule is untrusted text, and a backtracking pattern with many `*`s
+// can take time that grows with a power of the path length. Each part after the first is taken
+// at its earliest position, which is enough when `*` is the only wildcard, so a match costs at
+// most one scan of the path per part.
+function isRuleMatch({ parts, isAnchored }: CompiledRule, path: string): boolean {
+  const [first = '', ...rest] = parts;
+  if (!path.startsWith(first)) {
+    return false;
+  }
+  const last = rest.pop();
+  if (last === undefined) {
+    return !isAnchored || path === first;
+  }
+  let position = first.length;
+  for (const part of rest) {
+    const found = path.indexOf(part, position);
+    if (found === -1) {
+      return false;
+    }
+    position = found + part.length;
+  }
+  return isAnchored
+    ? path.endsWith(last) && path.length - last.length >= position
+    : path.includes(last, position);
 }
 
 // Returns a check for a URL path (plus query, if any). No matching rule means allowed.
@@ -130,7 +150,7 @@ export function robotsMatcher(rules: Pick<RobotsRules, 'allow' | 'disallow'>) {
     const path = normalizePath(pathAndQuery);
     let best: CompiledRule | undefined;
     for (const rule of compiled) {
-      if (!rule.pattern.test(path)) {
+      if (!isRuleMatch(rule, path)) {
         continue;
       }
       const isLonger = best === undefined || rule.length > best.length;

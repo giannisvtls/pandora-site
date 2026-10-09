@@ -101,4 +101,33 @@ describe('robotsMatcher', () => {
     const isTieAllowed = robotsMatcher({ allow: ['/page'], disallow: ['/page'] });
     expect(isTieAllowed('/page/')).toBe(true);
   });
+
+  it.each([
+    ['/a*b*c', '/axxbyyc/', true],
+    ['/a*b*c', '/acb/', false],
+    // Each part is looked for after the previous one, never inside it.
+    ['/ab*b*c', '/abc', false],
+    ['/*.php$', '/x/index.php', true],
+    ['/*.php$', '/x/index.php/', false],
+    ['/*.php$', '/.php', true],
+    // Anchored: the last part may not reuse characters the prefix matched.
+    ['/a*a$', '/a', false],
+    ['/a*a$', '/aa', true],
+    ['/fish*', '/fish', true],
+    // `$` anywhere but at the end is a plain character.
+    ['/x$y', '/x$y/', true],
+    ['/**/z', '/q/z', true],
+  ])('Disallow: %s blocks %s = %s', (rule, path, isBlocked) => {
+    expect(robotsMatcher({ allow: [], disallow: [rule] })(path)).toBe(!isBlocked);
+  });
+
+  it('matches a rule with many wildcards against a long path in linear time', () => {
+    // A backtracking RegExp for this rule would not finish.
+    const isAllowedHere = robotsMatcher({ allow: [], disallow: [`/${'*a'.repeat(30)}*b`] });
+    const path = `/${'a'.repeat(20_000)}`;
+    const started = performance.now();
+
+    expect(isAllowedHere(path)).toBe(true);
+    expect(performance.now() - started).toBeLessThan(500);
+  });
 });

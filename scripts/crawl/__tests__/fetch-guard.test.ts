@@ -69,6 +69,37 @@ describe('the fetch guard', () => {
     expect(probe.connect).toHaveBeenCalled();
   });
 
+  it('refuses a redirect that fetch would follow by itself, but hands a manual one back', async () => {
+    const paths: string[] = [];
+    // The redirect stays on this server, so even a guard that let fetch follow it reaches
+    // nothing but 127.0.0.1; any other target would be invisible to the guard.
+    const server = createServer((request, response) => {
+      paths.push(request.url ?? '');
+      if (request.url === '/') {
+        response.writeHead(302, { location: '/landed' }).end();
+      } else {
+        response.end('followed');
+      }
+    });
+    await new Promise<void>((resolve) => {
+      server.listen(0, '127.0.0.1', resolve);
+    });
+    const { port } = server.address() as AddressInfo;
+    const url = `http://127.0.0.1:${String(port)}/`;
+    try {
+      await expect(loopbackOnlyFetch(url)).rejects.toThrow(TypeError);
+      await expect(loopbackOnlyFetch(new Request(url))).rejects.toThrow(TypeError);
+      const manual = await loopbackOnlyFetch(url, { redirect: 'manual' });
+      expect(manual.status).toBe(302);
+      expect(manual.headers.get('location')).toBe('/landed');
+    } finally {
+      server.closeAllConnections();
+      server.close();
+    }
+
+    expect(paths).toStrictEqual(['/', '/', '/']);
+  });
+
   it('refuses a crawl started without a fetch override, before any socket opens', async () => {
     // Without the guard this test would reach the live hosts: refuse to run it at all.
     if (!isFetchGuarded()) {

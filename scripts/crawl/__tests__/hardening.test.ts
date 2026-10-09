@@ -1,19 +1,26 @@
 // Hostile or awkward site data, and a crash inside a run: prototype-named keys, URLs that differ
-// only in percent-escape case, and a worker that throws. No socket is opened.
+// only in percent-escape case, a robots.txt that redirects, and a worker that throws. No socket
+// is opened.
 import { setTimeout as delay } from 'node:timers/promises';
 
 import { describe, expect, it } from 'vitest';
 
-import { fakeFetch, html, type Route } from './helpers';
+import { EXIT_CODES, runCli } from '../cli';
+import { fakeFetch, html, redirect, type Route } from './helpers';
 import {
   A,
+  B,
+  captureIo,
+  cliOverrides,
   crawlOneHost,
   fakeSite,
   oneHostSite,
+  ORIGINS,
   readOutput,
   readRequestLog,
   useCrawlSandbox,
 } from './run-helpers';
+import { testSite } from './site';
 
 const { outDir } = useCrawlSandbox();
 
@@ -87,6 +94,31 @@ describe('URL identity ignores percent-escape case', () => {
       pageLinks: 1,
       linkOnlyUrls: 0,
     });
+  });
+});
+
+describe('a robots.txt that makes its host disallow-all for good', () => {
+  it.each([
+    ['to another site', 'https://www.invetec.eu/robots.txt', 'redirect-off-site'],
+    ['to another path on its host', `${B}/robots.txt/`, 'robots-disallowed'],
+  ])('is named in a WARNING on every run when it redirects %s', async (_, location, reason) => {
+    const dir = await outDir();
+    const site = fakeSite({ ...testSite(ORIGINS), [`${B}/robots.txt`]: redirect(location) });
+    const warning = `WARNING: ${B}/robots.txt ended in ${reason}; its host is treated as disallow-all (RFC 9309), so none of its URLs is crawled`;
+    const io = captureIo();
+
+    const code = await runCli([], cliOverrides(dir, site.fetch), io);
+
+    expect(code).toBe(EXIT_CODES.complete);
+    // Named when the seed completes and again after COMPLETE.
+    expect(io.out.join('').split(warning)).toHaveLength(3);
+    const output = await readOutput(dir);
+    expect(output.robots['lenovo.invetec.eu']).toMatchObject({
+      status: 301,
+      error: reason,
+      disallow: ['/'],
+    });
+    expect(output.urls.some((record) => record.host === 'lenovo.invetec.eu')).toBe(false);
   });
 });
 

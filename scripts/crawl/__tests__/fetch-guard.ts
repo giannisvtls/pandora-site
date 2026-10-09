@@ -12,12 +12,16 @@ const holder = globalThis as typeof globalThis & {
 holder.pandoraRealFetch ??= fetch;
 const realFetch: typeof fetch = holder.pandoraRealFetch;
 
+// Only the first URL can be checked here, so a redirect is never followed by fetch itself: it
+// fails, unless the caller follows redirects by hand (`redirect: 'manual'`, as the crawler does)
+// and so sends each hop through this guard again.
 export const loopbackOnlyFetch: typeof fetch = async (input, init) => {
   const url = new URL(input instanceof Request ? input.url : String(input));
   if (url.hostname !== '127.0.0.1') {
     throw new Error(`test tried to reach ${url.href}; only 127.0.0.1 is allowed`);
   }
-  return realFetch(input, init);
+  const mode = init?.redirect ?? (input instanceof Request ? input.redirect : 'follow');
+  return realFetch(input, { ...init, redirect: mode === 'manual' ? 'manual' : 'error' });
 };
 
 // Defined directly, not with vi.stubGlobal, so vi.unstubAllGlobals() in a test cannot remove it.
