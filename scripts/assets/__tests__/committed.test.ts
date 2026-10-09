@@ -17,7 +17,7 @@ import {
   MEDIA_DIR,
   SOURCES_FILE,
 } from '../config';
-import { readManifest, sha256, sourceKey } from '../manifest';
+import { contentTypeOfFile, readManifest, sha256, sourceKey } from '../manifest';
 import { parseSources } from '../sources';
 
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url));
@@ -64,6 +64,15 @@ describe('the committed media manifest', () => {
     for (const record of designRecords) {
       expect(record.file.startsWith(`${MEDIA_DIR}/pricelist/`)).toBe(true);
       expect(record.contentType).toBe('image/png');
+    }
+  });
+
+  it('records for every file the type its name stands for', () => {
+    for (const record of records.values()) {
+      expect({ file: record.file, contentType: record.contentType }).toEqual({
+        file: record.file,
+        contentType: contentTypeOfFile(record.file),
+      });
     }
   });
 

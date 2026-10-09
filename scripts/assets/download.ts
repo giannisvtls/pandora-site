@@ -4,8 +4,8 @@
 // (redirects followed by hand, each hop checked). The crawler reads response bodies as text, so
 // the media fetch gives createHttp a fetch that reads an image body itself, as bytes and with a
 // size cap, and hands on an empty response; the caller takes the bytes by URL once
-// fetchFollowing returns. Any other response (robots.txt, a redirect, an error status, a
-// non-image) passes through untouched.
+// fetchFollowing returns. Any other response (robots.txt, whatever its type; a redirect, an error
+// status, a non-image) passes through untouched.
 import { Buffer } from 'node:buffer';
 
 import { urlProblem } from './sources';
@@ -60,13 +60,18 @@ async function readCapped(response: Response, maxBytes: number, type: string): P
     : { ok: true, bytes: Buffer.concat(chunks), contentType: type };
 }
 
+// Whether a URL is a robots.txt (any origin).
+export const isRobotsTxt = (url: string): boolean => new URL(url).pathname === '/robots.txt';
+
 // A fetch for createHttp that keeps the body of each 200 image response; see the file comment.
+// A robots.txt is never tapped, whatever its Content-Type: its body must reach the robots parser,
+// or an `image/*` robots.txt would read as empty, which means "allow all".
 export function createImageTap(fetch: FetchLike, maxBytes: number) {
   const bodies = new Map<string, Download>();
   const tapped: FetchLike = async (url, init) => {
     const response = await fetch(url, init);
     const type = mediaTypeOf(response.headers.get('content-type'));
-    if (response.status !== 200 || type?.startsWith('image/') !== true) {
+    if (response.status !== 200 || type?.startsWith('image/') !== true || isRobotsTxt(url)) {
       return response;
     }
     // A read that fails (a reset, the timeout) throws here, so createHttp retries it as it would

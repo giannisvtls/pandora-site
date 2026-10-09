@@ -76,8 +76,7 @@ function parseFetchArgs(argv: readonly string[]) {
 
 export function describeStats(stats: RequestStats): string {
   const hosts = stats.hosts.length === 0 ? 'none' : stats.hosts.join(', ');
-  const images = stats.requests - stats.robots - stats.retries - stats.redirectHops;
-  return `requests: ${String(stats.requests)} (robots.txt ${String(stats.robots)}, images ${String(images)}, redirect hops ${String(stats.redirectHops)}, retries ${String(stats.retries)}); hosts contacted: ${hosts}`;
+  return `requests: ${String(stats.requests)} (robots.txt ${String(stats.robots)}, images ${String(stats.images)}, redirect hops ${String(stats.redirectHops)}, retries ${String(stats.retries)}); hosts contacted: ${hosts}`;
 }
 
 function printResult(result: MediaFetchResult, print: (line: string) => void): void {

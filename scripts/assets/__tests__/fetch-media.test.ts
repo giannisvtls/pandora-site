@@ -1,6 +1,7 @@
 // media:fetch against a loopback site (127.0.0.1, ephemeral port) under the global fetch guard:
 // what it fetches and records, that a run after a complete one sends no request at all
-// (robots.txt included), the 2-in-flight limit, the prototype-image copies and the command line.
+// (robots.txt included), how requests are counted, the 2-in-flight limit, the prototype-image
+// copies and the command line.
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -22,7 +23,15 @@ import {
   sourcesOf,
   useSandboxes,
 } from './fetch-setup';
-import { bytesOf, image, robotsTxt, useSites, type Site } from './loopback-site';
+import {
+  bytesOf,
+  image,
+  reply,
+  robotsTxt,
+  useSites,
+  type Handler,
+  type Site,
+} from './loopback-site';
 
 const startSite = useSites();
 const sandbox = useSandboxes();
@@ -57,8 +66,9 @@ describe('media:fetch', () => {
     expect(result.stats).toEqual({
       requests: 4,
       robots: 1,
-      retries: 0,
+      images: 3,
       redirectHops: 0,
+      retries: 0,
       hosts: [new URL(site.origin).host],
     });
     expect(site.paths().toSorted(byCodeUnit)).toEqual([
@@ -125,6 +135,34 @@ describe('media:fetch', () => {
     expect(result).toMatchObject({ current: 2, fetched: 1, failed: [] });
     expect(site.paths().slice(hitsBefore)).toEqual(['/robots.txt', '/up/Logo.webp']);
     expect(await fileSha(root, `${BRAND_DIR}/logo.webp`)).toBe(sha256(LOGO));
+  });
+
+  it('counts each request in exactly one bucket, a robots.txt retry included', async () => {
+    const site = await startSite();
+    const flakyRobots: Handler = (request, response, count) =>
+      count === 1
+        ? reply(503)(request, response, count)
+        : robotsTxt(OPEN_ROBOTS)(request, response, count);
+    site.routes.set('/robots.txt', flakyRobots);
+    site.routes.set('/a.webp', image(bytesOf('a')));
+    site.routes.set('/old.webp', reply(301, { location: '/b.webp' }));
+    site.routes.set('/b.webp', image(bytesOf('b')));
+    const sources = sourcesOf([`${site.origin}/a.webp`, `${site.origin}/old.webp`]);
+    const { options, lines } = optionsFor(await sandbox(), site.origin, sources);
+
+    const code = await runCli([], options, captureIo().io);
+
+    expect(code).toBe(MEDIA_EXIT_CODES.ok);
+    expect(site.paths().toSorted(byCodeUnit)).toEqual([
+      '/a.webp',
+      '/b.webp',
+      '/old.webp',
+      '/robots.txt',
+      '/robots.txt',
+    ]);
+    expect(lines).toContain(
+      `requests: 5 (robots.txt 1, images 2, redirect hops 1, retries 1); hosts contacted: ${new URL(site.origin).host}`,
+    );
   });
 
   it('keeps at most 2 requests in flight', async () => {

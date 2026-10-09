@@ -2,7 +2,7 @@
 // and chrome, copied prototype images), with where it came from and its sha256. A file whose
 // bytes still match its record is current and never fetched again.
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { z } from 'zod';
@@ -56,12 +56,27 @@ export function renderManifest(records: Iterable<ManifestRecord>): string {
   return `${JSON.stringify(manifestSchema.parse({ files }), null, 2)}\n`;
 }
 
-// Written next to the target and renamed into place, so a reader never sees half a file.
+// Removes a file if it is there; a failure here never hides the error that led to it.
+async function removeQuietly(file: string): Promise<void> {
+  try {
+    await rm(file, { force: true });
+  } catch {
+    // Nothing more to do: the caller rethrows the original error.
+  }
+}
+
+// Written next to the target and renamed into place, so a reader never sees half a file. When the
+// write or the rename fails, the partial file is removed before the error is rethrown.
 export async function writeFileAtomic(target: string, data: Uint8Array | string): Promise<void> {
   await mkdir(path.dirname(target), { recursive: true });
   const partial = `${target}.partial`;
-  await writeFile(partial, data);
-  await rename(partial, target);
+  try {
+    await writeFile(partial, data);
+    await rename(partial, target);
+  } catch (error) {
+    await removeQuietly(partial);
+    throw error;
+  }
 }
 
 // Whether the file on disk is exactly what the record describes.

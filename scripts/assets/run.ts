@@ -10,7 +10,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { MANIFEST_FILE } from './config';
-import { createDownloader } from './download';
+import { createDownloader, isRobotsTxt } from './download';
 import {
   contentTypeOfFile,
   isFileCurrent,
@@ -42,11 +42,15 @@ export interface MediaFetchOptions {
   readonly print: (line: string) => void;
 }
 
+// Every sent request lands in exactly one bucket: a repeated attempt is a retry, whatever its
+// URL; a first attempt is a robots.txt request, an image request or a redirect hop. So
+// requests = robots + images + redirectHops + retries.
 export interface RequestStats {
   readonly requests: number;
   readonly robots: number;
-  readonly retries: number;
+  readonly images: number;
   readonly redirectHops: number;
+  readonly retries: number;
   readonly hosts: string[];
 }
 
@@ -77,17 +81,17 @@ function targetsOf(sources: MediaSources): Target[] {
   ];
 }
 
-const isRobotsUrl = (url: string) => new URL(url).pathname === '/robots.txt';
-
 function statsOf(log: readonly RequestLogEntry[], imageUrls: ReadonlySet<string>): RequestStats {
   const sent = log.filter((entry) => entry.event === 'sent');
+  const first = sent.filter((entry) => entry.attempt === 1);
+  const robots = first.filter((entry) => isRobotsTxt(entry.url)).length;
+  const images = first.filter((entry) => !isRobotsTxt(entry.url) && imageUrls.has(entry.url));
   return {
     requests: sent.length,
-    robots: sent.filter((entry) => isRobotsUrl(entry.url)).length,
-    retries: sent.filter((entry) => entry.attempt > 1).length,
-    redirectHops: sent.filter(
-      (entry) => entry.attempt === 1 && !isRobotsUrl(entry.url) && !imageUrls.has(entry.url),
-    ).length,
+    robots,
+    images: images.length,
+    redirectHops: first.length - robots - images.length,
+    retries: sent.length - first.length,
     hosts: [...new Set(sent.map((entry) => new URL(entry.url).host))],
   };
 }
@@ -124,10 +128,7 @@ async function splitCurrent(options: MediaFetchOptions, targets: readonly Target
     .keys()
     .filter((file) => !listed.has(file))
     .toArray();
-  for (const file of dropped) {
-    options.print(`dropped the manifest record of ${file}: no source lists it (the file stays)`);
-  }
-  return { records, pending, isManifestStale: dropped.length > 0 };
+  return { records, pending, dropped };
 }
 
 function recordOf(
@@ -203,21 +204,29 @@ async function downloadAll(
   for (const origin of origins) {
     await downloader.readRobots(origin);
   }
+  const fail = (url: string, reason: string) => {
+    failed.push({ url, reason });
+    options.print(`FAILED ${url}: ${reason}`);
+  };
   const fetchOne = async (target: DownloadTarget) => {
     const { file, source } = target;
     const result = await downloader.download(source.url);
     if (!result.ok) {
-      failed.push({ url: source.url, reason: result.reason });
-      options.print(`FAILED ${source.url}: ${result.reason}`);
+      fail(source.url, result.reason);
+      return;
+    }
+    // The file name decides how the site serves the bytes, so a response of another type (an SVG
+    // behind a .webp name, say) is refused and nothing is written.
+    const named = contentTypeOfFile(file);
+    if (named !== result.contentType) {
+      fail(source.url, `type-mismatch: ${result.contentType}, the file name says ${String(named)}`);
       return;
     }
     await writeFileAtomic(path.join(options.root, file), result.bytes);
     records.set(file, recordOf(target, result.bytes, result.contentType, options.now()));
     bytesWritten += result.bytes.byteLength;
-    const named = contentTypeOfFile(file);
-    const note = named === result.contentType ? '' : `; NOTE: the name says ${String(named)}`;
     options.print(
-      `fetched ${file} (${result.contentType}, ${String(result.bytes.byteLength)} bytes${note})`,
+      `fetched ${file} (${result.contentType}, ${String(result.bytes.byteLength)} bytes)`,
     );
     await save();
   };
@@ -230,10 +239,7 @@ export async function runMediaFetch(options: MediaFetchOptions): Promise<MediaFe
   if (problems.length > 0) {
     throw new Error(`invalid media sources, nothing requested:\n  ${problems.join('\n  ')}`);
   }
-  const { records, pending, isManifestStale } = await splitCurrent(
-    options,
-    targetsOf(options.sources),
-  );
+  const { records, pending, dropped } = await splitCurrent(options, targetsOf(options.sources));
   const current = records.size;
   const copies = pending.filter((target): target is CopyTarget => 'designFile' in target.source);
   if (copies.length > 0 && options.designDir === null) {
@@ -243,8 +249,15 @@ export async function runMediaFetch(options: MediaFetchOptions): Promise<MediaFe
   }
   const downloads = pending.filter((target): target is DownloadTarget => 'url' in target.source);
   const save = manifestSaver(path.join(options.root, MANIFEST_FILE), records);
+  // A record no source lists leaves the manifest now, before any download that could fail.
+  if (dropped.length > 0) {
+    await save();
+    for (const file of dropped) {
+      options.print(`dropped the manifest record of ${file}: no source lists it (the file stays)`);
+    }
+  }
   const copiedBytes = await copyDesignFiles(options, copies, records);
-  if (copies.length > 0 || (isManifestStale && downloads.length === 0)) {
+  if (copies.length > 0) {
     await save();
   }
   const log: RequestLogEntry[] = [];
