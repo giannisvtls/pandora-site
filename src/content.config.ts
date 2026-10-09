@@ -1,6 +1,6 @@
 import { defineCollection } from 'astro:content';
 
-import { COLLECTIONS as C, type ContentName } from './content/contract';
+import { COLLECTIONS as C, GLOBALS as G, type ContentName } from './content/contract';
 import { contentLoader } from './content/loader';
 
 // Every registered collection and global, each with the loader and the schema of its own name.
@@ -26,4 +26,48 @@ export const collections = {
   features: defineCollection({ loader: contentLoader('features'), schema: C.features }),
   specRows: defineCollection({ loader: contentLoader('specRows'), schema: C.specRows }),
   levels: defineCollection({ loader: contentLoader('levels'), schema: C.levels }),
+  // Globals: one entry each, `global`.
+  siteCopyHeader: defineCollection({
+    loader: contentLoader('siteCopyHeader'),
+    schema: G.siteCopyHeader,
+  }),
+  siteCopyCommon: defineCollection({
+    loader: contentLoader('siteCopyCommon'),
+    schema: G.siteCopyCommon,
+  }),
+  siteCopyHome: defineCollection({ loader: contentLoader('siteCopyHome'), schema: G.siteCopyHome }),
+  siteCopyCatalogue: defineCollection({
+    loader: contentLoader('siteCopyCatalogue'),
+    schema: G.siteCopyCatalogue,
+  }),
+  siteCopyProduct: defineCollection({
+    loader: contentLoader('siteCopyProduct'),
+    schema: G.siteCopyProduct,
+  }),
+  siteCopyCompare: defineCollection({
+    loader: contentLoader('siteCopyCompare'),
+    schema: G.siteCopyCompare,
+  }),
+  siteCopyAccessories: defineCollection({
+    loader: contentLoader('siteCopyAccessories'),
+    schema: G.siteCopyAccessories,
+  }),
+  siteCopyBlog: defineCollection({ loader: contentLoader('siteCopyBlog'), schema: G.siteCopyBlog }),
+  siteCopyInstallers: defineCollection({
+    loader: contentLoader('siteCopyInstallers'),
+    schema: G.siteCopyInstallers,
+  }),
+  siteCopyForms: defineCollection({
+    loader: contentLoader('siteCopyForms'),
+    schema: G.siteCopyForms,
+  }),
+  siteCopyFooter: defineCollection({
+    loader: contentLoader('siteCopyFooter'),
+    schema: G.siteCopyFooter,
+  }),
+  siteCopyNotFound: defineCollection({
+    loader: contentLoader('siteCopyNotFound'),
+    schema: G.siteCopyNotFound,
+  }),
+  languages: defineCollection({ loader: contentLoader('languages'), schema: G.languages }),
 } satisfies Record<ContentName, unknown>;

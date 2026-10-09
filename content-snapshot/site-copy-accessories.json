@@ -1,0 +1,44 @@
+{
+  "heading": {
+    "lead": {
+      "en": "Pandora"
+    },
+    "payload": {
+      "en": "accessories."
+    }
+  },
+  "lead": {
+    "en": "Remotes, sirens, sensors, relays and parts from the 2026 Pandora range. Your certified installer fits them and confirms they suit your system."
+  },
+  "vehicleNavLabel": {
+    "en": "Accessories by vehicle"
+  },
+  "countForVehicle": {
+    "one": {
+      "en": "{count} accessory for {vehicle} systems"
+    },
+    "other": {
+      "en": "{count} accessories for {vehicle} systems"
+    }
+  },
+  "backToSystems": {
+    "en": "Back to the systems"
+  },
+  "browseSystems": {
+    "en": "Browse the systems"
+  },
+  "fits": {
+    "en": "Fits"
+  },
+  "moreFits": {
+    "one": {
+      "en": "+ {count} more"
+    },
+    "other": {
+      "en": "+ {count} more"
+    }
+  },
+  "ask": {
+    "en": "Ask about it"
+  }
+}

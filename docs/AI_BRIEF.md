@@ -128,7 +128,19 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
    `zod` (never the `z` re-exported by `astro:content`), so the CMS can share the same schemas
    later. Every schema of spec §2's collections (media, products, accessories, posts, faq,
    installers, navSections) and fixed-key sets (categories, accessoryCards, accessoryGroups,
-   features, specRows, levels) is registered by name in `contract/registry.ts`.
+   features, specRows, levels) is registered by name in `contract/registry.ts`, and so are the
+   globals: the twelve Site copy groups (`SITE_COPY`, `contract/site-copy-*.ts`) and `languages`.
+   The Finder schema (`contract/finder.ts`) is registered by the snapshot converter.
+   - **Site copy** holds every UI string of the prototype, English as the source language: one
+     global per page group (`siteCopyHeader`, `siteCopyCommon` for strings several pages share,
+     `siteCopyHome` … `siteCopyFooter`, `siteCopyNotFound`). Product, accessory, post, FAQ and
+     feature texts are collection data, not Site copy. A sentence is one value: what the
+     prototype builds by concatenation is a `template` with named placeholders, counts are
+     `plural` (Intl.PluralRules) or `byCount` ("Both / All three / All four"), and every h1/h2 is
+     a `heading` (`lead <span class="b">payload</span>`). Code fills placeholders; it never glues
+     copy fields together, because word order differs per language. Facts (the company name,
+     phone, email, postal code, a car in the proof rail) are plain strings shared by every
+     language.
    - `LOCALES = ['en', 'el', 'it', 'sq']`. Localized text is one language map per field
      (`localizedText`): a language without a translation has no key; there is never English
      filler in another language. A value is never empty, whitespace-only or untrimmed.
@@ -158,9 +170,11 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
    page's locale only: a field missing in that locale renders nothing, and no price is shown
    (prices belong on product pages).
 
-- **The snapshot** (`content-snapshot/`) has one file per collection. `products.json` holds one
-  product, `camperv3` (English text and the Greek blurb), and `media.json` its package shot; the
-  other files are `[]` until the converter fills them.
+- **The snapshot** (`content-snapshot/`) has one file per collection or global. `products.json`
+  holds one product, `camperv3` (English text and the Greek blurb), and `media.json` its package
+  shot; the other collection files are `[]` until the converter fills them. The
+  `site-copy-*.json` files hold the prototype's English, transcribed once; `languages.json` has
+  `en` live and `el`, `it`, `sq` not live.
 - **The data store**: `astro build`, `sync` and `check` keep it in
   `node_modules/.astro/data-store.json`; `astro dev` keeps its own in `.astro/data-store.json`. It
   persists between runs; the loader clears it on every load, so a changed or removed item is never

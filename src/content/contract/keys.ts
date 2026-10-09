@@ -16,6 +16,11 @@ export const LEVEL_IDS = ['1', '2', '3'] as const;
 export const levelId = z.enum(LEVEL_IDS);
 export type LevelId = z.infer<typeof levelId>;
 
+// Where the vehicle is usually parked, for the Finder's place notes.
+export const PLACE_KEYS = ['garage', 'shared', 'street', 'varies'] as const;
+export const placeKey = z.enum(PLACE_KEYS);
+export type PlaceKey = z.infer<typeof placeKey>;
+
 // The 22 rows of the comparison matrix, in the prototype's order (`specRows` in its data file).
 // A product's matrix has every one of them (spec §2); their groups stay in code (A7).
 export const SPEC_ROW_KEYS = [

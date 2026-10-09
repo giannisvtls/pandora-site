@@ -93,17 +93,26 @@ function placeholderProblem(declared: ReadonlySet<string>, value: string): strin
 }
 
 // Localized text whose every value uses exactly the declared `{name}` placeholders: none missing,
-// none extra, no other brace (checked per language; one may repeat).
+// none extra, no other brace (checked per language; one may repeat). The schema carries the
+// declared names as metadata (`declaredPlaceholders`), for tests and for the CMS later.
 export function template(placeholders: readonly string[], source?: Locale) {
   const declared = new Set(placeholders);
-  return text(source).superRefine((languages, context) => {
-    for (const [locale, value] of Object.entries(languages)) {
-      const problem = placeholderProblem(declared, value);
-      if (problem !== null) {
-        context.addIssue({ code: 'custom', path: [locale], message: problem });
+  return text(source)
+    .superRefine((languages, context) => {
+      for (const [locale, value] of Object.entries(languages)) {
+        const problem = placeholderProblem(declared, value);
+        if (problem !== null) {
+          context.addIssue({ code: 'custom', path: [locale], message: problem });
+        }
       }
-    }
-  });
+    })
+    .meta({ placeholders: [...placeholders] });
+}
+
+// The placeholders a schema built by `template()` declares; undefined for any other schema.
+export function declaredPlaceholders(schema: z.ZodType): readonly string[] | undefined {
+  const placeholders: unknown = schema.meta()?.placeholders;
+  return Array.isArray(placeholders) ? placeholders.map(String) : undefined;
 }
 
 function describePlaceholders(placeholders: ReadonlySet<string>): string {
@@ -131,11 +140,22 @@ export function plural(placeholders: readonly string[], source?: Locale) {
   });
 }
 
+// The counts `byCount` can spell out.
+export const BY_COUNT_KEYS = ['2', '3', '4'] as const;
+export type ByCountKey = (typeof BY_COUNT_KEYS)[number];
+
 // Explicit variants for a count of 2, 3 or 4 ("Both", "All three", "All four"); every variant
-// is a template.
-export function byCount(placeholders: readonly string[], source?: Locale) {
+// is a template. `counts` narrows the variants to the counts a sentence can have ("Two picks",
+// "Three picks": 2 and 3).
+export function byCount<const K extends readonly ByCountKey[] = typeof BY_COUNT_KEYS>(
+  placeholders: readonly string[],
+  source?: Locale,
+  counts?: K,
+) {
   const variant = template(placeholders, source);
-  return z.strictObject({ '2': variant, '3': variant, '4': variant });
+  const keys: readonly ByCountKey[] = counts ?? BY_COUNT_KEYS;
+  const shape = Object.fromEntries(keys.map((count) => [count, variant]));
+  return z.strictObject(shape as Record<K[number], typeof variant>);
 }
 
 // An h1/h2: `lead <span class="b">payload</span>`; the payload is optional.

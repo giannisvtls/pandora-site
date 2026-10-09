@@ -1,0 +1,225 @@
+{
+  "labels": {
+    "company": {
+      "en": "Company"
+    },
+    "address": {
+      "en": "Address"
+    },
+    "hours": {
+      "en": "Hours"
+    },
+    "phone": {
+      "en": "Phone"
+    },
+    "email": {
+      "en": "Email"
+    },
+    "fullName": {
+      "en": "Full name"
+    },
+    "vehicle": {
+      "en": "Vehicle (make & model)"
+    },
+    "message": {
+      "en": "How can we help?"
+    },
+    "city": {
+      "en": "City"
+    },
+    "trade": {
+      "en": "What do you install today?"
+    },
+    "workshop": {
+      "en": "Tell us about your workshop"
+    },
+    "system": {
+      "en": "System"
+    },
+    "serialNumber": {
+      "en": "Serial number"
+    },
+    "plate": {
+      "en": "Vehicle plate"
+    },
+    "installDate": {
+      "en": "Installation date"
+    },
+    "installer": {
+      "en": "Installer"
+    },
+    "yourEmail": {
+      "en": "Your email"
+    }
+  },
+  "placeholders": {
+    "vehicle": {
+      "en": "e.g. Toyota C-HR 2024"
+    },
+    "serialNumber": {
+      "en": "On the main unit label"
+    },
+    "installer": {
+      "en": "Workshop name"
+    }
+  },
+  "contact": {
+    "heading": {
+      "lead": {
+        "en": "Talk to"
+      },
+      "payload": {
+        "en": "INVETEC."
+      }
+    },
+    "lead": {
+      "en": "One message. We answer within working hours and route you to the right partner."
+    },
+    "mapTitle": {
+      "en": "INVETEC — {street}, {locality}"
+    },
+    "submit": {
+      "en": "Send message"
+    },
+    "done": {
+      "en": "Message sent."
+    }
+  },
+  "faqHeading": {
+    "lead": {
+      "en": "Questions we"
+    },
+    "payload": {
+      "en": "get asked."
+    }
+  },
+  "partners": {
+    "heading": {
+      "lead": {
+        "en": "Grow with"
+      },
+      "payload": {
+        "en": "Pandora."
+      }
+    },
+    "lead": {
+      "en": "Join a network of 100+ partners in 5 countries. Certified installers get technical support, training and access to the compatibility database."
+    },
+    "benefits": [
+      {
+        "title": {
+          "en": "Technical support."
+        },
+        "text": {
+          "en": "Direct line to INVETEC engineers for installations and configuration."
+        }
+      },
+      {
+        "title": {
+          "en": "Training."
+        },
+        "text": {
+          "en": "Certification on every Pandora system before you fit the first one."
+        }
+      },
+      {
+        "title": {
+          "en": "Compatibility database."
+        },
+        "text": {
+          "en": "Vehicle-by-vehicle CAN data so every install behaves like factory equipment."
+        }
+      },
+      {
+        "title": {
+          "en": "Warranty portal."
+        },
+        "text": {
+          "en": "Register installations online and activate the customer's warranty on the spot."
+        }
+      }
+    ],
+    "trades": [
+      {
+        "en": "Car security"
+      },
+      {
+        "en": "Motorcycle security"
+      },
+      {
+        "en": "Multimedia"
+      },
+      {
+        "en": "Fleet telematics"
+      },
+      {
+        "en": "New to the trade"
+      }
+    ],
+    "submit": {
+      "en": "Apply to the network"
+    },
+    "done": {
+      "en": "Application received."
+    }
+  },
+  "warranty": {
+    "heading": {
+      "lead": {
+        "en": "Activate your"
+      },
+      "payload": {
+        "en": "warranty."
+      }
+    },
+    "lead": {
+      "en": "Already installed? Register the system to INVETEC and your installer."
+    },
+    "steps": [
+      {
+        "title": {
+          "en": "Find the serial."
+        },
+        "text": {
+          "en": "Printed on the main unit label and on the box."
+        }
+      },
+      {
+        "title": {
+          "en": "Enter the vehicle and date."
+        },
+        "text": {
+          "en": "As on the installer's receipt."
+        }
+      },
+      {
+        "title": {
+          "en": "Done."
+        },
+        "text": {
+          "en": "The warranty is linked to you and your installer."
+        }
+      }
+    ],
+    "submit": {
+      "en": "Activate"
+    },
+    "done": {
+      "en": "Warranty activated."
+    },
+    "doneNote": {
+      "en": "A confirmation is on its way to your email."
+    }
+  },
+  "replyNote": {
+    "en": "We answer within working hours, {hours}."
+  },
+  "prefill": {
+    "installer": {
+      "en": "Please match me with a certified installer near postal code {code}, {country}."
+    },
+    "accessory": {
+      "en": "I would like to know more about the Pandora {code} ({name}) and whether it suits my system."
+    }
+  }
+}

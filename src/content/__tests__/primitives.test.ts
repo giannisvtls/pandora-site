@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   byCount,
+  declaredPlaceholders,
   hasStrayBrace,
   heading,
   idSchema,
@@ -197,6 +198,26 @@ describe('byCount', () => {
 
     expect(grammar.safeParse(all).success).toBe(true);
     expect(issuePaths(grammar.safeParse({ '2': all['2'], '3': all['3'] }))).toEqual(['4']);
+  });
+
+  it('takes only the counts it is given', () => {
+    const picks = byCount(['vehicle'], 'en', ['2', '3']);
+    const two = { '2': { en: 'Two {vehicle} picks' }, '3': { en: 'Three {vehicle} picks' } };
+
+    expect(picks.safeParse(two).success).toBe(true);
+    expect(
+      picks.safeParse({ ...two, '4': { en: 'Four {vehicle} picks' } }).error?.issues,
+    ).toMatchObject([{ code: 'unrecognized_keys', keys: ['4'] }]);
+    expect(issuePaths(picks.safeParse({ ...two, '3': { en: 'Three picks' } }))).toEqual(['3.en']);
+  });
+});
+
+describe('declaredPlaceholders', () => {
+  it('reads the names a template declares, and nothing from other schemas', () => {
+    expect(declaredPlaceholders(template(['count', 'name'], 'en'))).toEqual(['count', 'name']);
+    expect(declaredPlaceholders(template([]))).toEqual([]);
+    expect(declaredPlaceholders(text('en'))).toBeUndefined();
+    expect(declaredPlaceholders(plural(['count']).shape.many.unwrap())).toEqual(['count']);
   });
 });
 

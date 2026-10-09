@@ -313,6 +313,20 @@ are about to touch. When you hit a new one, add it here in the same shape.
     reports the same property issue twice.
   - Fix: pass `{ when: (payload) => payload.issues.length === 0 }` as the refinement's second
     argument, as `itemSchema` in `src/content/contract/item.ts` does.
+- **A template's placeholders live on the template schema only.** `template()` records its
+  declared names with zod's `.meta()`, which registers that one schema instance; a wrapper made
+  afterwards (`.optional()`, a plural's `few`) is another instance without them.
+  - Symptom: `declaredPlaceholders(schema)` returns `undefined` for an optional template, so a
+    walk over a schema skips it.
+  - Fix: unwrap `ZodOptional` before reading, as the walker in
+    `src/content/__tests__/site-copy.test.ts` does.
+- **A link target that fails inside the matching union option is reported at that option's
+  field.** The footer's link target is a union of a route target and an `{ href }` target.
+  - Symptom: `{ href: 'http://...' }` fails at `target.href`, while `{ route: 'shop' }`, a
+    vehicle outside the enum or both `route` and `href` fail at `target`.
+  - Fix: expected. zod 4 passes on the issues of an option that failed only a check (a
+    `refine`, a `regex`); a wrong type, enum value or key in every option becomes one
+    `invalid_union` issue at the union. Read the message for the reason.
 - **A generic helper around `defineCollection` erases the entry type.**
   - Symptom: when a generic `collection(name)` wraps `defineCollection` with the schema
     `COLLECTIONS[name]`, `getCollection()` returns `data: unknown` and `astro check` fails where
