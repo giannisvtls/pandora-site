@@ -8,9 +8,10 @@
 // - the system prices and the accessory prices, groups and fits;
 // - the launch catalogue is exactly the pricelist's systems (the tool checked the parked items
 //   and the hidden multimedia category; the snapshot has neither, so it checks the product set);
-// - the Finder picks and the level lists, with the level rule of P1-7: a system with a matrix
-//   takes its level from it, one without from the levels set that lists it.
-import type { Product } from '../../src/content/contract';
+// - the Finder picks and the level lists, with the site's level rule (src/content/levels.ts,
+//   P1-7): a system with a matrix takes its level from it, one without from the level that lists
+//   it.
+import { levelOf } from '../../src/content/levels';
 import { byCodeUnit } from '../crawl/output';
 import { REPO_ROOT } from '../snapshot/paths';
 import { readSnapshot, type SnapshotData } from '../snapshot/read-snapshot';
@@ -44,18 +45,6 @@ export const ACC: Readonly<Record<string, number>> = { 'd-061': 259, 'd-061-camp
   'd-022-cover': 29, 'alt-307': 249 };
 
 const byOrder = (a: { order: number }, b: { order: number }) => a.order - b.order;
-
-// A system's protection level (P1-7): with a matrix, GPS included -> 3, immobilizer included -> 2,
-// else 1; without one, the level whose `systems` lists it; 0 when neither.
-export function levelOf(snapshot: SnapshotData, product: Product): number {
-  const { matrix } = product;
-  if (matrix !== undefined) {
-    if (matrix.gps === 1) return 3;
-    return matrix.immo === 1 ? 2 : 1;
-  }
-  const level = snapshot.levels.find(({ systems }) => systems.includes(product.id));
-  return level === undefined ? 0 : Number(level.id);
-}
 
 function matrixProblems(snapshot: SnapshotData): string[] {
   const problems: string[] = [];
@@ -144,7 +133,7 @@ function catalogueProblems(snapshot: SnapshotData): string[] {
         product !== undefined,
         `finder.picks.${vehicle}.${level} = ${id} is not a visible product`,
       );
-      const reached = product === undefined ? 0 : levelOf(snapshot, product);
+      const reached = product === undefined ? 0 : levelOf(product, snapshot.levels);
       check(
         reached >= Number(level),
         `finder.picks.${vehicle}.${level} = ${id} sits at level ${String(reached)}`,
@@ -156,7 +145,7 @@ function catalogueProblems(snapshot: SnapshotData): string[] {
       const product = productById.get(id);
       check(product !== undefined, `levels ${level.id} lists hidden ${id}`);
       if (product?.matrix === undefined) continue;
-      const derived = levelOf(snapshot, product);
+      const derived = levelOf(product, snapshot.levels);
       check(
         derived === Number(level.id),
         `levels ${level.id} lists ${id}, derived level ${String(derived)}`,

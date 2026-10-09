@@ -28,7 +28,7 @@ scripts/snapshot/     the one-time snapshot converter, the snapshot reader, __fi
 scripts/pricelist/    the pricelist check behind `npm run check:pricelist` (+ __tests__/)
 src/
   content/            contract/ (Zod contract; contract.ts re-exports it), loader.ts, hues.ts,
-                      __tests__/
+                      routes.ts, rules.ts (+ completeness.ts), levels.ts, __tests__/
   content.config.ts   every registered collection
   components/         ProductSummary.astro, __tests__/
   layouts/            BaseLayout.astro (lang, title, skip link, main#main), __tests__/
@@ -41,6 +41,8 @@ src/
 - `astro.config.mjs` -- static output, `site`, Preact integration, i18n routing
 - `src/content/contract.ts` -- the content contract (re-exports `src/content/contract/`)
 - `src/content/loader.ts` -- `contentLoader(name)`, the `CONTENT_SOURCE` switch
+- `src/content/routes.ts`, `rules.ts`, `levels.ts` -- the URL map, the publish rules and the level
+  rule (spec §4), pure functions over content the caller passes in
 - `src/content.config.ts` -- collections, each wired to `contentLoader`
 - `src/pages/[locale]/index.astro` -- the home page per locale
 - `eslint.config.js` -- typed and untyped lint layers, Astro, a11y, import, unicorn, sonarjs
@@ -228,6 +230,42 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
 - **Adding a collection or global:** its schema in `src/content/contract/`, an entry in
   `COLLECTIONS` or `GLOBALS` (`contract/registry.ts`), `content-snapshot/<kebab-name>.json`, and
   a `defineCollection` in `content.config.ts` (the typecheck fails until it is there).
+
+## Routes and publish rules
+
+Spec §4, pure TypeScript with no Astro import and no file read: the caller (the query module)
+passes the content in as `ContentData` (`rules.ts`: every collection and global as the contract
+types it; the snapshot readers in `scripts/` use the same type).
+
+- **`routes.ts`:** `ROUTE_PATHS` (one pattern per page type, every path ending in `/` but
+  `/{L}/404.html`), `routePath(L, route, params)`, `targetHref(L, target)` for Site copy link
+  targets (adds `#hash`), `productPath`, `accessoryPath` (the first vehicle; an accessory with
+  no vehicle has no URL until Phase 3, so it throws), `postPath` (the slug in `L`), and
+  `BUILT_PAGE_TYPES` (A18; `['home']` in Phase 1; `routes.test.ts` fails when it and the page
+  files under `src/pages/` disagree). The parameters each route needs are one table,
+  `ROUTE_PARAMS` in `contract/keys.ts`, which the Site copy `routeTarget` schema checks too
+  (`{ route: 'category' }` without a vehicle fails at `params.vehicle`). `systems` is the nav
+  key of the car category page.
+- **The item rule (`completeness.ts`, re-exported by `rules.ts`):** `gapsIn(value, L, media)`
+  lists what a value lacks in `L`: every language map with a value in the source language
+  (`showIn[0]` for items, English otherwise) and none in `L`, found by walking the value (a
+  language map is an object keyed by languages only), plus `media.<id>.alt` for each referenced
+  media item that is not decorative and has no alt in `L` (A3). A plural's `few` / `many`
+  never count. `isComplete` and `isVisible` (`L` in `showIn` and complete) build on it. A media
+  reference is a field named `image`, `installImage`, `photo`, `gallery` or a rich-text image
+  block's `media`.
+- **`rules.ts`:** `contentIn(data, L)` (the visible items, with fits, level systems and Finder
+  picks to products that are not visible dropped), `builtLanguages(languages, { preview })`
+  (preview: all four; otherwise the live ones; none live is an error),
+  `languageGaps` / `assertLanguageReady(data, L)` (Site copy, the nav labels shown in `L`, the
+  Finder and the fixed-key sets; one error listing every missing path), `rootLanguage` /
+  `rootRedirect(built)` (`/el/` 301 once Greek is built, else a 302 to the first built of en,
+  it, sq), and the pages of a `Site` (`createSite(data, { preview })`): `pageUrl`, `hasPage`
+  (spec `pageExists`), `alternates` (with `x-default` -> el, else en), `sitemapEntries` and
+  `switcherTargets` (the page in each built language, else that language's home).
+- **`levels.ts`:** `levelOf(product, levels)` (P1-7): GPS included 3, immobilizer included 2,
+  else 1; a system without a matrix takes the level that lists it, else 0. The pricelist check
+  (`npm run check:pricelist`) uses the same function.
 
 ## i18n routing
 

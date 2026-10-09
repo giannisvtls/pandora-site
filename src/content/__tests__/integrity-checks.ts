@@ -46,8 +46,9 @@ function imagesIn(body: Partial<Record<string, RichText>>): string[] {
 
 type Reference = readonly [who: string, id: string];
 
-// Every media reference, collections and Site copy, with who makes it.
-function mediaReferences(s: SnapshotData): Reference[] {
+// Every media reference, collections and Site copy, with who makes it (the publish rules' tests
+// check that the item rule finds the same).
+export function mediaReferences(s: SnapshotData): Reference[] {
   return [
     ...s.products.flatMap((product): Reference[] => [
       [`product ${product.id} image`, product.image],

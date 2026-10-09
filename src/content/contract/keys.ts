@@ -71,3 +71,28 @@ export const ROUTE_KEYS = [
 ] as const;
 export const routeKey = z.enum(ROUTE_KEYS);
 export type RouteKey = z.infer<typeof routeKey>;
+
+// The parameters a route's path can take: a vehicle (a category id), a slug, an item id.
+export const ROUTE_PARAM_NAMES = ['vehicle', 'slug', 'id'] as const;
+export type RouteParamName = (typeof ROUTE_PARAM_NAMES)[number];
+
+// The parameters each route's path needs, in path order: the one table behind the path builders
+// (src/content/routes.ts) and the Site copy link targets (`routeTarget`). `systems` needs none:
+// it leads to the car category.
+export const ROUTE_PARAMS = {
+  home: [],
+  systems: [],
+  category: ['vehicle'],
+  product: ['vehicle', 'slug'],
+  compare: [],
+  accessories: [],
+  accessoriesVehicle: ['vehicle'],
+  accessory: ['vehicle', 'id'],
+  blog: [],
+  post: ['slug'],
+  installers: [],
+  contact: [],
+  partners: [],
+  warranty: [],
+  notFound: [],
+} as const satisfies Readonly<Record<RouteKey, readonly RouteParamName[]>>;

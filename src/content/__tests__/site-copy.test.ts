@@ -296,6 +296,8 @@ describe('the footer', () => {
   it('takes a link to a route, to an https URL, or with no URL yet (A9)', () => {
     for (const target of [
       { route: 'category', params: { vehicle: 'marine' } },
+      { route: 'accessory', params: { vehicle: 'car', id: 'd-061' } },
+      { route: 'systems' },
       { route: 'contact', hash: 'faq' },
       { href: 'https://www.example.com/invetec' },
       undefined,
@@ -313,6 +315,10 @@ describe('the footer', () => {
     // A hash is an element id, without the `#`.
     [{ route: 'contact', hash: '#faq' }, '.hash'],
     [{ route: 'contact', hash: 'FAQ' }, '.hash'],
+    // The parameters each route needs, no more (ROUTE_PARAMS, shared with routes.ts).
+    [{ route: 'category' }, '.params.vehicle'],
+    [{ route: 'product', params: { vehicle: 'car' } }, '.params.slug'],
+    [{ route: 'contact', params: { vehicle: 'car' } }, '.params.vehicle'],
   ])('rejects the link target %j', (target, field) => {
     expect(pathsOf(siteCopyFooterSchema, footerWithFirstLink({ label, target }))).toEqual([
       `columns.0.links.0.target${field}`,

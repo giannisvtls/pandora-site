@@ -127,6 +127,14 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Fix: name the intermediate value (a schema constant, a test helper such as `fileSha()`), move
     capture-free helpers to module scope, use `try`/`await`, and write
     `iterator.map(...).toArray()`.
+- **More unicorn 77 rules met in `src/content/`.**
+  - Symptom: `unicorn/no-unsafe-string-replacement` rejects `path.replace('{L}', locale)` (a `$&`
+    or `$1` in the value would be expanded); `unicorn/no-useless-recursion` rejects a function
+    that calls itself once to rewrite its own arguments; `unicorn/consistent-boolean-name` rejects
+    a spec name such as `pageExists`.
+  - Fix: pass a replacer function (`.replace('{L}', () => locale)`); rewrite the arguments before
+    the work instead of recursing; give the name a boolean prefix (`hasPage` for spec §4's
+    `pageExists`).
 - **`../` and `./` imports form one import-x group.**
   - Symptom: `There should be no empty line within import group` when a blank line separates
     `from '../x'` and `from './y'`.
@@ -327,6 +335,27 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Fix: expected. zod 4 passes on the issues of an option that failed only a check (a
     `refine`, a `regex`); a wrong type, enum value or key in every option becomes one
     `invalid_union` issue at the union. Read the message for the reason.
+- **A parameter a route does not expect is reported at `params`.** The Site copy `routeTarget`
+  checks its parameters against `ROUTE_PARAMS` (`contract/keys.ts`) in a refinement.
+  - Symptom: `{ route: 'category' }` fails at `target.params.vehicle` ("needs a vehicle"), and
+    `{ route: 'contact', params: { vehicle: 'car' } }` at `target.params.vehicle` ("takes no
+    vehicle"); `routePath` / `targetHref` throw the same messages.
+  - Fix: give the route exactly the parameters its path has (spec §4 table).
+- **Optional zod fields are `T | undefined` under `exactOptionalPropertyTypes`.** The contract's
+  inferred types keep `undefined` in every optional field.
+  - Symptom: `astro check` reports ts2379 when a parsed value (a link target's `params`) goes
+    where `Partial<Record<K, string>>` is expected.
+  - Fix: accept `string | undefined` values (`RawParams` in `src/content/routes.ts`).
+- **The item rule finds localized text and media by shape.** `gapsIn`
+  (`src/content/completeness.ts`) walks any value: an object keyed only by languages is a
+  language map, and the fields `image`, `installImage`, `photo`, `gallery` and a rich-text image
+  block's `media` hold media ids.
+  - Symptom: a media field under another name (`poster`, `thumbnail`) is never checked for alt
+    text in the page's language, so an item shows with an image that has no alt there; an object
+    keyed by languages that is not text (per-language settings) is checked as if it were.
+  - Fix: name a media field like the existing ones or add it to `MEDIA_FIELDS`, and list it in
+    `mediaReferences` (`src/content/__tests__/integrity-checks.ts`): `rules-items.test.ts`
+    compares the two on the snapshot.
 - **A generic helper around `defineCollection` erases the entry type.**
   - Symptom: when a generic `collection(name)` wraps `defineCollection` with the schema
     `COLLECTIONS[name]`, `getCollection()` returns `data: unknown` and `astro check` fails where

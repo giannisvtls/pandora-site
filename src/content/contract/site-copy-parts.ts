@@ -3,7 +3,7 @@
 // demo) are plain strings shared by every language.
 import { z } from 'zod';
 
-import { categoryId, routeKey } from './keys';
+import { categoryId, ROUTE_PARAM_NAMES, ROUTE_PARAMS, routeKey, type RouteParamName } from './keys';
 import {
   byCount,
   FIXED_SOURCE,
@@ -50,19 +50,41 @@ export function isHttpsUrl(value: string): boolean {
 }
 export const httpsUrl = z.string().refine(isHttpsUrl, 'Expected an https:// URL');
 
-// A page of the site by its route key (spec §4), with the parameters its path needs and an
-// optional `#hash`; routes.ts builds the URL.
-export const routeTarget = z.strictObject({
-  route: routeKey,
-  params: z
-    .strictObject({
-      vehicle: categoryId.optional(),
-      slug: slugSchema.optional(),
-      id: idSchema.optional(),
-    })
-    .optional(),
-  hash: idSchema.optional(),
-});
+// A page of the site by its route key (spec §4), with exactly the parameters its path needs
+// (ROUTE_PARAMS: `{ route: 'category' }` needs a vehicle) and an optional `#hash`; routes.ts
+// builds the URL.
+export const routeTarget = z
+  .strictObject({
+    route: routeKey,
+    params: z
+      .strictObject({
+        vehicle: categoryId.optional(),
+        slug: slugSchema.optional(),
+        id: idSchema.optional(),
+      })
+      .optional(),
+    hash: idSchema.optional(),
+  })
+  .superRefine(
+    ({ route, params = {} }, context) => {
+      const needed: readonly RouteParamName[] = ROUTE_PARAMS[route];
+      for (const name of ROUTE_PARAM_NAMES) {
+        const isGiven = params[name] !== undefined;
+        if (isGiven !== needed.includes(name)) {
+          context.addIssue({
+            code: 'custom',
+            path: ['params', name],
+            message: isGiven
+              ? `The route "${route}" takes no ${name}`
+              : `The route "${route}" needs a ${name}`,
+          });
+        }
+      }
+    },
+    // A route outside the enum has no parameter list to check against.
+    { when: (payload) => payload.issues.length === 0 },
+  );
+export type RouteTarget = z.infer<typeof routeTarget>;
 
 // A link: its label and where it goes. A link without a target has no URL yet and is not
 // rendered (A9); its label waits here.

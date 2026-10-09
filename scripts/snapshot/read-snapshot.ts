@@ -15,10 +15,10 @@ import {
   type CollectionName,
   type GlobalName,
 } from '../../src/content/contract';
+import type { ContentData } from '../../src/content/rules';
 
-export type SnapshotData = {
-  readonly [K in CollectionName]: readonly z.infer<(typeof COLLECTIONS)[K]>[];
-} & { readonly [K in GlobalName]: z.infer<(typeof GLOBALS)[K]> };
+// The snapshot is the site's content (the type the publish rules read).
+export type SnapshotData = ContentData;
 
 // The parsed JSON of `content-snapshot/<file>` under `root`.
 export async function readSnapshotJson(root: string, name: string): Promise<unknown> {
