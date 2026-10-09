@@ -9,17 +9,29 @@ test.describe('/en/ home page', () => {
     const response = await page.goto('/en/');
 
     expect(response?.status()).toBe(200);
+    // goto reports the last response of a redirect chain: /en/ itself must answer 200.
+    expect(response?.request().redirectedFrom()).toBeNull();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    // Locally the gate reuses any server already on port 4321. `astro dev` pages load the Vite
+    // client, so a reused dev server fails here instead of passing on unbuilt output.
+    await expect(page.locator('script[src*="/@vite/client"]')).toHaveCount(0);
   });
 
   test('shows the h1 and the product name', async ({ page }) => {
     await page.goto('/en/');
 
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Your car is not going anywhere without you.' }),
+      page.getByRole('heading', {
+        level: 1,
+        name: 'Your car is not going anywhere without you.',
+        exact: true,
+      }),
     ).toBeVisible();
-    // The one product in content-snapshot/products.json (camperv3).
-    await expect(page.getByRole('heading', { level: 2, name: 'Camper V3' })).toBeVisible();
+    // The one product in content-snapshot/products.json (camperv3). `exact`: role names
+    // otherwise match case-insensitive substrings ("Camper V3 Pro" would pass).
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Camper V3', exact: true }),
+    ).toBeVisible();
   });
 
   test('the skip link moves keyboard focus to main', async ({ page }) => {
