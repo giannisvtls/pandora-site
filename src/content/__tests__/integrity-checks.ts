@@ -7,6 +7,7 @@ import {
   CATEGORY_IDS,
   LEVEL_IDS,
   LOCALES,
+  mediaIdOf,
   ROUTE_KEYS,
   SPEC_ROW_KEYS,
   type Block,
@@ -21,16 +22,6 @@ export interface IntegrityContext {
   readonly hueIds: readonly string[];
   readonly hasFile: (file: string) => boolean;
 }
-
-const MEDIA_DIR = 'src/assets/media/';
-
-// The media id a file path gives (lead decision, cycle 2): `pricelist/acc-band.png` ->
-// `pricelist-acc-band`.
-export const mediaIdOfFile = (file: string) =>
-  file
-    .slice(MEDIA_DIR.length)
-    .replace(/\.[^./]+$/u, '')
-    .replaceAll('/', '-');
 
 const byOrder = (a: { order: number }, b: { order: number }) => a.order - b.order;
 
@@ -170,9 +161,9 @@ function mediaProblems(s: SnapshotData, context: IntegrityContext): string[] {
       .map(([who, id]) => `${who}: media "${id}" does not exist`),
     ...duplicates(s.media.map(({ id }) => id)).map((id) => `media id "${id}" twice`),
     ...s.media.flatMap((media) => [
-      ...(media.id === mediaIdOfFile(media.file)
+      ...(media.id === mediaIdOf(media.file)
         ? []
-        : [`media ${media.id}: the id of ${media.file} is ${mediaIdOfFile(media.file)}`]),
+        : [`media ${media.id}: the id of ${media.file} is ${mediaIdOf(media.file)}`]),
       ...(context.hasFile(media.file) ? [] : [`media ${media.id}: ${media.file} is not on disk`]),
       ...(used.has(media.id) ? [] : [`media ${media.id}: nothing uses it`]),
     ]),

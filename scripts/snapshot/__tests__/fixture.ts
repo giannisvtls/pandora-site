@@ -42,13 +42,16 @@ export const MANIFEST: readonly ManifestEntry[] = [
   fetched('alpha-package.webp'),
   fetched('camper.webp'),
   fetched('car.webp'),
-  fetched('frame.webp'),
+  // The hero poster, also a product's install image: ALT_BY_MEDIA has its alt.
+  fetched('frame.webp', 'pandora-smart-v4-homepage-frame.webp'),
   fetched('install-alpha.jpg'),
   // An id ALT_BY_MEDIA has an alt for, so the gallery shot gets one.
   fetched('ps-330.webp', 'pandora-ps-330.webp'),
   copied('acc-d-061.png'),
   copied('beta.png'),
   fetched('rail.jpg'),
+  // A post image whose ALT_BY_MEDIA entry is the prototype's own alt.
+  fetched('motodays.webp', '20260218-motodays-2026-gr.webp'),
   fetched('unused.webp'),
 ];
 

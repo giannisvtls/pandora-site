@@ -14,10 +14,17 @@ import {
   postsOf,
   productOf,
 } from './convert-items';
-import { english, issueLines, mediaIdOf } from './convert-text';
+import { english, issueLines } from './convert-text';
+import { LEFT_OUT_KEYS, parkedEntries } from './left-out';
 import { MediaRefs, photoUses, type ManifestEntry, type ProofShot } from './media-refs';
 import type { PrototypeData, PrototypeHue, PrototypeProduct } from './prototype';
-import { COLLECTIONS, LOCALES, type CollectionName, type Finder } from '../../src/content/contract';
+import {
+  COLLECTIONS,
+  LOCALES,
+  mediaIdOf,
+  type CollectionName,
+  type Finder,
+} from '../../src/content/contract';
 
 export type { ManifestEntry, ProofShot } from './media-refs';
 
@@ -47,8 +54,9 @@ export interface Converted {
 }
 
 // The nav sections, in the prototype header's desktop order (`<nav aria-label="Primary">` in the
-// prototype page, labels verbatim). The mobile menu uses the same order. The page is not the
-// converter's source, so the labels are held here.
+// prototype page, labels verbatim). The site's mobile menu uses this order too, while the
+// prototype's mobile nav swaps Partners and Contact (one `order` field, lead decision in cycle
+// 3). The page is not the converter's source, so the labels are held here.
 export const NAV_SECTIONS = [
   ['systems', 'Systems'],
   ['compare', 'Compare'],
@@ -114,7 +122,9 @@ function huesOf(data: PrototypeData, products: readonly PrototypeProduct[]) {
 }
 
 // The media the content uses: the proof rail first, so its photos keep the prototype's own alt
-// text; the hero poster only makes its file decorative.
+// text. The hero poster is a use that gives no alt: the hero renders it with alt="" because of
+// where it sits, and its file is also Smart V4's install image, whose alt is in ALT_BY_MEDIA
+// (spec §3.1).
 function mediaRefsOf(data: PrototypeData, inputs: ConvertInputs): MediaRefs {
   const media = new MediaRefs(inputs.manifest);
   for (const [index, shot] of inputs.proofShots.entries()) {
@@ -125,7 +135,7 @@ function mediaRefsOf(data: PrototypeData, inputs: ConvertInputs): MediaRefs {
       system: shot.caption.split(' · ', 1)[0] ?? shot.caption,
     });
   }
-  media.mark(data.smartFrame, { role: 'decorative', at: 'smartFrame (home hero poster)' });
+  media.mark(data.smartFrame, { role: 'other', at: 'smartFrame (home hero poster)' });
   return media;
 }
 
@@ -184,6 +194,6 @@ export function convertPrototype(data: PrototypeData, inputs: ConvertInputs): Co
     finder: finderOf(data),
     hues,
     media: mediaItems.map(({ item, uses, text }) => ({ id: item.id, uses, text })),
-    dropped,
+    dropped: [...LEFT_OUT_KEYS, ...parkedEntries(data), ...dropped],
   };
 }

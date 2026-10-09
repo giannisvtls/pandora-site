@@ -16,13 +16,18 @@ import type { PrototypeData, PrototypeDetail, PrototypeProduct } from './prototy
 import { ACCESSORY_CARD_IDS, finderSchema, LOCALES, type Finder } from '../../src/content/contract';
 
 // The matrix of a system in spec-row order; undefined when the data has none (Finder, Tracer).
+// A value for a key that is not a spec row stops the conversion: it would be lost.
 function matrixOf(data: PrototypeData, id: string) {
   const specs = data.specs[id];
-  return specs === undefined
-    ? undefined
-    : Object.fromEntries(
-        data.specRows.map(({ key }) => [key, required(specs[key], `specs.${id}.${key}`)]),
-      );
+  if (specs === undefined) return;
+  const rows = new Set(data.specRows.map(({ key }) => key));
+  const extra = Object.keys(specs).find((key) => !rows.has(key));
+  if (extra !== undefined) {
+    throw new Error(`specs.${id}.${extra} is not a spec row`);
+  }
+  return Object.fromEntries(
+    data.specRows.map(({ key }) => [key, required(specs[key], `specs.${id}.${key}`)]),
+  );
 }
 
 // The part codes of a system in spec-row order; undefined when the data has none.

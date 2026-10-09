@@ -223,11 +223,15 @@ describe('plain text', () => {
     expect(pathsOf(SITE_COPY.siteCopyCommon, common)).toEqual([`${field}.el`]);
   });
 
-  it('includes headings', () => {
+  it('includes headings, lead and payload', () => {
     const compare = snapshotOf('siteCopyCompare');
     compare.heading = { lead: { en: 'Compare' }, payload: { en: '{count} systems.' } };
 
     expect(pathsOf(siteCopyCompareSchema, compare)).toEqual(['heading.payload.en']);
+
+    compare.heading = { lead: { en: 'Compare {count}' } };
+
+    expect(pathsOf(siteCopyCompareSchema, compare)).toEqual(['heading.lead.en']);
   });
 
   it('carries no placeholder declaration (the walk tells it from a template)', () => {

@@ -1,8 +1,8 @@
-// The converter's small rules: slugs (A17), partial dates (A14) and media ids (lead decision,
-// cycle 2).
+// The converter's small rules: slugs (A17) and partial dates (A14). Media ids are the contract's
+// (`mediaIdOf`, tested with the media schema).
 import { describe, expect, it } from 'vitest';
 
-import { mediaIdOf, partialDateOf, slugOf } from '../convert-text';
+import { partialDateOf, slugOf } from '../convert-text';
 
 describe('slugOf', () => {
   it.each([
@@ -32,13 +32,5 @@ describe('partialDateOf', () => {
     ['Spring 2026', undefined],
   ])('%j -> %j, never a day or month the source does not give', (source, date) => {
     expect(partialDateOf(source)).toBe(date);
-  });
-});
-
-describe('mediaIdOf', () => {
-  it('is the path under src/assets/media/ without the extension, / as -', () => {
-    expect(mediaIdOf('src/assets/media/pricelist/acc-band.png')).toBe('pricelist-acc-band');
-    expect(mediaIdOf('src/assets/media/pandora-camper-2.webp')).toBe('pandora-camper-2');
-    expect(() => mediaIdOf('src/assets/brand/invetec-logo.webp')).toThrow('is not under');
   });
 });

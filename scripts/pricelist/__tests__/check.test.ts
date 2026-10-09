@@ -158,6 +158,88 @@ describe('a copy with one fact changed', () => {
       },
       ['product tracer-pro is not in the pricelist'],
     ],
+    [
+      'an accessory that fits a product that does not exist',
+      (copy: Copy) => {
+        (itemOf(copy.accessories, 'd-061').fits as string[]).push('elite-v4');
+      },
+      ['accessory d-061 fits unknown elite-v4'],
+    ],
+    [
+      'a level that lists a product that does not exist',
+      (copy: Copy) => {
+        (itemOf(copy.levels, '3').systems as string[]).push('fleetmgmt');
+      },
+      ['levels 3 lists hidden fleetmgmt'],
+    ],
+    [
+      'an accessory count other than the pricelist',
+      (copy: Copy) => {
+        copy.accessories.push({ ...itemOf(copy.accessories, 'band'), id: 'band-2' });
+      },
+      ['accessories: 39, expected 38'],
+    ],
+    [
+      'a spec row without an explainer',
+      (copy: Copy) => {
+        copy.features = copy.features.filter(({ id }) => id !== 'wifi');
+      },
+      ['no explainer for row wifi'],
+    ],
+    [
+      'the spec rows out of order',
+      (copy: Copy) => {
+        itemOf(copy.specRows, 'accel').order = 99;
+      },
+      [`specRows order: ${[...Object.keys(MATRIX).slice(1), 'accel'].join(',')}`],
+    ],
+    [
+      'a matrix on a system the pricelist compares without one',
+      (copy: Copy) => {
+        itemOf(copy.products, 'tracer').matrix = {
+          ...(itemOf(copy.products, 'elite').matrix as Loose),
+        };
+      },
+      [
+        'specs systems: elite,professional,smartpro,smart,lightpro,light,primo,immo,motoevo,motov2,camperpro,camperv3,marine,truck,tracer',
+      ],
+    ],
+    [
+      'a missing product',
+      (copy: Copy) => {
+        copy.products = copy.products.filter(({ id }) => id !== 'immo');
+      },
+      [
+        'specs systems: elite,professional,smartpro,smart,lightpro,light,primo,motoevo,motov2,camperpro,camperv3,marine,truck',
+        // Immobilizer is the 8th system of the transcription.
+        ...Object.entries(MATRIX).map(
+          ([key, row]) => `specs.immo.${key} = undefined, expected ${row[7] ?? ''}`,
+        ),
+        'product immo priceEur = undefined, expected 179',
+        'product immo missing',
+        'accessory btr-101 fits unknown immo',
+        'accessory bt-790 fits unknown immo',
+        'levels 2 lists hidden immo',
+      ],
+    ],
+    [
+      'a Finder pick that is not a product',
+      (copy: Copy) => {
+        const picks = (copy.finder.picks as Record<string, Record<string, Loose>>).moto;
+        if (picks?.['1'] !== undefined) picks['1'].product = 'scooter';
+      },
+      [
+        'finder.picks.moto.1 = scooter is not a visible product',
+        'finder.picks.moto.1 = scooter sits at level 0',
+      ],
+    ],
+    [
+      'a product in a category the site does not show',
+      (copy: Copy) => {
+        copy.categories = copy.categories.filter(({ id }) => id !== 'marine');
+      },
+      ['product marine in hidden category marine'],
+    ],
   ])('names %s', (_what, change, problems) => {
     expect(pricelistProblems(changed(change))).toEqual(problems);
   });

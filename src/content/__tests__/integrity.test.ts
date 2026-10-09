@@ -121,6 +121,35 @@ describe('a broken reference', () => {
       'siteCopyHome.proof.shots.0.photo: media "nope" does not exist',
     ],
     [
+      'an image block in a post body',
+      (copy) => {
+        const body = itemOf(copy.posts, 'motodays').body as { en: Loose[] };
+        body.en.push({ type: 'image', media: 'nope' });
+      },
+      'post motodays body: media "nope" does not exist',
+    ],
+    [
+      'a media id used twice',
+      (copy) => {
+        copy.media.push({ ...itemOf(copy.media, 'pricelist-acc-band') });
+      },
+      'media id "pricelist-acc-band" twice',
+    ],
+    [
+      'an accessory vehicle that is not a category',
+      (copy) => {
+        copy.categories = copy.categories.filter(({ id }) => id !== 'marine');
+      },
+      'accessory ps-331-bt: vehicle "marine" is not a category',
+    ],
+    [
+      'an accessory card whose vehicle is not a category',
+      (copy) => {
+        copy.categories = copy.categories.filter(({ id }) => id !== 'marine');
+      },
+      'accessory card "marine" is not a category',
+    ],
+    [
       'a nav route',
       (copy) => {
         itemOf(copy.navSections, 'blog').route = 'news';

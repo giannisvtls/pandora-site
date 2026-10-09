@@ -374,7 +374,9 @@
   {
     "id": "pandora-smart-v4-homepage-frame",
     "file": "src/assets/media/pandora-smart-v4-homepage-frame.webp",
-    "decorative": true,
+    "alt": {
+      "en": "Pandora Smart V4 package and the Pandora Connect app on a phone"
+    },
     "source": {
       "url": "https://invetec.eu/wp-content/uploads/2024/11/Pandora-Smart-V4-homepage-frame-1536x864.webp"
     }

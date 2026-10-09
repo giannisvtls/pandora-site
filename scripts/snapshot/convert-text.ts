@@ -1,20 +1,8 @@
-// The snapshot converter's small rules: media ids, slugs (A17), partial dates (A14) and the
-// language maps it builds from the prototype's English and Greek.
+// The snapshot converter's small rules: slugs (A17), partial dates (A14) and the language maps it
+// builds from the prototype's English and Greek. Media ids come from the contract (`mediaIdOf`).
 import type { LocalizedText } from '../../src/content/contract';
 
-export const MEDIA_DIR = 'src/assets/media/';
-
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-// The id of the media item for a file: its path under src/assets/media/ without the extension,
-// `/` replaced by `-` (`pricelist/acc-band.png` -> `pricelist-acc-band`).
-export function mediaIdOf(file: string): string {
-  if (!file.startsWith(MEDIA_DIR)) {
-    throw new Error(`${file} is not under ${MEDIA_DIR}`);
-  }
-  const name = file.slice(MEDIA_DIR.length);
-  return name.slice(0, name.lastIndexOf('.')).replaceAll('/', '-');
-}
 
 // An ASCII kebab-case slug of an English text (A17): accents and apostrophes dropped, every other
 // run of characters that are not a-z or 0-9 a hyphen ("Smart Pro V4 FD" -> `smart-pro-v4-fd`).

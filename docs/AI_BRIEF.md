@@ -210,7 +210,9 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
   - Media: one item per file of `src/assets/media/` the content uses (92), its id the file path
     without the extension, `/` as `-` (`pricelist-acc-band`). Alt text follows the patterns of
     spec §3.1 or, where none fits the picture, `ALT_BY_MEDIA` in `scripts/snapshot/alt-text.ts`,
-    written after viewing each image; category heads and the hero poster are decorative.
+    written after viewing each image; category heads are decorative. The home hero poster's file
+    is also Smart V4's install image, so it has an alt; the hero renders it with `alt=""`
+    because of where it sits (spec §3.1).
   - The `site-copy-*.json` files hold the prototype's English, transcribed once;
     `languages.json` has `en` live and `el`, `it`, `sq` not live.
   - Guards: the unit test `src/content/__tests__/integrity.test.ts` checks that every reference

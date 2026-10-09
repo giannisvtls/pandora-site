@@ -6,7 +6,9 @@
 // - a package shot: "{brand} {name} package";
 // - an installation or proof photo: "{car} with Pandora {system} installed";
 // - an accessory: "Pandora {code}".
-// Category heads and the home hero poster are decorative (no alt in any language).
+// Category heads are decorative (no alt in any language). The home hero poster is not: its file
+// is also Smart V4's install image, so its media item has an alt, and the hero renders it with
+// alt="" because of where it sits (spec §3.1, lead decision after cycle 4).
 //
 // ALT_BY_MEDIA holds the alt written after viewing each image where no pattern applies (gallery
 // shots, post images) or the pattern does not match the picture; it wins over a pattern. A media
@@ -54,6 +56,10 @@ export const ALT_BY_MEDIA: Readonly<Record<string, string>> = {
     'The Pandora Connect app on a phone and the web service on a laptop, tracking a boat',
   'pandora-finder-2': 'Pandora Finder opened, with its AAA batteries',
   'pandora-finder-3': 'Pandora Finder tracker',
+  // The home hero poster, which is also Smart V4's install image: the Smart V4 box, and the
+  // Pandora Connect app on a phone in a hand.
+  'pandora-smart-v4-homepage-frame':
+    'Pandora Smart V4 package and the Pandora Connect app on a phone',
   // Installation photos whose car the data does not name: the car is from the file name.
   'works-2024-pandora-light-pro-v2-toyota-c-hr': 'Toyota C-HR with Pandora Light Pro V2 installed',
   'works-2024-pandora-marine-sea-ray-sdx-250': 'Sea Ray SDX 250 with Pandora Marine installed',
@@ -70,6 +76,10 @@ export const ALT_BY_MEDIA: Readonly<Record<string, string>> = {
   // The battery is not a Pandora part: the accessory pattern would say "Pandora ZDR GM 50".
   'pricelist-acc-zdr-gm-50': 'ZDR GM 50 backup battery',
 };
+
+// The ALT_BY_MEDIA entries that are the prototype's own alt attribute, not written after
+// viewing (the converter's report says so).
+export const PROTOTYPE_ALT_IDS: ReadonlySet<string> = new Set(['20260218-motodays-2026-gr']);
 
 // The pattern alt of the first use that has one: a proof photo before a package shot before an
 // accessory, each in the order the uses were found.

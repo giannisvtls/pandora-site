@@ -106,6 +106,29 @@ describe('npm run snapshot:convert', () => {
     expect(after?.sha256).not.toBe(before?.sha256);
   });
 
+  it('reports the alts other than a pattern, telling the prototype alt apart, and what it left out', async () => {
+    const { root, source } = await sandbox();
+    const data = JSON.parse(fixtureJson) as Loose;
+    (data.postImg as Loose).second = 'https://invetec.eu/test/motodays.webp';
+    await writeFile(source, dataFile(JSON.stringify(data)));
+
+    const { stdout } = await run(['--source', source], root);
+
+    expect(stdout).toContain(
+      [
+        'media alt text other than its pattern:',
+        '  20260218-motodays-2026-gr: "MotoDays 2026 poster, Fiera di Roma" (the prototype\'s alt)',
+        '  camper: decorative',
+        '  car: decorative',
+        '  pandora-ps-330: "Pandora PS-330 siren" (no pattern; written after viewing)',
+        '  pandora-smart-v4-homepage-frame: "Pandora Smart V4 package and the Pandora Connect app on a phone" (no pattern; written after viewing)',
+        'left out:',
+        '  products[].features: the feature bullets (P1-12)',
+      ].join('\n'),
+    );
+    expect(stdout).toContain('  hues.parked: not a launch product\nwrote ');
+  });
+
   it('writes the hues module as code', async () => {
     const { root, source } = await sandbox();
     await run(['--source', source], root);

@@ -6,9 +6,23 @@ import { z } from 'zod';
 
 import { FIXED_SOURCE, idSchema, text, textValue } from './primitives';
 
-const MEDIA_DIR = 'src/assets/media/';
+export const MEDIA_DIR = 'src/assets/media/';
 const KEBAB = /^[a-z\d]+(?:-[a-z\d]+)*$/u;
 const IMAGE_EXTENSIONS = new Set(['avif', 'gif', 'jpeg', 'jpg', 'png', 'svg', 'webp']);
+
+// The id of the media item for a file (lead decision, cycle 2): its path under src/assets/media/
+// without the extension, `/` replaced by `-` (`pricelist/acc-band.png` -> `pricelist-acc-band`).
+// A name without an extension stays whole. The snapshot converter gives ids this way, and the
+// snapshot integrity test checks every id against it.
+export function mediaIdOf(file: string): string {
+  if (!file.startsWith(MEDIA_DIR)) {
+    throw new Error(`${file} is not under ${MEDIA_DIR}`);
+  }
+  return file
+    .slice(MEDIA_DIR.length)
+    .replace(/\.[^./]+$/u, '')
+    .replaceAll('/', '-');
+}
 
 // `src/assets/media/<kebab-name>.<image extension>`, in kebab-case sub-folders or not (so never
 // `..`).

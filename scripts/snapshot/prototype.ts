@@ -1,9 +1,9 @@
 // The part of the prototype's data file (`nightwatch-data.js`) the snapshot converter reads, as
 // a schema: a key that is missing or has another shape stops the conversion and names it. The
 // file is parsed as JSON, never run (`prototypeJson`, shared with `npm run media:sources`).
-// Keys the converter does not read are dropped on purpose (P1-12): product `features` bullets,
-// `productColor`, `vehicles` (the proof list), `handed`, `U`, `dealers`, `parked` and the
-// `_source` / `_note` remarks.
+// Keys the converter does not convert are left out on purpose (P1-12): product `features`
+// bullets, `productColor`, `vehicles` (the proof list), `handed`, `U`, `dealers`, `parked` and
+// the `_source` / `_note` remarks; the run's report lists them (left-out.ts).
 import { z } from 'zod';
 
 import { prototypeJson } from '../assets/extract';

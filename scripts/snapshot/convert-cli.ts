@@ -7,6 +7,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
+import { PROTOTYPE_ALT_IDS } from './alt-text';
 import { convertPrototype, type Converted, type ProofShot } from './convert-data';
 import { HUES_FILE, PROVENANCE_FILE, REPO_ROOT } from './paths';
 import { readPrototype } from './prototype';
@@ -95,8 +96,9 @@ function outputsOf(converted: Converted): [string, string][] {
 }
 
 // How a media item got an alt other than its pattern's.
-function altNote(text: Converted['media'][number]['text']): string {
+function altNote({ id, text }: Converted['media'][number]): string {
   if ('decorative' in text) return 'decorative';
+  if (PROTOTYPE_ALT_IDS.has(id)) return `"${text.alt}" (the prototype's alt)`;
   return text.pattern === undefined
     ? `"${text.alt}" (no pattern; written after viewing)`
     : `"${text.alt}" (the pattern gives "${text.pattern}")`;
@@ -109,7 +111,7 @@ function report(converted: Converted, written: readonly string[]): string {
   );
   const altLines = converted.media
     .filter(({ text }) => !('alt' in text) || text.pattern !== text.alt)
-    .map(({ id, text }) => `  ${id}: ${altNote(text)}`);
+    .map((media) => `  ${media.id}: ${altNote(media)}`);
   return [
     'items:',
     ...counts,

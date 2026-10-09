@@ -1,8 +1,10 @@
 // The snapshot converter on a small fixture data file (__fixtures__/prototype-data.json): the
-// mapping onto the contract, the media items and their alt text, and the errors that stop it.
+// mapping onto the contract, the media items and their alt text (what stops it:
+// convert-errors.test.ts).
 import { describe, expect, it } from 'vitest';
 
 import { convertPrototype } from '../convert-data';
+import { LEFT_OUT_KEYS } from '../left-out';
 import { fixtureData, INPUTS, type Loose } from './fixture';
 
 const converted = convertPrototype(fixtureData(), INPUTS);
@@ -90,7 +92,33 @@ describe('the products', () => {
 
   it('give the hues of launch systems to hues.ts and leave the others out', () => {
     expect(converted.hues.map(([id]) => id)).toEqual(['alpha']);
-    expect(converted.dropped).toEqual(['hues.parked: not a launch product']);
+    expect(converted.dropped).toEqual([...LEFT_OUT_KEYS, 'hues.parked: not a launch product']);
+  });
+
+  it('report the dropped keys and every entry a parked item left behind', () => {
+    const data = fixtureData((raw) => {
+      (raw.productImg as Loose).parked = 'https://invetec.eu/test/parked.webp';
+      (raw.productGallery as Loose).parked = ['https://invetec.eu/test/parked-2.webp'];
+      (raw.catImg as Loose).multimedia = 'https://invetec.eu/test/multimedia.webp';
+    });
+
+    expect(convertPrototype(data, INPUTS).dropped).toEqual([
+      ...LEFT_OUT_KEYS,
+      'productImg.parked: not a launch product',
+      'productGallery.parked: not a launch product',
+      'catImg.multimedia: not a launch category',
+      'hues.parked: not a launch product',
+    ]);
+    for (const key of [
+      'products[].features',
+      'productColor',
+      'vehicles',
+      'handed',
+      'U',
+      'dealers',
+    ]) {
+      expect(LEFT_OUT_KEYS.some((line) => line.startsWith(`${key}: `))).toBe(true);
+    }
   });
 });
 
@@ -201,9 +229,9 @@ describe('the media items', () => {
       'alpha-package',
       'camper',
       'car',
-      'frame',
       'install-alpha',
       'pandora-ps-330',
+      'pandora-smart-v4-homepage-frame',
       'pricelist-acc-d-061',
       'pricelist-beta',
       'rail',
@@ -230,11 +258,20 @@ describe('the media items', () => {
     expect(itemOf('media', id).alt).toEqual({ en: alt });
   });
 
-  it('marks category heads and the hero poster decorative, wherever else they are used', () => {
-    for (const id of ['car', 'camper', 'frame']) {
+  it('marks category heads decorative, wherever else they are used', () => {
+    for (const id of ['car', 'camper']) {
       expect(itemOf('media', id)).toMatchObject({ decorative: true });
       expect(itemOf('media', id)).not.toHaveProperty('alt');
     }
+  });
+
+  it('gives the hero poster file the alt of its picture (the hero renders it with alt="")', () => {
+    expect(itemOf('media', 'pandora-smart-v4-homepage-frame')).toEqual({
+      id: 'pandora-smart-v4-homepage-frame',
+      file: 'src/assets/media/pandora-smart-v4-homepage-frame.webp',
+      alt: { en: 'Pandora Smart V4 package and the Pandora Connect app on a phone' },
+      source: { url: 'https://invetec.eu/test/frame.webp' },
+    });
   });
 
   it('take a post photo from the vehicles list when no product uses it', () => {
@@ -247,48 +284,5 @@ describe('the media items', () => {
     expect(media.find(({ id }) => id === 'install-alpha')?.alt).toEqual({
       en: 'Test Car with Pandora Alpha installed',
     });
-  });
-});
-
-describe('what stops the conversion', () => {
-  it.each<[string, (data: Loose) => void, string]>([
-    [
-      'a date in another form',
-      (data) => {
-        (data.posts as Loose[])[1] = { ...(data.posts as Loose[])[1], date: 'Spring 2025' };
-      },
-      'posts.second.date: "Spring 2025" is not a date the converter reads',
-    ],
-    [
-      'an image the manifest does not hold',
-      (data) => {
-        (data.productImg as Loose).beta = 'img/pricelist/gamma.png';
-      },
-      'productImg.beta: img/pricelist/gamma.png is not in the media manifest',
-    ],
-    [
-      'a system without its detail',
-      (data) => {
-        delete (data.productDetail as Loose).beta;
-      },
-      'productDetail.beta is missing in the prototype data',
-    ],
-    [
-      'a value the contract refuses (named with the item and the field)',
-      (data) => {
-        (data.accessories as Loose[])[0] = { ...(data.accessories as Loose[])[0], price_eur: 0 };
-      },
-      'accessories d-061:\n    priceEur:',
-    ],
-  ])('%s', (_what, change, message) => {
-    expect(() => convertPrototype(fixtureData(change), INPUTS)).toThrow(message);
-  });
-
-  it('names a key of the data file that has another shape', () => {
-    expect(() =>
-      fixtureData((data) => {
-        data.specRows = 'none';
-      }),
-    ).toThrow(/the prototype data does not have the expected shape:\n {2}specRows: /u);
   });
 });

@@ -4,10 +4,10 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { mediaIdOf } from '../../../src/content/contract';
 import { MANIFEST_FILE } from '../../assets/config';
 import { readManifest } from '../../assets/manifest';
 import { ALT_BY_MEDIA, mediaText, patternAlt, type MediaUse } from '../alt-text';
-import { mediaIdOf } from '../convert-text';
 import { REPO_ROOT } from '../paths';
 
 const photo: MediaUse = { role: 'photo', at: 'a', car: 'Car', system: 'One' };

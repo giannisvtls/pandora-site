@@ -2,8 +2,8 @@
 // is looked up in the media manifest, becomes a media id, and keeps every use, from which its alt
 // text follows (alt-text.ts).
 import type { MediaUse } from './alt-text';
-import { MEDIA_DIR, mediaIdOf } from './convert-text';
 import type { PrototypeData } from './prototype';
+import { MEDIA_DIR, mediaIdOf } from '../../src/content/contract';
 import { byCodeUnit } from '../crawl/output';
 
 // A media file as the manifest records it (src/assets/media/manifest.json).
@@ -64,8 +64,8 @@ export class MediaRefs {
     this.#referenced.add(file);
   }
 
-  // Records a use that makes no reference of its own (the hero poster: it only makes its file
-  // decorative wherever the content uses that file).
+  // Records a use that makes no reference of its own (the hero poster: its file must be in the
+  // manifest, and it is a media item only when the content references it elsewhere).
   mark(source: string, use: MediaUse): void {
     this.#add(this.#fileOf(source, use.at), use);
   }

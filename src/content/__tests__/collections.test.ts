@@ -14,6 +14,7 @@ import {
   featureSchema,
   installerSchema,
   levelSchema,
+  mediaIdOf,
   mediaSchema,
   navSectionSchema,
   postSchema,
@@ -235,6 +236,15 @@ describe('media', () => {
     ]) {
       expect(pathsOf(mediaSchema, changed('media', { file }))).toEqual(['file']);
     }
+  });
+
+  it('take as id the path under src/assets/media/ without the extension, / as -', () => {
+    expect(mediaIdOf('src/assets/media/pricelist/acc-band.png')).toBe('pricelist-acc-band');
+    expect(mediaIdOf('src/assets/media/pandora-camper-2.webp')).toBe('pandora-camper-2');
+    // A name without an extension keeps its last character; a dot in a folder is not one.
+    expect(mediaIdOf('src/assets/media/pricelist/band')).toBe('pricelist-band');
+    expect(mediaIdOf('src/assets/media/v1.2/band')).toBe('v1.2-band');
+    expect(() => mediaIdOf('src/assets/brand/invetec-logo.webp')).toThrow('is not under');
   });
 });
 
