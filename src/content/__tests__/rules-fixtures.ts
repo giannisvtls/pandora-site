@@ -4,6 +4,7 @@
 import { readSnapshot } from '../../../scripts/snapshot/read-snapshot';
 import {
   accessorySchema,
+  installerSchema,
   LOCALES,
   mediaSchema,
   postSchema,
@@ -127,6 +128,8 @@ export function fixtureContent(live: readonly Locale[] = ['en']): ContentData {
     products: products(),
     accessories: accessories(),
     posts: posts(),
+    // An installer in Greek and English (the snapshot has none).
+    installers: [installerSchema.parse(fixtures.installers())],
     levels: snapshot.levels.map((level) => ({
       ...level,
       systems: level.id === '3' ? ['elite', 'smart', 'light', 'tracer'] : [],

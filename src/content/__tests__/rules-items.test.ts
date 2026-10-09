@@ -50,6 +50,17 @@ const level3In = (locale: Locale) =>
 
 const languagesLive = (live: readonly Locale[]) => fixtureContent(live).languages;
 
+const idsOf = (items: readonly { id: string }[]) => items.map(({ id }) => id);
+
+const ITEM_COLLECTIONS = [
+  'products',
+  'accessories',
+  'posts',
+  'faq',
+  'installers',
+  'navSections',
+] as const;
+
 describe('the item rule', () => {
   it('shows an it-only item in it alone', () => {
     expect(sourceOf(productOf('tracer'))).toBe('it');
@@ -76,6 +87,24 @@ describe('the item rule', () => {
     expect(
       LOCALES.filter((locale) => d061 !== undefined && isVisible(d061, locale, media)),
     ).toEqual(['en', 'el']);
+  });
+
+  // FAQ and nav sections are the snapshot's (English only); every collection hides at least one
+  // item in some language, so a collection that skipped the rule would fail here.
+  it.each(LOCALES)('keeps exactly the items visible in %s, in every item collection', (locale) => {
+    const shown = contentIn(data, locale);
+
+    for (const name of ITEM_COLLECTIONS) {
+      const items: readonly { id: string }[] = data[name];
+      const hasHidden = items.some((item) =>
+        LOCALES.some((other) => !isVisible(item, other, media)),
+      );
+
+      expect(hasHidden, name).toBe(true);
+      expect(idsOf(shown[name]), name).toEqual(
+        idsOf(items.filter((item) => isVisible(item, locale, media))),
+      );
+    }
   });
 
   it('lists each language the planted products show in', () => {
