@@ -1,0 +1,954 @@
+{
+  "files": [
+    {
+      "file": "public/favicon.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/05/favi.webp"
+      },
+      "bytes": 10960,
+      "sha256": "0f16701575ce2898f1526cc5ad209027d90c6fcf495b23293b30717f4bf35a11",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:27.741Z"
+    },
+    {
+      "file": "src/assets/brand/invetec-logo-lettering-white.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/INVETEC-Logo-Lettering-white-300x90.webp"
+      },
+      "bytes": 2256,
+      "sha256": "34918c7f7128e99923aa29f5955a5c90e2872941fc070ddf01da0aeef982d17d",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:27.963Z"
+    },
+    {
+      "file": "src/assets/brand/invetec-logo.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/02/Invetec-logo.webp"
+      },
+      "bytes": 9390,
+      "sha256": "2bdc88bc23603cfd93386e51596440a668be2bab396698ef1066bf47bd07a16a",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:28.061Z"
+    },
+    {
+      "file": "src/assets/media/20260122-invetec-pandora-featured-on-affari-e-finanza-by-la-repubblica.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2026/01/20260122-INVETEC-Pandora-featured-on-Affari-e-Finanza-by-La-Repubblica.webp"
+      },
+      "bytes": 121112,
+      "sha256": "11a4341e412ddefdeeb548e9381222ebaab7a20f20a94416ebcbd5002d18fee0",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:19.387Z"
+    },
+    {
+      "file": "src/assets/media/20260218-motodays-2026-gr.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2026/02/20260218-MotoDays-2026_GR.webp"
+      },
+      "bytes": 56164,
+      "sha256": "af468d4d6c3249d65a5049e3b0c2060bd121319aaf2262ddc40af34934676b69",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:19.204Z"
+    },
+    {
+      "file": "src/assets/media/antijammer-primo.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Antijammer-Primo.webp"
+      },
+      "bytes": 7374,
+      "sha256": "7a1686146082ee20381441381b52b53f46a6a9311e3b4463f06d892278390426",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:19.484Z"
+    },
+    {
+      "file": "src/assets/media/camper.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Camper.webp"
+      },
+      "bytes": 25388,
+      "sha256": "ca2447b54c4a7d54432789cfb0c5ee996cf414ac193b1ee9451ef6823d965da0",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:19.707Z"
+    },
+    {
+      "file": "src/assets/media/car.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/CAR.webp"
+      },
+      "bytes": 21576,
+      "sha256": "20d539bf8d34d6e8dc05bb8446026b75104f7f7218377d5eb55f26d668ac0a21",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:20.004Z"
+    },
+    {
+      "file": "src/assets/media/fleet-final.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/fleet-final.webp"
+      },
+      "bytes": 15606,
+      "sha256": "ebca7c21c6aec1e3bad3baba1a59cf02f2c68bd30460e1f0a58b9a0645de904e",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:20.017Z"
+    },
+    {
+      "file": "src/assets/media/honda-adv350.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/10/Honda-ADV350.webp"
+      },
+      "bytes": 84694,
+      "sha256": "e1487489d9905fea14ac36d43a3cd2c26d71e40dbd799335ceced87ce875fd5a",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:20.114Z"
+    },
+    {
+      "file": "src/assets/media/light-pro-v2.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Light-Pro-v2.webp"
+      },
+      "bytes": 12572,
+      "sha256": "19752c267d2be155f8cc7c35813f91fcf4c22d1cbe802afcbb5c1d31a59a291e",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:20.326Z"
+    },
+    {
+      "file": "src/assets/media/light-v3-part.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Light-v3-part.webp"
+      },
+      "bytes": 8732,
+      "sha256": "a0c30e9fcbe451acf704aece203cb6b33f6b01d40b5e5e5fe6b492fd39a760dc",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:20.427Z"
+    },
+    {
+      "file": "src/assets/media/marine-connect.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Marine-Connect.webp"
+      },
+      "bytes": 23626,
+      "sha256": "a86387b5b41ec5980cd73853b5306a4f25e3e04ab5d2c7f4ecfa6eed2fa9e995",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:20.645Z"
+    },
+    {
+      "file": "src/assets/media/motori.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Motori.webp"
+      },
+      "bytes": 12818,
+      "sha256": "0c3c647fca8501916a85e05c75cf11fde244b278301b5e44638040ccbccca969",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:20.760Z"
+    },
+    {
+      "file": "src/assets/media/pandora-accessories-remote-controllers-pandora-r-468bt-pandora-r-500-bt.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2024/11/Pandora-Accessories-Remote-controllers-Pandora-R-468BT-Pandora-R-500-BT.webp"
+      },
+      "bytes": 24964,
+      "sha256": "3a5a6f7b03e8ed43dc45cda0811d36f6b9c53bc8542c28c1ad7d89d35e648257",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:20.960Z"
+    },
+    {
+      "file": "src/assets/media/pandora-accessories-sirens-pandora-ps-330-pandora-ps-331-bt-pandora-ps-332-bt.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2024/11/Pandora-Accessories-Sirens-Pandora-PS-330-Pandora-PS-331-BT-Pandora-PS-332-BT.webp"
+      },
+      "bytes": 29992,
+      "sha256": "dd0880f61a53f15e1e9b0986b1513469c9a5a1085ba8f687cbd891f7e13c69b6",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:21.046Z"
+    },
+    {
+      "file": "src/assets/media/pandora-camper-2.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Camper-2.webp"
+      },
+      "bytes": 15732,
+      "sha256": "67a7304432e07cf6adb0fefb22a6f8fd0434dc970f747d6b4e1036ddfac837e9",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:21.265Z"
+    },
+    {
+      "file": "src/assets/media/pandora-camper-pro-v2-features.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/04/Pandora-Camper-Pro-V2-features.webp"
+      },
+      "bytes": 97800,
+      "sha256": "14d2dd2f5551794d7f96ef88058ca7ca4d1af180df8e1ff3a421a59886501053",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:21.366Z"
+    },
+    {
+      "file": "src/assets/media/pandora-camper-pro.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Camper-Pro.webp"
+      },
+      "bytes": 19600,
+      "sha256": "bd64a449896a05e173254f80518657c7929a4d43439cecbc5266468c12245c8b",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:21.576Z"
+    },
+    {
+      "file": "src/assets/media/pandora-commander-remote-control.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/03/Pandora-Commander-remote-control.webp"
+      },
+      "bytes": 73890,
+      "sha256": "be6e5df15df76355fe6bd661908a8d436db6f3688e4205860a10955c03637272",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:21.676Z"
+    },
+    {
+      "file": "src/assets/media/pandora-d-061-lora-868mhzbluetooth5-gr.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/03/Pandora-D-061-LoRa-868MHzBluetooth5_GR.webp"
+      },
+      "bytes": 67278,
+      "sha256": "41de16f3fee7b334c2cb423497903d8d3a8c0c517ad8d3b34758b4718b445085",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:21.888Z"
+    },
+    {
+      "file": "src/assets/media/pandora-dms-100-bt-black.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/04/Pandora-DMS-100-BT-black.webp"
+      },
+      "bytes": 31646,
+      "sha256": "ec24178e1c9eddf52c78131969a57d41719f5e1ce841278185776771e5d1febd",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:21.987Z"
+    },
+    {
+      "file": "src/assets/media/pandora-elite-v3-package.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/03/Pandora-Elite-V3-package.webp"
+      },
+      "bytes": 15098,
+      "sha256": "b1a82bfbf80c1ecaa18371e38b97b24e7823fd234aa5f3752678da21d830089e",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:22.200Z"
+    },
+    {
+      "file": "src/assets/media/pandora-finder-1.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Finder-1.webp"
+      },
+      "bytes": 20154,
+      "sha256": "be67c798b960c1ca87628b2d187240fc20d7fafa16af2d848970b7c450ac72cb",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:22.292Z"
+    },
+    {
+      "file": "src/assets/media/pandora-finder-2.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Finder-2.webp"
+      },
+      "bytes": 14714,
+      "sha256": "21f9c086d73d6c04ab472a76a736a1eba6e18bd648f9259a2c4276ab0570b0e8",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:22.523Z"
+    },
+    {
+      "file": "src/assets/media/pandora-finder-3.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Finder-3.webp"
+      },
+      "bytes": 20448,
+      "sha256": "fe9857f180cf2782d5e459c8c9fa1292b5d3aa0a0c30a1c49a49faefce00817f",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:22.605Z"
+    },
+    {
+      "file": "src/assets/media/pandora-immo.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Immo.webp"
+      },
+      "bytes": 9424,
+      "sha256": "ff25feab799ccbc4431b42d2b7cb4d1a681e00477ed0af3feff3dfdfdd86be24",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:22.823Z"
+    },
+    {
+      "file": "src/assets/media/pandora-keycard-context.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2026/02/Pandora-KeyCard-context-scaled-e1770714262162.webp"
+      },
+      "bytes": 40068,
+      "sha256": "0078bb0cf9d503f753ae0daa266b10993fe1fca4bc4fad4c7447ce4ce751a95a",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:22.921Z"
+    },
+    {
+      "file": "src/assets/media/pandora-light-pro-v2.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Light-Pro-V2.webp"
+      },
+      "bytes": 19508,
+      "sha256": "e37c54c2076eb38838ad326bda6b1b9820dec027161816483675f5242a71323f",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:23.205Z"
+    },
+    {
+      "file": "src/assets/media/pandora-light-remote.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Light-remote.webp"
+      },
+      "bytes": 19634,
+      "sha256": "5e97c1dbee21640ebbc26f89db160bb1655dfa076b2add5ab18ec999736dd42a",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:23.387Z"
+    },
+    {
+      "file": "src/assets/media/pandora-light-v3.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Light-V3.webp"
+      },
+      "bytes": 15328,
+      "sha256": "fb651de7a87deb94af29f6d99484138caa15c30424b4c1d7e5c35d8727ab61be",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:23.510Z"
+    },
+    {
+      "file": "src/assets/media/pandora-marine.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Marine.webp"
+      },
+      "bytes": 17914,
+      "sha256": "f4112d83f2ad4a2f7bb333441d3dd985ea8aa459d0630e8291307d52ccc0dc8c",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:23.699Z"
+    },
+    {
+      "file": "src/assets/media/pandora-moto-eu-v2-package.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/10/Pandora-Moto-EU-V2-package.webp"
+      },
+      "bytes": 126538,
+      "sha256": "a847a240cc6b21d08e848532fb5eaa6f501f661e177911b7affba414f9757ed9",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:23.831Z"
+    },
+    {
+      "file": "src/assets/media/pandora-moto-evo-v2-package.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2026/04/Pandora-Moto-Evo-V2-package.webp"
+      },
+      "bytes": 92054,
+      "sha256": "f6d4cb0d9e75cc8dc04875e84c1b33046023ea8f93c43c388a36632ad05121ea",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:24.020Z"
+    },
+    {
+      "file": "src/assets/media/pandora-nav-035-bt.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2024/10/Pandora-NAV-035-BT.webp"
+      },
+      "bytes": 34734,
+      "sha256": "61166127666f2ce1a7315a1bff2c551eac8c7e9dc46195a9e1dd0e114817331d",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:24.140Z"
+    },
+    {
+      "file": "src/assets/media/pandora-primo-bt.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Primo-BT.webp"
+      },
+      "bytes": 13768,
+      "sha256": "4af561746790a5da5f8f8063179366835cf80a795541aa94952805c9fe7ef3c5",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:24.326Z"
+    },
+    {
+      "file": "src/assets/media/pandora-primo.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Primo.webp"
+      },
+      "bytes": 13492,
+      "sha256": "bc8a66a2989feb38ad349331d344f5968583cb8367aaeded75b4b3738962b2ee",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:24.451Z"
+    },
+    {
+      "file": "src/assets/media/pandora-professional-v3-connectivity.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/04/Pandora-Professional-V3-connectivity.webp"
+      },
+      "bytes": 78554,
+      "sha256": "a54af7092a8b6d84f1a0d98b703382a16d8407adf18a05dd6adbe6403c9fd89a",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:24.635Z"
+    },
+    {
+      "file": "src/assets/media/pandora-professional-v3-package-commander.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/04/Pandora-Professional-V3-package-Commander.webp"
+      },
+      "bytes": 53580,
+      "sha256": "810a4fe1492e18d9cec89a13fe7714d7bc16a9e89b1ff2232b956e964b436e1e",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:24.757Z"
+    },
+    {
+      "file": "src/assets/media/pandora-ps-330.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2024/10/Pandora-PS-330.webp"
+      },
+      "bytes": 88174,
+      "sha256": "bd2aa34c9be73a807fc1a9169b5f846597ed7244e8b3811ddd60a87deb806c38",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:24.942Z"
+    },
+    {
+      "file": "src/assets/media/pandora-smart-pro-v4-package.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2024/09/Pandora-Smart-Pro-v4-package.webp"
+      },
+      "bytes": 16142,
+      "sha256": "4744309ab9bed180de2694541eba1a2790a9e8db95e304b2365f0dd2f9a08b83",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:25.060Z"
+    },
+    {
+      "file": "src/assets/media/pandora-smart-v4-homepage-frame.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2024/11/Pandora-Smart-V4-homepage-frame-1536x864.webp"
+      },
+      "bytes": 88914,
+      "sha256": "25c108d09fea5b293fe14db7fe1dd6fbb94689b87fad3c10adb675d32c50421c",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:25.254Z"
+    },
+    {
+      "file": "src/assets/media/pandora-smart-v4-package-web.png",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2024/09/Pandora-Smart-v4-package-web.png"
+      },
+      "bytes": 1434233,
+      "sha256": "292fd6230ef5a078655699b9377d81c21b2a42413b22e27d10050ed265cce1d2",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:25.487Z"
+    },
+    {
+      "file": "src/assets/media/pandora-ultimate-d-060.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2026/07/Pandora-Ultimate-D-060.webp"
+      },
+      "bytes": 86332,
+      "sha256": "f67cb110cc9c856a1597add76ff3665f00232c0487b1493bbc75579afdd62456",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:25.562Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-band.png",
+      "source": {
+        "designFile": "img/pricelist/acc-band.png"
+      },
+      "bytes": 33845,
+      "sha256": "8c1ca48cfcfb11a230f9e0e9a3a595b9b0c6c9e01da1ca6e913c0d456dfd26e5",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.490Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-bt-01.png",
+      "source": {
+        "designFile": "img/pricelist/acc-bt-01.png"
+      },
+      "bytes": 25425,
+      "sha256": "e2273d09a0eb5249efe0dc498ee4a1c1456b7f46c7f7e6f53835acd80dbe2baa",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.495Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-bt-02.png",
+      "source": {
+        "designFile": "img/pricelist/acc-bt-02.png"
+      },
+      "bytes": 18714,
+      "sha256": "b00652a34c15ec7a7298003e03c68d32acf318ade4688f4262abe0f6561a7730",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.499Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-bt-790.png",
+      "source": {
+        "designFile": "img/pricelist/acc-bt-790.png"
+      },
+      "bytes": 15420,
+      "sha256": "920d7983f866314b5b7142227c653334f9043d04fa853801b3c1f6dfad50eec0",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.504Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-btr-101.png",
+      "source": {
+        "designFile": "img/pricelist/acc-btr-101.png"
+      },
+      "bytes": 28760,
+      "sha256": "cb2c4682fccffc87f3bb0cd865469e8e585a1a76acb1a6697bbdfdcdfb0e5f0a",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.507Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-d-010-cover.png",
+      "source": {
+        "designFile": "img/pricelist/acc-d-010-cover.png"
+      },
+      "bytes": 42005,
+      "sha256": "c80bb8161fbe19c81418b8ad3c5182f3b74278a240614d1d8de9a97989e5ee88",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.510Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-d-010.png",
+      "source": {
+        "designFile": "img/pricelist/acc-d-010.png"
+      },
+      "bytes": 22822,
+      "sha256": "192cf7132b3b50d7f7ade2b199879c92301dd007636d7ef6f1845e3df1f86e3b",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.514Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-d-011.png",
+      "source": {
+        "designFile": "img/pricelist/acc-d-011.png"
+      },
+      "bytes": 19006,
+      "sha256": "10c482afbe3e52455fe775ceef5463eeb1a25ed4d41b5031f98969073e9cff1d",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.521Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-d-022-cover.png",
+      "source": {
+        "designFile": "img/pricelist/acc-d-022-cover.png"
+      },
+      "bytes": 10130,
+      "sha256": "76cf8381e228a20e68f145aaa8730a28d09fc8e850320a1aaa6dece45553eb97",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.527Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-d-022-lora.png",
+      "source": {
+        "designFile": "img/pricelist/acc-d-022-lora.png"
+      },
+      "bytes": 22229,
+      "sha256": "53d2288eac553dabb3407a93b9e14b0cff192f0c4dbd5785e9fbd9d759009ebb",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.534Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-d-061-camper.png",
+      "source": {
+        "designFile": "img/pricelist/acc-d-061-camper.png"
+      },
+      "bytes": 35909,
+      "sha256": "935736e2ed96c339210d02319540963d5e06e656f14b7f957fd0d0fbefdebd18",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.540Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-d-061.png",
+      "source": {
+        "designFile": "img/pricelist/acc-d-061.png"
+      },
+      "bytes": 35909,
+      "sha256": "935736e2ed96c339210d02319540963d5e06e656f14b7f957fd0d0fbefdebd18",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.550Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-d-062.png",
+      "source": {
+        "designFile": "img/pricelist/acc-d-062.png"
+      },
+      "bytes": 35909,
+      "sha256": "935736e2ed96c339210d02319540963d5e06e656f14b7f957fd0d0fbefdebd18",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.559Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-di-02.png",
+      "source": {
+        "designFile": "img/pricelist/acc-di-02.png"
+      },
+      "bytes": 29866,
+      "sha256": "c99374cca6061957bb90cea6a92a2917c8ba25b195a41d40d7ad12193f751d69",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.564Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-di-03.png",
+      "source": {
+        "designFile": "img/pricelist/acc-di-03.png"
+      },
+      "bytes": 29866,
+      "sha256": "c99374cca6061957bb90cea6a92a2917c8ba25b195a41d40d7ad12193f751d69",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.573Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-di-04.png",
+      "source": {
+        "designFile": "img/pricelist/acc-di-04.png"
+      },
+      "bytes": 29866,
+      "sha256": "c99374cca6061957bb90cea6a92a2917c8ba25b195a41d40d7ad12193f751d69",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.578Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-dms-100-bt.png",
+      "source": {
+        "designFile": "img/pricelist/acc-dms-100-bt.png"
+      },
+      "bytes": 16434,
+      "sha256": "0e70940e7a132438a6b93683774a74803bc4adcf9c1e1e978d00570656727b13",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.588Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-dms-101-bt.png",
+      "source": {
+        "designFile": "img/pricelist/acc-dms-101-bt.png"
+      },
+      "bytes": 18933,
+      "sha256": "2baef2c62376183e47e09ba567cc6e0fdb03e23d298910ec8eef5a38e6534b5e",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.597Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-dms-105-bt.png",
+      "source": {
+        "designFile": "img/pricelist/acc-dms-105-bt.png"
+      },
+      "bytes": 20131,
+      "sha256": "721af3f095ff6cbfacabf47b26326d4b1b4d7957ef139c8063ce713a1903d950",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.604Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-lc-d-010.png",
+      "source": {
+        "designFile": "img/pricelist/acc-lc-d-010.png"
+      },
+      "bytes": 24091,
+      "sha256": "a275fa13b52ce4ea5276b08c67361e47884bf10ed1de0b1f53b7ac6a62ef9bf1",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.608Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-led-valet-2.png",
+      "source": {
+        "designFile": "img/pricelist/acc-led-valet-2.png"
+      },
+      "bytes": 33655,
+      "sha256": "4fa9b83d18529d747861c4d3a6a9158b31274acd95d48963118a360cff4c0159",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.616Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-nav-035-bt.png",
+      "source": {
+        "designFile": "img/pricelist/acc-nav-035-bt.png"
+      },
+      "bytes": 50152,
+      "sha256": "a089148c9e845998830c0bf76df58169e2ce09bea9bb02dcc0c1020ba969d92e",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.620Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-nav-x.png",
+      "source": {
+        "designFile": "img/pricelist/acc-nav-x.png"
+      },
+      "bytes": 35153,
+      "sha256": "5eb942020316a596c27f53a9d0a351d3593acf7f1ba667c3159fed5626e24574",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.623Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-pir-100-bt.png",
+      "source": {
+        "designFile": "img/pricelist/acc-pir-100-bt.png"
+      },
+      "bytes": 23698,
+      "sha256": "0b8cb143429580e9bb16aa5e94029937eb6b532b5d0d9b454fb2351798dc8b10",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.628Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-pir-100-btm.png",
+      "source": {
+        "designFile": "img/pricelist/acc-pir-100-btm.png"
+      },
+      "bytes": 23924,
+      "sha256": "5b44fdf89a3609762162ac4abe1be522f1a48054c8d6867ab3f9cc3b8003697f",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.633Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-powercab.png",
+      "source": {
+        "designFile": "img/pricelist/acc-powercab.png"
+      },
+      "bytes": 52127,
+      "sha256": "f0b6fe46e96cb77911e88a78a18b9f6154351d6f86bb93e0161a2b11a16927b1",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.636Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-ps-330.png",
+      "source": {
+        "designFile": "img/pricelist/acc-ps-330.png"
+      },
+      "bytes": 19058,
+      "sha256": "5e6edf4cb102de79d0ceac77b0308b3475b9ca4e37b85e119a7ebadcb9a60624",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.641Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-ps-331-bt.png",
+      "source": {
+        "designFile": "img/pricelist/acc-ps-331-bt.png"
+      },
+      "bytes": 19058,
+      "sha256": "5e6edf4cb102de79d0ceac77b0308b3475b9ca4e37b85e119a7ebadcb9a60624",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.646Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-ps-332-bt.png",
+      "source": {
+        "designFile": "img/pricelist/acc-ps-332-bt.png"
+      },
+      "bytes": 19058,
+      "sha256": "5e6edf4cb102de79d0ceac77b0308b3475b9ca4e37b85e119a7ebadcb9a60624",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.651Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-ps-333.png",
+      "source": {
+        "designFile": "img/pricelist/acc-ps-333.png"
+      },
+      "bytes": 19797,
+      "sha256": "9140a4112aa69919af658ac61ea7547b31b43188a54e95a2e02c55bc4360a1a3",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.656Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-r-387-r-389.png",
+      "source": {
+        "designFile": "img/pricelist/acc-r-387-r-389.png"
+      },
+      "bytes": 24130,
+      "sha256": "ec256dd1bbbd132340dfaad646acdb8beb5424b2bbaa7e5c79cdfd41bcc52de0",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.663Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-r-500-bt.png",
+      "source": {
+        "designFile": "img/pricelist/acc-r-500-bt.png"
+      },
+      "bytes": 25537,
+      "sha256": "a935aa8c77524a86a15ccf95b108e44fc4fd24f79616d30340d06a6ea6b8ea36",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.668Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-rmd-5m.png",
+      "source": {
+        "designFile": "img/pricelist/acc-rmd-5m.png"
+      },
+      "bytes": 44517,
+      "sha256": "dd2ab536c60f2bff53aa6ba472442d8e4017d9591d7db24bb0b816e03532138c",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.671Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-rmd-bmw-v2.png",
+      "source": {
+        "designFile": "img/pricelist/acc-rmd-bmw-v2.png"
+      },
+      "bytes": 51933,
+      "sha256": "3655df731060c3e9d1b3ca84430f84876489a142b41e8fce32f67dd4e79b81ff",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.676Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-vs-22d.png",
+      "source": {
+        "designFile": "img/pricelist/acc-vs-22d.png"
+      },
+      "bytes": 23219,
+      "sha256": "c4648c5eb9c598d669d66ded7976f5c92c2fd94b3b03faadb5e965e80b6c9ef5",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.695Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/acc-zdr-gm-50.png",
+      "source": {
+        "designFile": "img/pricelist/acc-zdr-gm-50.png"
+      },
+      "bytes": 19528,
+      "sha256": "0ada6a7fa9b8498fe78ac88a546dba8a8646acaac823e4a348167c84a7f56d6f",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.698Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/tracer.png",
+      "source": {
+        "designFile": "img/pricelist/tracer.png"
+      },
+      "bytes": 95129,
+      "sha256": "b436098db2c6e3ee85f5c80debea9eb3626702d9a3c77e492efc3d60ab6de3df",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.702Z"
+    },
+    {
+      "file": "src/assets/media/pricelist/truck.png",
+      "source": {
+        "designFile": "img/pricelist/truck.png"
+      },
+      "bytes": 83289,
+      "sha256": "21c415af9cefbb51fccabad04567aa5d6ab603f19967a0f78037a5fc6fb1e6bc",
+      "contentType": "image/png",
+      "fetchedAt": "2026-10-09T13:13:18.706Z"
+    },
+    {
+      "file": "src/assets/media/pro-v2.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Pro-v2.webp"
+      },
+      "bytes": 10516,
+      "sha256": "a110f641b28c29aa4033fd1fd04fcd9da5f91a611e9904ebeddfe61cdab6e187",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:25.792Z"
+    },
+    {
+      "file": "src/assets/media/works-2024-pandora-light-pro-v2-toyota-c-hr.jpg",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2024-Pandora-Light-Pro-V2-Toyota-C-HR.jpg"
+      },
+      "bytes": 65522,
+      "sha256": "356479c52d90dfeb1b6bc556278861e7bf507d6aa568eb7c4223d266553625c3",
+      "contentType": "image/jpeg",
+      "fetchedAt": "2026-10-09T13:13:25.876Z"
+    },
+    {
+      "file": "src/assets/media/works-2024-pandora-marine-sea-ray-sdx-250.jpg",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2024-Pandora-Marine-Sea-Ray-SDX-250.jpg"
+      },
+      "bytes": 72066,
+      "sha256": "d616f65946d251f602feec34ec005debab713a7683de7c128aa9c54f322da2cc",
+      "contentType": "image/jpeg",
+      "fetchedAt": "2026-10-09T13:13:26.097Z"
+    },
+    {
+      "file": "src/assets/media/works-2024-pandora-smart-pro-v4-cupra-formentor-2025-fd-can.jpg",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2024-Pandora-Smart-Pro-V4-Cupra-Formentor-2025-FD-CAN.jpg"
+      },
+      "bytes": 80682,
+      "sha256": "10371dd9e4ccc491fe95691058deddf11f8c2e59a9f1623400e8fae0025f544c",
+      "contentType": "image/jpeg",
+      "fetchedAt": "2026-10-09T13:13:26.186Z"
+    },
+    {
+      "file": "src/assets/media/works-2024-pandora-smart-pro-v4-porsche-taycan-turbo.jpg",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2024-Pandora-Smart-Pro-V4-Porsche-Taycan-Turbo.jpg"
+      },
+      "bytes": 81337,
+      "sha256": "bbf7be91754c30c5acac93da83c6d0f00f8d800de73d2e4111c9f6154626bf1a",
+      "contentType": "image/jpeg",
+      "fetchedAt": "2026-10-09T13:13:26.406Z"
+    },
+    {
+      "file": "src/assets/media/works-2025-pandora-camper-pro-mercedes-hymen.jpg",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2025-Pandora-Camper-Pro-Mercedes-Hymen.jpg"
+      },
+      "bytes": 81653,
+      "sha256": "b6119bfda4663e59581877a637ac4fe192828a745ef175086af0d7f1d02dec5b",
+      "contentType": "image/jpeg",
+      "fetchedAt": "2026-10-09T13:13:26.497Z"
+    },
+    {
+      "file": "src/assets/media/works-2025-pandora-elite-v3-audi-rs6.jpg",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2025-Pandora-Elite-V3-Audi-RS6.jpg"
+      },
+      "bytes": 79759,
+      "sha256": "a758423cb4b72eec2490e785fd3b02f999947dda0f4c765b0faaad864d6633a4",
+      "contentType": "image/jpeg",
+      "fetchedAt": "2026-10-09T13:13:26.714Z"
+    },
+    {
+      "file": "src/assets/media/works-2025-pandora-elite-v3-porsche-911-turbo-s.jpg",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2025-Pandora-Elite-V3-Porsche-911-Turbo-S.jpg"
+      },
+      "bytes": 72996,
+      "sha256": "487194fcedb65ea9284da7e7b59910b2cec07164f594e9e191469acc9270be3e",
+      "contentType": "image/jpeg",
+      "fetchedAt": "2026-10-09T13:13:26.807Z"
+    },
+    {
+      "file": "src/assets/media/works-2025-pandora-marine-sea-doo-rxt-xrs.jpg",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/06/Works-2025-Pandora-Marine-Sea-Doo-RXT-XRS-scaled.jpg"
+      },
+      "bytes": 399367,
+      "sha256": "89afb72036857fc29a864d8ab09ad5cb9df018b844eadb3c2c45503115bdcdcb",
+      "contentType": "image/jpeg",
+      "fetchedAt": "2026-10-09T13:13:27.039Z"
+    },
+    {
+      "file": "src/assets/media/works-2025-pandora-moto-evo-suzuki-katana.jpg",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2025-Pandora-Moto-Evo-Suzuki-Katana.jpg"
+      },
+      "bytes": 70458,
+      "sha256": "1da63c5214defe9bfee0e5b05e1cdd672152ad3d5c40e2093407c3c12dece020",
+      "contentType": "image/jpeg",
+      "fetchedAt": "2026-10-09T13:13:27.121Z"
+    },
+    {
+      "file": "src/assets/media/works-2025-pandora-professional-v3-land-rover-range-rover-sport-p400e-hse.jpg",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2025-Pandora-Professional-V3-Land-Rover-Range-Rover-Sport-P400E-HSE.jpg"
+      },
+      "bytes": 65592,
+      "sha256": "68e24eb446f9aa262e9bfe1f6ee169cf35f1f1b13f61929a0d88de30bc362455",
+      "contentType": "image/jpeg",
+      "fetchedAt": "2026-10-09T13:13:27.338Z"
+    },
+    {
+      "file": "src/assets/media/works-2026-pandora-elite-v3-ferrari-f355-berlinetta.jpg",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2026/03/Works-2026-Pandora-Elite-V3-Ferrari-F355-Berlinetta.jpg"
+      },
+      "bytes": 98813,
+      "sha256": "fd5a7d3d8e5335884f609b853581bbc1169751a132d7c2d9bc1d406893015c39",
+      "contentType": "image/jpeg",
+      "fetchedAt": "2026-10-09T13:13:27.434Z"
+    },
+    {
+      "file": "src/assets/media/yaucht.webp",
+      "source": {
+        "url": "https://invetec.eu/wp-content/uploads/2023/03/Yaucht.webp"
+      },
+      "bytes": 13704,
+      "sha256": "f77f7c489eb964974b30d999110abb25b1778f95d4e512c5abc4957b2b3e61d4",
+      "contentType": "image/webp",
+      "fetchedAt": "2026-10-09T13:13:27.652Z"
+    }
+  ]
+}

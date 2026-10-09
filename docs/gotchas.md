@@ -110,6 +110,23 @@ are about to touch. When you hit a new one, add it here in the same shape.
     function that returns everything (see `scripts/crawl/__tests__/dry-run.test.ts`); sort
     strings with `byCodeUnit` from `scripts/crawl/output.ts` (code-unit order, the same on every
     machine, unlike `localeCompare`).
+- **`eslint --fix` rewrites `http://` inside strings.** `unicorn/prefer-https` has an autofix,
+  and lint-staged runs `eslint --fix` on every commit.
+  - Symptom: a test's expected text such as `origin http://invetec.eu is not allowed` silently
+    becomes `https://...`, so the test asserts something else (and can still pass).
+  - Fix: build a plain-HTTP URL with `url.protocol = 'http:'` and derive the expected text from
+    that object (`${url.origin}`), as `scripts/assets/__tests__/sources.test.ts` does; read the
+    diff of every `--fix` run that touches a test.
+- **unicorn 77 call nesting and scoping.**
+  - Symptom: `unicorn/max-nested-calls` rejects more than 3 nested calls, such as
+    `expect(sha256(await readFile(path.join(...))))` or
+    `z.union([z.strictObject({ url: z.string().min(1) })])`;
+    `unicorn/consistent-function-scoping` rejects a helper defined inside `describe` or a function
+    that captures nothing from it; `unicorn/prefer-await` rejects `.then()` and `.catch()` chains;
+    `unicorn/prefer-iterator-to-array` rejects `[...iterator].map(...)`.
+  - Fix: name the intermediate value (a schema constant, a test helper such as `fileSha()`), move
+    capture-free helpers to module scope, use `try`/`await`, and write
+    `iterator.map(...).toArray()`.
 - **`../` and `./` imports form one import-x group.**
   - Symptom: `There should be no empty line within import group` when a blank line separates
     `from '../x'` and `from './y'`.
@@ -117,8 +134,9 @@ are about to touch. When you hit a new one, add it here in the same shape.
 - **Byte-exact fixtures.** Prettier formats `.html` files.
   - Symptom: `prettier --write .` would reformat `scripts/crawl/__fixtures__/*.html` and break
     the tests that compare bytes.
-  - Fix: `.prettierignore` lists `scripts/crawl/__fixtures__/`, and `redirects/crawl.json`
-    (generated).
+  - Fix: `.prettierignore` lists `scripts/crawl/__fixtures__/`, and the generated
+    `redirects/crawl.json`, `scripts/assets/media-sources.json` (checked byte for byte by
+    `npm run media:sources -- --check`) and `src/assets/media/manifest.json`.
 
 ## Redirect crawler
 
@@ -220,6 +238,21 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Fix: the summary lists URLs as bullets and keeps tables for counts; its Markdown goes through
     Prettier's API (`formatSummary`), checked to be stable on a second pass, so `format:check`
     and `--check` agree.
+
+## Media fetch
+
+- **The crawler's `createHttp` reads every response body as text.**
+  - Symptom: an image fetched through it comes back as a decoded string, its bytes corrupted.
+  - Fix: `scripts/assets/download.ts` gives createHttp a fetch that reads a `200 image/*` body
+    itself, as bytes with the 15 MB cap, and passes on an empty response; the limiter, retries,
+    robots check, request log and hand-followed redirects stay the crawler's. Reuse that, not
+    `response.text()`, for any binary download.
+- **An empty query string is invisible to `URL.search`.**
+  - Symptom: `new URL('https://invetec.eu/a.webp?').search` is `''`, so a `search !== ''` check
+    lets `a.webp?` through and the request goes out with the `?` (the crawler's
+    `assertRequestable` checks `search` only).
+  - Fix: `urlProblem()` in `scripts/assets/sources.ts` refuses any URL whose text contains `?`;
+    use it for media URLs and their redirect targets.
 
 ## Astro and content
 

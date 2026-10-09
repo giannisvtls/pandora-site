@@ -20,6 +20,8 @@
     "test:e2e": "playwright test",
     "crawl": "tsx scripts/crawl/crawl.ts",
     "crawl:summary": "tsx scripts/crawl/summary.ts",
+    "media:sources": "tsx scripts/assets/extract-sources.ts",
+    "media:fetch": "tsx scripts/assets/fetch-media.ts",
     "prepare": "husky || true"
   },
   "lint-staged": {
