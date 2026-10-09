@@ -134,9 +134,12 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
      filler in another language. A value is never empty, whitespace-only or untrimmed.
    - Every language map an item carries needs its source language: `showIn[0]` for items
      (`itemSchema` in `contract/item.ts`), English for media, fixed-key sets and globals. Errors
-     name the path down to the locale (`name.en`, `specGroups.0.items.1.en`).
-   - Primitives (`contract/primitives.ts`): `template(placeholders)`, `plural`, `byCount`,
-     `heading`, `partialDate`, ids and slugs; rich text (`contract/rich-text.ts`); the fixed keys
+     name the path down to the locale (`name.en`, `specGroups.0.items.1.en`). The one exception
+     is a `plural`'s optional `few` / `many`: they exist only in the languages whose plural rules
+     select them.
+   - Primitives (`contract/primitives.ts`): `template(placeholders)` (every value uses exactly
+     the declared `{name}` placeholders and no other `{` or `}`), `plural`, `byCount`, `heading`,
+     `partialDate`, ids and slugs; rich text (`contract/rich-text.ts`); the fixed keys
      (`contract/keys.ts`: categories, levels, the 22 spec rows, route keys).
 2. **Loader** (`src/content/loader.ts`): `contentLoader(name)` returns an Astro `Loader` for any
    registered collection or global. It reads `CONTENT_SOURCE` on every load:

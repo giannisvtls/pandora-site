@@ -187,8 +187,20 @@ describe('products', () => {
     ['highlights', [], 'highlights'],
     ['highlights', ['gps', 'gps'], 'highlights.1'],
     ['gallery', ['a', 'a'], 'gallery.1'],
+    ['matrixNotes', { nope: 'PS-332' }, 'matrixNotes'],
   ])('rejects %s = %j', (field, value, path) => {
     expect(pathsOf(productSchema, changed('products', { [field]: value }))).toEqual([path]);
+  });
+});
+
+describe('accessories', () => {
+  it.each([
+    ['fits', ['elite', 'smart', 'elite'], 'fits.2'],
+    ['vehicles', ['car', 'moto', 'car'], 'vehicles.2'],
+    ['vehicles', [], 'vehicles'],
+    ['vehicles', ['truck'], 'vehicles.0'],
+  ])('rejects %s = %j', (field, value, path) => {
+    expect(pathsOf(accessorySchema, changed('accessories', { [field]: value }))).toEqual([path]);
   });
 });
 
@@ -215,6 +227,7 @@ describe('media', () => {
       'src/assets/media/Elite.webp',
       'src/assets/media/elite.txt',
       'src/assets/media/elite.v3.webp',
+      'src/assets/media/a.webp.png',
       'src/assets/media/elite',
     ]) {
       expect(pathsOf(mediaSchema, changed('media', { file }))).toEqual(['file']);
@@ -236,6 +249,14 @@ describe('posts', () => {
 
     expect(pathsOf(postSchema, slug)).toEqual(['slug.en']);
     expect(pathsOf(postSchema, body)).toEqual(['body.en.0.type']);
+  });
+
+  it.each(['news', 'tech'])('take the category %s', (category) => {
+    expect(pathsOf(postSchema, changed('posts', { category }))).toEqual([]);
+  });
+
+  it.each(['blog', 'News', ''])('reject the category %j', (category) => {
+    expect(pathsOf(postSchema, changed('posts', { category }))).toEqual(['category']);
   });
 });
 
@@ -274,6 +295,13 @@ describe('fixed-key sets', () => {
 
     expect(pathsOf(featureSchema, feature)).toEqual(['title.en']);
     expect(pathsOf(accessoryGroupSchema, group)).toEqual(['']);
+  });
+
+  it.each([
+    [['finder', 'tracer', 'finder'], 'systems.2'],
+    [['Finder'], 'systems.0'],
+  ])('levels reject systems = %j', (systems, path) => {
+    expect(pathsOf(levelSchema, changed('levels', { systems }))).toEqual([path]);
   });
 
   it('accept a feature without how and needs', () => {

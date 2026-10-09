@@ -1,13 +1,14 @@
 // How media:fetch keeps src/assets/media/manifest.json true, against loopback sites under the
 // global fetch guard: a record no source lists leaves the manifest (whether or not anything is
-// downloaded), a file whose source URL changed is fetched again, and an atomic write that fails
+// downloaded) and is reported only once that is saved; a file whose source URL changed is fetched
+// again, and keeps its previous record while the new download fails; an atomic write that fails
 // leaves no `.partial` file behind.
 import { mkdir, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { MEDIA_DIR } from '../config';
+import { MANIFEST_FILE, MEDIA_DIR } from '../config';
 import { sha256, writeFileAtomic } from '../manifest';
 import { runMediaFetch } from '../run';
 import {
@@ -73,6 +74,18 @@ describe('a manifest record that no source lists', () => {
     expect(await filesOf(root)).toEqual([`${MEDIA_DIR}/a.webp`]);
     expect(lines).toContain(DROPPED_LINE);
   });
+
+  it('is reported dropped only after the manifest without it is saved', async () => {
+    const { site, root } = await fetchedTwo();
+    // A non-empty directory where the atomic write puts its partial file: the save fails.
+    await mkdir(path.join(root, `${MANIFEST_FILE}.partial`, 'child'), { recursive: true });
+
+    const { options, lines } = optionsFor(root, site.origin, sourcesOf([`${site.origin}/a.webp`]));
+
+    await expect(runMediaFetch(options)).rejects.toThrow();
+    expect(lines).not.toContain(DROPPED_LINE);
+    expect(await filesOf(root)).toEqual([`${MEDIA_DIR}/a.webp`, `${MEDIA_DIR}/gone.webp`]);
+  });
 });
 
 describe('a file whose source URL changed', () => {
@@ -96,6 +109,33 @@ describe('a file whose source URL changed', () => {
     expect(await manifestRecords(root)).toMatchObject([
       { file: `${MEDIA_DIR}/a.webp`, source: { url: `${site.origin}/v2/a.webp` } },
     ]);
+  });
+
+  it('keeps its previous record when the new download fails, while a stale one is dropped', async () => {
+    const site = await startSite();
+    site.routes.set('/robots.txt', robotsTxt(OPEN_ROBOTS));
+    site.routes.set('/v1/a.webp', image(bytesOf('v1')));
+    site.routes.set('/gone.webp', image(bytesOf('gone')));
+    const root = await sandbox();
+    const first = sourcesOf([`${site.origin}/v1/a.webp`, `${site.origin}/gone.webp`]);
+    await runMediaFetch(optionsFor(root, site.origin, first).options);
+
+    // /v2/a.webp has no route: the site answers 404.
+    const moved = `${site.origin}/v2/a.webp`;
+    const { options, lines } = optionsFor(root, site.origin, sourcesOf([moved]));
+    const result = await runMediaFetch(options);
+
+    const v1Sha = sha256(bytesOf('v1'));
+    expect(result).toMatchObject({ current: 0, fetched: 0, failed: [{ url: moved }] });
+    expect(lines).toContain(DROPPED_LINE);
+    expect(await manifestRecords(root)).toEqual([
+      expect.objectContaining({
+        file: `${MEDIA_DIR}/a.webp`,
+        source: { url: `${site.origin}/v1/a.webp` },
+        sha256: v1Sha,
+      }),
+    ]);
+    expect(await fileSha(root, `${MEDIA_DIR}/a.webp`)).toBe(v1Sha);
   });
 });
 

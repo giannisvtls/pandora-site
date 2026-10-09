@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   byCount,
+  hasStrayBrace,
   heading,
   idSchema,
   isPartialDate,
@@ -123,6 +124,33 @@ describe('template', () => {
   it('reads placeholders in order of appearance', () => {
     expect(placeholdersOf('{a} and {b2} then {a}, not { c } or {}')).toEqual(['a', 'b2', 'a']);
   });
+
+  it.each([
+    ['a spaced placeholder', '{ count } systems for {name}'],
+    ['a doubled placeholder', '{{count}} systems for {name}'],
+    ['a lone {', '{count} systems { for {name}'],
+    ['a lone }', '{count} systems } for {name}'],
+    ['an extra closing brace', '{count}} systems for {name}'],
+    ['empty braces', '{count} systems for {name} {}'],
+  ])('rejects %s in the language that has it', (_label, value) => {
+    const result = sentence.safeParse({ en: '{count} systems for {name}', el: value });
+
+    expect(issuePaths(result)).toEqual(['el']);
+    expect(result.error?.issues[0]?.message).toContain('a { or } outside a {name} placeholder');
+    expect(hasStrayBrace(value)).toBe(true);
+  });
+
+  it('rejects a stray brace when no placeholder is declared, at the nested field path', () => {
+    const grammar = byCount([], 'en');
+    const result = grammar.safeParse({
+      '2': { en: 'Both' },
+      '3': { en: 'All three' },
+      '4': { en: 'All four}' },
+    });
+
+    expect(issuePaths(result)).toEqual(['4.en']);
+    expect(hasStrayBrace('{count} systems for {name}')).toBe(false);
+  });
 });
 
 describe('plural', () => {
@@ -144,6 +172,21 @@ describe('plural', () => {
     });
 
     expect(issuePaths(result)).toEqual(['one.en']);
+  });
+
+  it('needs the source language for one and other, not for few and many', () => {
+    const italianMany = {
+      one: { en: '{count} system', it: '{count} sistema' },
+      other: { en: '{count} systems', it: '{count} sistemi' },
+      many: { it: '{count} di sistemi' },
+    };
+    const englishless = { ...italianMany, other: { it: '{count} sistemi' } };
+
+    expect(issuePaths(systems.safeParse(italianMany))).toEqual([]);
+    expect(issuePaths(systems.safeParse(englishless))).toEqual(['other.en']);
+    expect(issuePaths(systems.safeParse({ ...italianMany, few: { el: 'Test' } }))).toEqual([
+      'few.el',
+    ]);
   });
 });
 

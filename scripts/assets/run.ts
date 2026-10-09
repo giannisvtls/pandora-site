@@ -109,16 +109,19 @@ function manifestSaver(manifestPath: string, records: ReadonlyMap<string, Manife
   };
 }
 
+// The records to keep are the previous ones minus those no source lists (`dropped`). A pending
+// target keeps its previous record until its new copy or download succeeds, so a file whose
+// source URL changed and whose new download fails stays recorded with the source it came from.
 async function splitCurrent(options: MediaFetchOptions, targets: readonly Target[]) {
   const previous = await readManifest(path.join(options.root, MANIFEST_FILE));
-  const records = new Map<string, ManifestRecord>();
   const pending: Target[] = [];
+  let current = 0;
   for (const target of targets) {
     const record = previous.get(target.file);
     const isSameSource =
       record !== undefined && sourceKey(record.source) === sourceKey(target.source);
     if (isSameSource && (await isFileCurrent(options.root, record))) {
-      records.set(target.file, record);
+      current += 1;
     } else {
       pending.push(target);
     }
@@ -128,7 +131,8 @@ async function splitCurrent(options: MediaFetchOptions, targets: readonly Target
     .keys()
     .filter((file) => !listed.has(file))
     .toArray();
-  return { records, pending, dropped };
+  const records = new Map(previous.entries().filter(([file]) => listed.has(file)));
+  return { records, current, pending, dropped };
 }
 
 function recordOf(
@@ -239,8 +243,10 @@ export async function runMediaFetch(options: MediaFetchOptions): Promise<MediaFe
   if (problems.length > 0) {
     throw new Error(`invalid media sources, nothing requested:\n  ${problems.join('\n  ')}`);
   }
-  const { records, pending, dropped } = await splitCurrent(options, targetsOf(options.sources));
-  const current = records.size;
+  const { records, current, pending, dropped } = await splitCurrent(
+    options,
+    targetsOf(options.sources),
+  );
   const copies = pending.filter((target): target is CopyTarget => 'designFile' in target.source);
   if (copies.length > 0 && options.designDir === null) {
     throw new DesignDirRequiredError(
@@ -249,7 +255,8 @@ export async function runMediaFetch(options: MediaFetchOptions): Promise<MediaFe
   }
   const downloads = pending.filter((target): target is DownloadTarget => 'url' in target.source);
   const save = manifestSaver(path.join(options.root, MANIFEST_FILE), records);
-  // A record no source lists leaves the manifest now, before any download that could fail.
+  // A record no source lists leaves the manifest now, before any download that could fail; the
+  // line is printed only once the manifest without it is saved.
   if (dropped.length > 0) {
     await save();
     for (const file of dropped) {

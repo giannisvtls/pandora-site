@@ -73,12 +73,19 @@ export function placeholdersOf(value: string): string[] {
     .toArray();
 }
 
+// A `{` or `}` that is not part of a `{name}` placeholder (`{ count }`, `{{count}}`, a lone
+// brace): nothing would fill it, so it would show as is.
+export function hasStrayBrace(value: string): boolean {
+  return /[{}]/u.test(value.replaceAll(PLACEHOLDER, ''));
+}
+
 // What is wrong with the placeholders of one value, or null.
 function placeholderProblem(declared: ReadonlySet<string>, value: string): string | null {
   const used = new Set(placeholdersOf(value));
   const parts = [
     ...[...declared.difference(used)].map((name) => `missing {${name}}`),
     ...[...used.difference(declared)].map((name) => `unknown {${name}}`),
+    ...(hasStrayBrace(value) ? ['a { or } outside a {name} placeholder'] : []),
   ];
   return parts.length === 0
     ? null
@@ -86,7 +93,7 @@ function placeholderProblem(declared: ReadonlySet<string>, value: string): strin
 }
 
 // Localized text whose every value uses exactly the declared `{name}` placeholders: none missing,
-// none extra (checked per language; one may repeat).
+// none extra, no other brace (checked per language; one may repeat).
 export function template(placeholders: readonly string[], source?: Locale) {
   const declared = new Set(placeholders);
   return text(source).superRefine((languages, context) => {
@@ -110,14 +117,17 @@ function describePlaceholders(placeholders: ReadonlySet<string>): string {
 }
 
 // Count-dependent text, chosen per language with Intl.PluralRules: `one` and `other` always,
-// `few` and `many` for languages that use them. Every variant is a template.
+// `few` and `many` for languages that use them. Every variant is a template. Only `one` and
+// `other` need the source language: `few` and `many` exist only in the languages whose plural
+// rules select them (an Italian `many`, say, has no English counterpart).
 export function plural(placeholders: readonly string[], source?: Locale) {
-  const variant = template(placeholders, source);
+  const always = template(placeholders, source);
+  const perLanguage = template(placeholders);
   return z.strictObject({
-    one: variant,
-    other: variant,
-    few: variant.optional(),
-    many: variant.optional(),
+    one: always,
+    other: always,
+    few: perLanguage.optional(),
+    many: perLanguage.optional(),
   });
 }
 
