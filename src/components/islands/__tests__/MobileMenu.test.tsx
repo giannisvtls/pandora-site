@@ -2,10 +2,11 @@
 // The mobile menu island (spec §8) in jsdom, with the showModal() stand-in of src/test/setup.ts:
 // the burger opens the dialog with the nav and the switcher and focus moves to the first link;
 // Escape, the close button and following a link close it and give focus back to the burger; Tab
-// and Shift+Tab wrap at the ends. What only a browser does (the inert page, the scroll lock, the
-// real Tab order) is in e2e/menu.spec.ts.
+// and Shift+Tab wrap at the ends; while open, the close button follows the burger through a resize,
+// and the menu closes once a resize hides the burger. What only a browser does (the inert page, the
+// scroll lock, the real Tab order, layout) is in e2e/menu.spec.ts and e2e/menu-resize.spec.ts.
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/preact';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LANGUAGE_NAMES } from '../../../content/contract';
 import MobileMenu, { type MobileMenuProps } from '../MobileMenu';
@@ -34,7 +35,25 @@ beforeEach(() => {
 
 afterEach(() => {
   document.removeEventListener('click', stayOnPage);
+  vi.restoreAllMocks();
 });
+
+// Lays the burger out at `top`, `left` (jsdom lays nothing out).
+function placeBurger(top: number, left: number): void {
+  vi.spyOn(burger(), 'getBoundingClientRect').mockReturnValue(
+    DOMRect.fromRect({ x: left, y: top, width: 44, height: 44 }),
+  );
+}
+
+// The close button's place, as the dialog's CSS variables give it.
+const closePlace = (dialog: HTMLElement) => [
+  dialog.style.getPropertyValue('--burger-top'),
+  dialog.style.getPropertyValue('--burger-left'),
+];
+
+const resize = () => {
+  fireEvent(globalThis as unknown as Window, new Event('resize'));
+};
 
 const burger = () => screen.getByRole('button', { name: 'Open menu' });
 
@@ -152,11 +171,63 @@ describe('MobileMenu', () => {
     expect(fireEvent.keyDown(close, { key: 'Tab', shiftKey: true })).toBe(false);
     expect(last).toHaveFocus();
 
+    // Focus on the dialog itself (a click on its background) counts as an end both ways.
+    dialog.tabIndex = -1;
+    dialog.focus();
+    expect(fireEvent.keyDown(dialog, { key: 'Tab', shiftKey: true })).toBe(false);
+    expect(last).toHaveFocus();
+    dialog.focus();
+    expect(fireEvent.keyDown(dialog, { key: 'Tab' })).toBe(false);
+    expect(close).toHaveFocus();
+
     // Between the ends the browser moves focus itself: the key is left alone.
     const middle = within(dialog).getByRole('link', { name: 'Compare' });
     middle.focus();
     expect(fireEvent.keyDown(middle, { key: 'Tab' })).toBe(true);
     expect(fireEvent.keyDown(middle, { key: 'Tab', shiftKey: true })).toBe(true);
     expect(middle).toHaveFocus();
+  });
+
+  it('keeps the close button over the burger through a resize, until the menu closes', async () => {
+    render(<MobileMenu {...PROPS} />);
+    placeBurger(30, 300);
+    fireEvent.click(burger());
+    const dialog = screen.getByRole('dialog', { name: 'Mobile' });
+    expect(closePlace(dialog)).toEqual(['30px', '300px']);
+
+    placeBurger(40, 120);
+    resize();
+    expect(closePlace(dialog)).toEqual(['40px', '120px']);
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Close menu' }));
+    await expectClosed(dialog);
+    placeBurger(50, 60);
+    resize();
+    // Closed: the resize watch has ended.
+    expect(closePlace(dialog)).toEqual(['40px', '120px']);
+  });
+
+  it('keeps the close button on the screen', () => {
+    render(<MobileMenu {...PROPS} />);
+    placeBurger(-20, 5000);
+    fireEvent.click(burger());
+
+    expect(closePlace(screen.getByRole('dialog', { name: 'Mobile' }))).toEqual([
+      '0px',
+      `${String(innerWidth - 44)}px`,
+    ]);
+  });
+
+  it('closes once a resize hides the burger (the screen grew past the breakpoint)', async () => {
+    const dialog = openMenu();
+    const opener = burger();
+
+    opener.style.display = 'none';
+    resize();
+
+    expect(dialog).not.toHaveAttribute('open');
+    // Focus goes to the header's own link (e2e/menu-resize.spec.ts), never to the hidden burger.
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(opener).not.toHaveFocus();
   });
 });

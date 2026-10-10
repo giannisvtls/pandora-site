@@ -1,66 +1,25 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+import {
+  focusInDialog,
+  menuOf,
+  menuPage,
+  openMenu,
+  overflowOf,
+  PHONE,
+  type Menu,
+} from './menu-fixtures';
 
 // The mobile menu island on the built /en/ (spec §8, A10, A11): below 1120px the burger opens a
 // native modal dialog with the nav and the switcher, keeps focus inside and gives it back, and the
 // page under it does not scroll; from 1120px the island's script is never requested; without
 // JavaScript the nav stays inline. The header keeps every control within reach under WCAG 1.4.12
-// text spacing at every width (header-spacing.spec.ts).
+// text spacing at every width (header-spacing.spec.ts); resizes while the menu is open are in
+// menu-resize.spec.ts.
 
 // WCAG 2.0, 2.1 and 2.2 at levels A and AA. axe-core 4.13 defines no `wcag22a` tag.
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
-
-const PHONE = { width: 390, height: 844 };
-
-interface Menu {
-  readonly burger: Locator;
-  readonly dialog: Locator;
-  readonly close: Locator;
-  readonly links: Locator;
-}
-
-function menuOf(page: Page): Menu {
-  const dialog = page.getByRole('dialog', { name: 'Mobile', exact: true });
-  return {
-    burger: page.getByRole('button', { name: 'Open menu', exact: true }),
-    dialog,
-    close: dialog.getByRole('button', { name: 'Close menu', exact: true }),
-    links: dialog.getByRole('navigation', { name: 'Mobile', exact: true }).getByRole('link'),
-  };
-}
-
-// /en/ at phone size, once the island has hydrated (Astro drops `ssr` from the island then).
-async function phonePage(page: Page): Promise<Menu> {
-  await page.setViewportSize(PHONE);
-  await page.goto('/en/');
-  await expect(page.locator('astro-island')).not.toHaveAttribute('ssr');
-  return menuOf(page);
-}
-
-// Opens the menu with a click on the burger; with `byTap`, a click that leaves focus where it was,
-// as a tap does in some browsers (iOS). The browser then returns focus to <body> on close, so only
-// the island's own restore can bring it back to the burger.
-async function openMenu(page: Page, { byTap = false } = {}): Promise<Menu> {
-  const menu = await phonePage(page);
-  await (byTap ? menu.burger.dispatchEvent('click') : menu.burger.click());
-  await expect(menu.dialog).toBeVisible();
-  return menu;
-}
-
-// The focused element: inside the dialog, and the page (not the browser's UI) has focus.
-async function focusInDialog(menu: Menu) {
-  return menu.dialog.evaluate((dialog) => {
-    const { activeElement } = dialog.ownerDocument;
-    return {
-      isInside: activeElement !== null && dialog.contains(activeElement),
-      hasFocus: dialog.ownerDocument.hasFocus(),
-      name: `${activeElement?.tagName ?? ''} ${activeElement?.getAttribute('aria-label') ?? activeElement?.textContent ?? ''}`,
-    };
-  });
-}
-
-const overflowOf = (page: Page) =>
-  page.locator('html').evaluate((html) => getComputedStyle(html).overflow);
 
 const scrollOf = (page: Page) =>
   page.locator('html').evaluate((html) => html.ownerDocument.defaultView?.scrollY ?? -1);
@@ -88,7 +47,7 @@ async function expectClosedWithFocusOnBurger(page: Page, menu: Menu): Promise<vo
 
 test.describe('the mobile menu at 390 × 844', () => {
   test('shows the burger, and neither the desktop nav nor the switcher', async ({ page }) => {
-    const menu = await phonePage(page);
+    const menu = await menuPage(page);
 
     await expect(menu.burger).toBeVisible();
     await expect(menu.burger).toHaveAttribute('aria-haspopup', 'dialog');
@@ -100,7 +59,7 @@ test.describe('the mobile menu at 390 × 844', () => {
   test('opens with focus on the first link and the close button where the burger was', async ({
     page,
   }) => {
-    const menu = await phonePage(page);
+    const menu = await menuPage(page);
     const burgerBox = await menu.burger.boundingBox();
     await menu.burger.click();
 
@@ -110,6 +69,13 @@ test.describe('the mobile menu at 390 × 844', () => {
       menu.dialog.getByRole('list', { name: 'Language', exact: true }).locator('[aria-current]'),
     ).toHaveText('EN English');
     expect(await menu.close.boundingBox()).toEqual(burgerBox);
+    // The links and the switcher sit in the middle of the screen, as the design's centred menu.
+    const space = await menu.dialog.evaluate((dialog) => {
+      const first = dialog.querySelector(':scope nav a')?.getBoundingClientRect();
+      const last = dialog.querySelector(':scope ul.lang')?.getBoundingClientRect();
+      return { above: first?.top ?? 0, below: dialog.clientHeight - (last?.bottom ?? 0) };
+    });
+    expect(Math.abs(space.above - space.below)).toBeLessThan(1);
   });
 
   test('keeps Tab inside for 10 presses, and Shift+Tab from the first control reaches the last', async ({
@@ -165,7 +131,7 @@ test.describe('the mobile menu at 390 × 844', () => {
   });
 
   test('keeps the page from scrolling while open, and where it was after', async ({ page }) => {
-    const menu = await phonePage(page);
+    const menu = await menuPage(page);
     await page.locator('html').evaluate((html) => {
       html.ownerDocument.defaultView?.scrollTo({ top: 10, behavior: 'instant' });
     });

@@ -33,8 +33,8 @@ src/
   content.config.ts   every registered collection
   components/         SiteHeader.astro, ThemeToggle.astro, LanguageSwitcher.astro,
                       SiteFooter.astro, FeatureButton.astro, LevelButton.astro, system-index.ts
-                      (the interim index's content), islands/ (MobileMenu.tsx + MobileMenu.css,
-                      __tests__/), __tests__/
+                      (the interim index's content), islands/ (MobileMenu.tsx + MobileMenu.css
+                      and menu-dialog.ts, its behaviour; __tests__/), __tests__/
   fonts/              fontsource-variable.ts (the Fonts API provider), __tests__/
   layouts/            BaseLayout.astro (head, theme script, skip link, header, main#main, footer,
                       reveal script), head.ts (what the head says), shell.ts (what the header and
@@ -469,22 +469,32 @@ JavaScript nothing an island renders is needed (A11).
 
 - **`islands/MobileMenu.tsx`** (+ `MobileMenu.css`), in SiteHeader with
   `client:media="(max-width: 1119px)"`: its script and Preact load only below 1120px (about 8 KB
-  gzip with the renderer; `MobileMenu.*.js` is 2.4 KB, 1.1 KB gzip, and imports Preact and its
+  gzip with the renderer; `MobileMenu.*.js` is 3.3 KB, 1.5 KB gzip, and imports Preact and its
   hooks only). Props (`MobileMenuProps`, built by `headerContent(...).menu` in `shell.ts`): the
   labels (`header.openMenu`, `closeMenu`, `mobileNavLabel`, `languageLabel`), the nav's links
   with `isCurrent`, and the switcher's languages with their endonym. The burger
   (`aria-haspopup="dialog"`, `aria-controls`) opens a full-screen modal dialog named by its nav
-  (`aria-labelledby` on the nav, whose `aria-label` is the mobile nav label: no new string). Its
-  close button is measured into the burger's place. Focus goes to the first link; Tab and
-  Shift+Tab wrap at the ends (a native modal dialog lets focus leave the page for the browser's own
-  UI); Escape (the browser's close request), the close button and following a link close it, and
-  the dialog's `close` event gives focus back to the burger on every way out. The page under it
-  does not scroll (`html:has(.m-nav[open]) { overflow: hidden }`, lifted on every close). The
-  burger's transition is off under reduced motion. No reveal classes: the reveal script never sees
-  island markup. Tests: `islands/__tests__/MobileMenu.test.tsx` (jsdom, with the `showModal()`
-  stand-in of `src/test/setup.ts`), `components/__tests__/header-menu.test.ts` (Container API),
+  (`aria-labelledby` on the nav, whose `aria-label` is the mobile nav label: no new string). The
+  behaviour is `menu-dialog.ts` (`wireMenu`, native listeners on the server's markup). The close
+  button sits over the burger, fixed to the screen: measured once the dialog is open (the scroll
+  lock can move the burger) and again on every resize while it is open (rotation, zoom), kept on
+  the screen, so it stays in reach while the menu scrolls; links that take focus stop below it
+  (`scroll-margin-top`). The links and the switcher are centred on the screen as the design's. Focus
+  goes to the first link; Tab and Shift+Tab wrap at the ends, and from the dialog itself (a click
+  on its background) or anywhere else that is not a control (a native modal dialog lets focus
+  leave the page for the browser's own UI); Escape (the browser's close request), the close
+  button, following a link and a resize that hides the burger (the screen grew past the
+  breakpoint) close it. The dialog's `close` event, which every way out ends in, ends the resize
+  watch and gives focus back to the burger, or, once the burger is gone, to the header's own link
+  to where focus was in the menu (else its first nav link). The page under it does not scroll
+  (`html:has(.m-nav[open]) { overflow: hidden }`, lifted on every close). The design's
+  burger-to-X morph is not ported: the close button is a control of its own inside the modal,
+  drawn as the X, so nothing animates. No reveal classes: the reveal script never sees island
+  markup. Tests: `islands/__tests__/MobileMenu.test.tsx` (jsdom, with the `showModal()` stand-in
+  of `src/test/setup.ts`), `components/__tests__/header-menu.test.ts` (Container API),
   `e2e/menu.spec.ts` (390 × 844, 1280, 1120, 1119, without JavaScript, axe with the menu open in
-  both themes) and `e2e/header-spacing.spec.ts`.
+  both themes), `e2e/menu-resize.spec.ts` (rotation, zoom, scrolling, growing past the breakpoint,
+  a click on the background; helpers in `e2e/menu-fixtures.ts`) and `e2e/header-spacing.spec.ts`.
 
 ## i18n routing
 

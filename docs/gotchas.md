@@ -614,8 +614,32 @@ are about to touch. When you hit a new one, add it here in the same shape.
   `document.hasFocus()` is false), then back to the first control; Shift+Tab from the first
   control does the same.
   - Symptom: "Tab stays inside" fails on the press after the last control.
-  - Fix: the island wraps Tab and Shift+Tab at the ends itself (`wrapFocus` in MobileMenu.tsx);
-    `e2e/menu.spec.ts` checks `hasFocus()` after each press.
+  - Fix: the island wraps Tab and Shift+Tab at the ends itself (`wrapFocus` in
+    menu-dialog.ts); `e2e/menu.spec.ts` checks `hasFocus()` after each press.
+- **A click on a modal dialog's background focuses the dialog.** The open menu is a scroll
+  container, and Chromium gives it focus when its empty part is clicked.
+  - Symptom: the next Shift+Tab (or Tab) is not at a control, so a wrap that only looks at the
+    first and last controls lets focus leave the page.
+  - Fix: `wrapFocus` treats focus on anything that is not one of the controls as an end: Shift+Tab
+    goes to the last control, Tab to the first (`e2e/menu-resize.spec.ts` clicks the background).
+- **A top-layer dialog does not follow a resize.** Whatever was measured when the dialog opened
+  (the close button's place over the burger) goes stale when the phone turns or the page zooms,
+  and the browser does nothing about it.
+  - Symptom: after a rotation the close button sits outside the screen (left 766px at 390px wide)
+    and the menu scrolls sideways (WCAG 1.4.10); after widening past the breakpoint the menu
+    stays open over the desktop header with the page still locked, and closing it focuses the
+    hidden burger, so focus falls to `<body>`.
+  - Fix: while the dialog is open, a `resize` listener (added on opening, removed in the `close`
+    event, which every way out ends in) measures again, or closes the menu once the burger is
+    hidden and puts focus on the header's own link. Measure after `showModal()`, not before: the
+    scroll lock takes the page's scrollbar away and moves the burger (a headless browser shows no
+    scrollbar, so no e2e can see this).
+- **An absolutely positioned control scrolls with its dialog.** Inside a scrolling modal dialog, a
+  `position: absolute` close button leaves the screen as soon as the menu scrolls (a phone held
+  sideways).
+  - Fix: `position: fixed` (in the top layer it is fixed to the screen, and it adds nothing to the
+    dialog's scroll area), an opaque background over the links passing under it, and a
+    `scroll-margin-top` on the links so a focused one stops below it.
 - **Focus after a dialog opened from code.** On close the browser returns focus to the element
   focused before `showModal()`, which is `<body>` when the opener never took focus (a tap on
   iOS, a click in some browsers).

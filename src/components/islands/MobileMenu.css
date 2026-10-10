@@ -3,8 +3,9 @@
    SiteHeader.astro's breakpoint and the island's `client:media`; tokens.css gives `.m-nav` the night
    tokens. */
 
-/* The burger and the close button (the design's open burger). Button styles are reset one by one,
-   never with `all` (base.test.ts). */
+/* The burger and the close button (the design's open burger, drawn at once: the design's
+   burger-to-X morph is not ported, since the close button is a control of its own inside the modal
+   dialog). Button styles are reset one by one, never with `all` (base.test.ts). */
 .menu-btn {
   appearance: none;
   display: none;
@@ -28,7 +29,6 @@
   width: 20px;
   height: 2px;
   background: var(--ink);
-  transition: transform 0.4s var(--ease);
 }
 
 /* The burger shows only with JavaScript, below 1120px: without JavaScript the header keeps its
@@ -39,12 +39,16 @@
   }
 }
 
-/* The close button, where the burger is on the screen (MobileMenu.tsx measures it on opening). */
+/* The close button, over the burger (menu-dialog.ts measures it on opening and on every resize
+   while open). Fixed to the screen, so it stays in reach while the menu scrolls; on the night
+   background, so it stays legible over the links passing under it. */
 .menu-close {
   display: flex;
-  position: absolute;
+  position: fixed;
   top: var(--burger-top, 22px);
   left: var(--burger-left, calc(100% - var(--gutter) - 44px));
+  z-index: 1;
+  background: var(--night);
 }
 
 .menu-close span:first-child {
@@ -78,11 +82,17 @@
   flex-direction: column;
 }
 
-/* Centred as the design's `justify-content: center`, yet scrollable from its top when it is taller
-   than the screen (large text, text spacing); clear of the close button. */
+/* Centred on the screen as the design's `justify-content: center` (the same space above and
+   below), yet scrollable from its top when it is taller than the screen (large text, text spacing,
+   a phone held sideways); clear of the close button at the top. */
 .m-nav-body {
   margin-block: auto;
-  padding-block: calc(var(--burger-top, 22px) + 44px + 24px) 40px;
+  padding-block: calc(var(--burger-top, 22px) + 44px + 24px);
+}
+
+/* A link that takes focus while the menu scrolls stops below the close button. */
+.m-nav-body a {
+  scroll-margin-top: calc(var(--burger-top, 22px) + 44px + 8px);
 }
 
 .m-nav nav {
@@ -140,11 +150,5 @@ html:has(.m-nav[open]) {
 @media (max-width: 400px) {
   .m-nav nav a {
     font-size: 44px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .menu-btn span {
-    transition: none;
   }
 }
