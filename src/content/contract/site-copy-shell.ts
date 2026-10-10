@@ -112,7 +112,11 @@ export const siteCopyFooterSchema = z.strictObject({
 });
 export type SiteCopyFooter = z.infer<typeof siteCopyFooterSchema>;
 
+// The 404 pages (new English, A6).
 export const siteCopyNotFoundSchema = z.strictObject({
+  // The page's name in the title template (`common.titleTemplate`, A5): "Page not found —
+  // INVETEC". The h1 is `title`, whose payload ends in a full stop.
+  name: copy(),
   title: copyHeading(),
   text: copy(),
   homeLink: copy(),

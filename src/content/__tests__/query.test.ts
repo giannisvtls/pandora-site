@@ -174,12 +174,26 @@ const home = (locale: Locale) => ({
   props: { locale, page: { type: 'home' } },
 });
 
+// The static path of the 404 page in `locale`.
+const notFound = (locale: Locale) => ({
+  params: { locale },
+  props: { locale, page: { type: 'notFound' } },
+});
+
 describe('staticPaths', () => {
   it('gives home in every built language: the live ones, or all four in preview', () => {
     expect(englishOnly.staticPaths('home')).toEqual([home('en')]);
     expect(withGreek.staticPaths('home')).toEqual([home('en'), home('el')]);
     expect(preview.staticPaths('home')).toEqual(LOCALES.map((locale) => home(locale)));
     expect(site.staticPaths('home')).toEqual([home('en')]);
+  });
+
+  it('gives a 404 page per built language, outside BUILT_PAGE_TYPES and every list (A18)', () => {
+    expect(site.staticPaths('notFound')).toEqual([notFound('en')]);
+    expect(withGreek.staticPaths('notFound')).toEqual([notFound('en'), notFound('el')]);
+    expect(preview.staticPaths('notFound')).toEqual(LOCALES.map((locale) => notFound(locale)));
+    expect(withGreek.alternates({ type: 'notFound' })).toEqual([]);
+    expect(withGreek.pageUrl({ type: 'notFound' }, 'en')).toBeUndefined();
   });
 
   it('refuses a page type the build does not render (BUILT_PAGE_TYPES)', () => {
@@ -232,6 +246,16 @@ describe('the readiness check', () => {
   it('lets a preview build show every language without the check', () => {
     expect(createQuery(greekLive, { preview: true }).built).toEqual([...LOCALES]);
     expect(site.built).toEqual(['en']);
+  });
+});
+
+describe('the root language', () => {
+  it('is the first live one of Greek, English, Italian and Albanian, never a preview language', () => {
+    expect(site.rootLanguage()).toBe('en');
+    expect(withGreek.rootLanguage()).toBe('el');
+    // Greek is built in preview, but English alone is live.
+    expect(preview.built).toContain('el');
+    expect(preview.rootLanguage()).toBe('en');
   });
 });
 

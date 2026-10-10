@@ -3,6 +3,7 @@ import preact from '@astrojs/preact';
 import { defineConfig } from 'astro/config';
 
 import { fontsourceFamily } from './src/fonts/fontsource-variable';
+import { buildFiles } from './src/integrations/build-files';
 
 // The subsets the site's languages need (A12): English and Italian, Albanian, Greek.
 const FONT_SUBSETS = ['latin', 'latin-ext', 'greek'];
@@ -10,7 +11,9 @@ const FONT_SUBSETS = ['latin', 'latin-ext', 'greek'];
 export default defineConfig({
   site: 'https://invetec.eu',
   output: 'static',
-  integrations: [preact()],
+  // buildFiles: once the build is done, writes dist/_redirects (the root redirect), moves each
+  // language's 404 page to {L}/404.html and deletes the images no built file names (spec §9).
+  integrations: [preact(), buildFiles()],
   // Self-hosted through the Fonts API from the pinned @fontsource-variable packages (A12); no
   // request leaves the site for a font, at build time or in the browser. The CSS variables are the
   // design's own `--display` and `--body` tokens (nightwatch.css), with its fallback lists.

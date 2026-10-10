@@ -4,8 +4,9 @@ const PORT = 4321;
 const BASE_URL = `http://localhost:${String(PORT)}`;
 
 // The e2e suite runs against the built site (`astro build` + `astro preview`), not the dev server.
-// `astro preview` does not serve public/_redirects, so `/` is a 404 here: the server is probed on
-// /en/, and the root redirect is covered by a unit test on the file instead.
+// `astro preview` does not apply dist/_redirects (the build writes it; the preview serves it as a
+// plain file), so `/` is a 404 here: the server is probed on /en/, and e2e/seo.spec.ts checks the
+// redirect line in the file.
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,

@@ -1,8 +1,10 @@
-// BaseLayout (spec §6) through the Container API, on fixture content: the query module's adapter
-// (`siteQuery`) is replaced by a query over the fixtures, since astro:content serves no entries in
-// Vitest. English and Greek are live, so a page has two alternates and x-default (Greek).
+// BaseLayout (spec §6, §9) through the Container API, on fixture content: the query module's
+// adapter (`siteQuery`) is replaced by a query over the fixtures, since astro:content serves no
+// entries in Vitest. English and Greek are live, so a page has two alternates and x-default
+// (Greek); a 404 page has none, and only a language home has the Organization JSON-LD.
 import { describe, expect, it, vi } from 'vitest';
 
+import { between } from '../../components/__tests__/shell-fixtures';
 import { fixtureContent, withLanguage } from '../../content/__tests__/rules-fixtures';
 import type { Locale } from '../../content/contract';
 import { createQuery, type Query } from '../../content/query';
@@ -53,6 +55,7 @@ interface RenderProps {
   readonly page: Page;
   readonly name?: string;
   readonly description?: string;
+  readonly hasExplainer?: boolean;
 }
 
 const render = (props: RenderProps) =>
@@ -62,6 +65,17 @@ const render = (props: RenderProps) =>
   });
 
 const HOME = { type: 'home' } as const;
+const NOT_FOUND = { type: 'notFound' } as const;
+
+// A 404 page in `locale`, as NotFoundPage.astro renders it: no explainer island.
+const notFound = (locale: Locale) =>
+  render({
+    locale,
+    page: NOT_FOUND,
+    name: `Not found (${locale})`,
+    description: `Gone (${locale}).`,
+    hasExplainer: false,
+  });
 
 describe('BaseLayout', () => {
   it('sets the language and the title and description of home in that language (A5)', async () => {
@@ -194,6 +208,57 @@ describe('BaseLayout', () => {
     expect(props).toContain('"title":[0,"Level 3 · Recovery"]');
     // The reveal script comes after it.
     expect(html.indexOf("querySelectorAll('.rv, .zoom")).toBeGreaterThan(start);
+  });
+
+  it('gives a 404 page noindex and no canonical URL, alternate or og:url (A18)', async () => {
+    const html = await notFound('el');
+    const head = between(html, '<head>', '</head>');
+
+    expect(head).toContain('<title>Not found (el) | INVETEC (el)</title>');
+    expect(head).toContain('<meta name="description" content="Gone (el).">');
+    expect(head).toContain('<meta name="robots" content="noindex">');
+    expect(head).not.toContain('rel="canonical"');
+    expect(head).not.toContain('rel="alternate"');
+    expect(head).not.toContain('og:url');
+    expect(head).toContain('<meta property="og:locale" content="el_GR">');
+    expect(await render({ locale: 'en', page: HOME })).not.toContain('name="robots"');
+  });
+
+  it('puts the Organization JSON-LD in the head of a language home, as JSON', async () => {
+    const html = await render({ locale: 'el', page: HOME });
+    const start = '<script type="application/ld+json">';
+    const json = between(html, start, '</script>').slice(start.length);
+    const data = JSON.parse(json) as { logo: string };
+
+    expect(html.indexOf('application/ld+json')).toBeLessThan(html.indexOf('</head>'));
+    expect(data).toMatchObject({
+      '@type': 'Organization',
+      name: 'INVETEC E.E.',
+      url: 'https://invetec.eu/',
+      address: { '@type': 'PostalAddress', streetAddress: 'Iera Odos 330' },
+    });
+    expect(data.logo).toMatch(/^https:\/\/invetec\.eu\/.*invetec-logo/u);
+  });
+
+  it('puts no JSON-LD on any other page: neither a 404 page nor another page type', async () => {
+    const compare = await render({
+      locale: 'en',
+      page: { type: 'compare' },
+      name: 'Compare',
+      description: 'Compare.',
+    });
+
+    expect(await notFound('en')).not.toContain('application/ld+json');
+    expect(compare).not.toContain('application/ld+json');
+  });
+
+  it('mounts no explainer island on a page that asks for none', async () => {
+    const html = await notFound('en');
+
+    expect(html).toContain('<footer class="ftr wrap"');
+    expect(html).not.toContain('client="idle"');
+    expect(html).not.toContain('fx-panel');
+    expect(await render({ locale: 'en', page: HOME })).toContain('client="idle"');
   });
 
   it('refuses a page the language does not have', async () => {

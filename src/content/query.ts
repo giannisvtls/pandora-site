@@ -31,6 +31,7 @@ import {
   pathParams,
   postPath,
   productPath,
+  routePath,
   targetHref,
   type PageType,
   type RouteParams,
@@ -41,6 +42,7 @@ import {
   createSite,
   pagesIn,
   pageUrl,
+  rootLanguage,
   sitemapEntries,
   switcherTargets,
   type Alternate,
@@ -80,6 +82,9 @@ export interface StaticPath<T extends PageType> {
 export interface Query {
   // The languages the build renders (live ones, or all four in preview).
   readonly built: readonly Locale[];
+  // The root's language, from the live languages (rules.ts): the root 404 page's language, and
+  // the root redirect's target.
+  readonly rootLanguage: () => Locale;
   readonly products: (locale: Locale) => readonly ProductIn[];
   // In their order.
   readonly categories: (locale: Locale) => readonly Category[];
@@ -92,7 +97,8 @@ export interface Query {
   readonly explainer: (locale: Locale) => Explainer;
   // A media id -> its image file and its alt text in a built language (./media.ts).
   readonly image: MediaResolver;
-  // One entry per built language and, for item page types, per item visible there.
+  // One entry per built language and, for item page types, per item visible there; for the 404
+  // pages (`notFound`, never in BUILT_PAGE_TYPES, A18) one per built language.
   readonly staticPaths: <T extends PageType>(type: T) => StaticPath<T>[];
   readonly pageUrl: (page: Page, locale: Locale) => string | undefined;
   readonly alternates: (page: Page) => Alternate[];
@@ -101,6 +107,8 @@ export interface Query {
 }
 
 const byOrder = (a: { order: number }, b: { order: number }) => a.order - b.order;
+
+const NOT_FOUND: Page = { type: 'notFound' };
 
 const COPY_NAMES = Object.keys(SITE_COPY) as SiteCopyName[];
 
@@ -163,6 +171,14 @@ export function createQuery(data: ContentData, options: QueryOptions): Query {
     return view;
   };
   const staticPaths = <T extends PageType>(type: T): StaticPath<T>[] => {
+    // The 404 pages are built in every built language but listed nowhere (A18): pagesIn, the
+    // sitemaps and the alternates never give one.
+    if (type === 'notFound') {
+      return site.built.map((locale) => ({
+        params: pathParams(type, routePath(locale, 'notFound', {})) as StaticPath<T>['params'],
+        props: { locale, page: NOT_FOUND },
+      }));
+    }
     if (!site.pageTypes.includes(type)) {
       throw new Error(
         `The page type "${type}" is not built: BUILT_PAGE_TYPES lists ${site.pageTypes.join(', ')}`,
@@ -178,6 +194,7 @@ export function createQuery(data: ContentData, options: QueryOptions): Query {
   const resolveImage = createMediaResolver(data.media);
   return {
     built: site.built,
+    rootLanguage: () => rootLanguage(data.languages),
     products: (locale) => viewIn(locale).products,
     categories: (locale) => viewIn(locale).content.categories.toSorted(byOrder),
     accessories: (locale) => viewIn(locale).accessories,

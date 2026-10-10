@@ -1,8 +1,9 @@
 ---
-// The document shell of every page (spec §6, §7, §8): the head (title, description, canonical,
-// hreflang alternates, og: tags, favicon, fonts), the theme applied before first paint, the
-// localized skip link, the site header, <main>, the site footer, the explainer island and the
-// reveal script. Everything it says comes through the query module.
+// The document shell of every page (spec §6, §7, §8, §9): the head (title, description, robots,
+// canonical, hreflang alternates, og: tags, the Organization JSON-LD on a language home, favicon,
+// fonts), the theme applied before first paint, the localized skip link, the site header, <main>,
+// the site footer, the explainer island and the reveal script. Everything it says comes through
+// the query module.
 import { Font } from 'astro:assets';
 
 import { explainerContent } from './explainer-content';
@@ -27,9 +28,12 @@ interface Props {
   description?: string;
   // The header: `solid` (the default) on the page's background, `overlay` over a dark hero.
   header?: 'solid' | 'overlay';
+  // Whether the page mounts the explainer island (the default); a page without explainer buttons
+  // (the 404 pages) passes false and loads no island script for it.
+  hasExplainer?: boolean;
 }
 
-const { locale, page, name, description, header = 'solid' } = Astro.props;
+const { locale, page, name, description, header = 'solid', hasExplainer = true } = Astro.props;
 if (Astro.site === undefined) throw new Error('astro.config.mjs sets no site');
 const query = await siteQuery();
 const head = pageHead(query, Astro.site, { locale, page, name, description });
@@ -59,14 +63,19 @@ const head = pageHead(query, Astro.site, { locale, page, name, description });
     </script>
     <title>{head.title}</title>
     <meta name="description" content={head.description} />
-    <link rel="canonical" href={head.canonical} />
+    {!head.isIndexed && <meta name="robots" content="noindex" />}
+    {head.canonical !== undefined && <link rel="canonical" href={head.canonical} />}
     {head.alternates.map(({ hreflang, href }) => (
       <link rel="alternate" hreflang={hreflang} href={href} />
     ))}
     <meta property="og:title" content={head.title} />
     <meta property="og:description" content={head.description} />
-    <meta property="og:url" content={head.canonical} />
+    {head.canonical !== undefined && <meta property="og:url" content={head.canonical} />}
     <meta property="og:locale" content={head.ogLocale} />
+    {/* A data block, not a script: no CSP hash needed. `scriptJson` escapes every `<`. */}
+    {head.organization !== undefined && (
+      <script is:inline type="application/ld+json" set:html={head.organization} />
+    )}
     <link rel="icon" href="/favicon.webp" type="image/webp" />
     <Font cssVariable="--display" preload={[{ subset: 'latin', weight: 800 }]} />
     <Font cssVariable="--body" preload={[{ subset: 'latin', weight: 400 }]} />
@@ -84,7 +93,7 @@ const head = pageHead(query, Astro.site, { locale, page, name, description });
         The explainer (spec §8): one dialog for every feature and level button on the page,
         hydrated once the browser is idle; its markup is a closed dialog until a button opens it.
       */}
-    <Explainer client:idle {...explainerContent(query, locale)} />
+    {hasExplainer && <Explainer client:idle {...explainerContent(query, locale)} />}
     {/*
         The reveal grammar (base.css): `.in` once a tenth of an element is in view. An element
         taller than nine viewports (a tenth of it barely fits, over ten it never does) gets `.in`

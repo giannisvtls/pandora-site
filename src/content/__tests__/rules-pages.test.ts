@@ -1,13 +1,16 @@
 // The page rules (spec §4, A18), on fixtures (./rules-fixtures.ts): which pages exist in which
 // built language, their alternates and x-default, the language switcher's targets, the sitemap
-// entries and the root redirect, with English only, English + Greek, and Italian only built.
+// entries and the root redirect, with English only, English + Greek, and Italian only built, and
+// the root of a preview build (every language built, English alone live).
 import { describe, expect, it } from 'vitest';
 
-import type { Locale } from '../contract';
+import type { Languages, Locale } from '../contract';
 import {
   alternates,
+  builtLanguages,
   createSite,
   hasPage,
+  liveLanguages,
   pagesIn,
   pageUrl,
   rootLanguage,
@@ -29,6 +32,9 @@ const ITEM_TYPES = [
   'post',
   'notFound',
 ] as const;
+
+// The languages global with `live` live.
+const liveIn = (...live: readonly Locale[]): Languages => fixtureContent(live).languages;
 
 // The site built with `live` languages; `pageTypes` stands in for BUILT_PAGE_TYPES when given.
 function siteWith(live: readonly Locale[], pageTypes?: Site['pageTypes']): Site {
@@ -59,8 +65,8 @@ describe('English only', () => {
   });
 
   it('redirects the root to /en/ with a 302', () => {
-    expect(rootRedirect(site.built)).toEqual({ from: '/', to: '/en/', status: 302 });
-    expect(rootLanguage(site.built)).toBe('en');
+    expect(rootRedirect(liveIn('en'))).toEqual({ from: '/', to: '/en/', status: 302 });
+    expect(rootLanguage(liveIn('en'))).toBe('en');
   });
 
   it('lists only home in the sitemap, with its alternates (BUILT_PAGE_TYPES)', () => {
@@ -111,7 +117,7 @@ describe('English and Greek', () => {
   });
 
   it('redirects the root to /el/ with a 301', () => {
-    expect(rootRedirect(site.built)).toEqual({ from: '/', to: '/el/', status: 301 });
+    expect(rootRedirect(liveIn('en', 'el'))).toEqual({ from: '/', to: '/el/', status: 301 });
   });
 
   it('lists in each sitemap the pages that exist there, never a 404 page', () => {
@@ -178,20 +184,35 @@ describe('Italian only', () => {
   });
 
   it('redirects the root to /it/ with a 302', () => {
-    expect(rootRedirect(site.built)).toEqual({ from: '/', to: '/it/', status: 302 });
+    expect(rootRedirect(liveIn('it'))).toEqual({ from: '/', to: '/it/', status: 302 });
   });
 });
 
-describe('the root without a built language', () => {
+describe('the root of a preview build', () => {
+  const site = createSite(fixtureContent(['en']), { preview: true });
+
+  it('follows the live languages, not the four the build renders', () => {
+    expect(site.built).toEqual(['en', 'el', 'it', 'sq']);
+    // Greek is built but not live: no permanent redirect to it.
+    expect(rootRedirect(liveIn('en'))).toEqual({ from: '/', to: '/en/', status: 302 });
+    expect(rootLanguage(liveIn('en'))).toBe('en');
+    expect(liveLanguages(liveIn('en'))).toEqual(['en']);
+    expect(builtLanguages(liveIn('en'), { preview: true })).toEqual(site.built);
+  });
+});
+
+describe('the root without a live language', () => {
   it('is an error', () => {
-    expect(() => rootRedirect([])).toThrow('No language is built');
+    expect(() => rootRedirect(liveIn())).toThrow('No language is live');
+    expect(() => rootLanguage(liveIn())).toThrow('No language is live');
     expect(() => createSite(fixtureContent([]), { preview: false })).toThrow('No language is live');
   });
 
   it('prefers Greek, then English, Italian and Albanian', () => {
-    expect(rootLanguage(['sq', 'it'])).toBe('it');
-    expect(rootLanguage(['sq', 'en', 'el'])).toBe('el');
-    expect(rootLanguage(['it', 'en'])).toBe('en');
-    expect(rootRedirect(['en', 'it'])).toEqual({ from: '/', to: '/en/', status: 302 });
+    expect(rootLanguage(liveIn('sq', 'it'))).toBe('it');
+    expect(rootLanguage(liveIn('sq', 'en', 'el'))).toBe('el');
+    expect(rootLanguage(liveIn('it', 'en'))).toBe('en');
+    expect(rootRedirect(liveIn('en', 'it'))).toEqual({ from: '/', to: '/en/', status: 302 });
+    expect(rootRedirect(liveIn('sq'))).toEqual({ from: '/', to: '/sq/', status: 302 });
   });
 });

@@ -82,6 +82,8 @@ export default defineConfig(
         },
         // External, i18n and content shapes keep their own key casing.
         { selector: ['objectLiteralProperty', 'typeProperty'], format: null },
+        // So do quoted method names, such as an integration's hooks ('astro:build:done').
+        { selector: 'objectLiteralMethod', modifiers: ['requiresQuotes'], format: null },
       ],
     },
   },
@@ -143,10 +145,15 @@ export default defineConfig(
     files: ALL_FILES,
     extends: [unicorn.configs.recommended, sonarjs.configs.recommended],
     rules: {
-      // Components are PascalCase (BaseLayout.astro), modules kebab-case; [param] routes are Astro's.
+      // Components are PascalCase (BaseLayout.astro), modules kebab-case; [param] routes are Astro's,
+      // a page (`[locale].astro`) or an endpoint with a parameter in its name
+      // (`sitemap-[locale].xml.ts`).
       'unicorn/filename-case': [
         'error',
-        { cases: { kebabCase: true, pascalCase: true }, ignore: [String.raw`^\[.+\]\.astro$`] },
+        {
+          cases: { kebabCase: true, pascalCase: true },
+          ignore: [String.raw`^\[.+\]\.astro$`, String.raw`^[a-z0-9-]*\[\w+\][a-z0-9.-]*\.ts$`],
+        },
       ],
       // Preact components return null to render nothing, and DOM APIs return null.
       'unicorn/no-null': 'off',

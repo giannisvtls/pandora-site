@@ -20,7 +20,7 @@ the live URLs for the future redirect map.
 content-snapshot/     one JSON file per collection or global: the content source; PROVENANCE.md
 docs/                 this brief, gotchas.md
 e2e/                  Playwright + axe specs, run against `astro preview`
-public/_redirects     root redirect for the static host: /  /en/  302
+public/               favicon.webp (the host's `_redirects` is generated into dist/, see SEO files)
 redirects/            crawl.json (live URL inventory, written by `npm run crawl`), CRAWL.md (its
                       summary, written by `npm run crawl:summary`); .crawl-cache/ (gitignored)
 scripts/crawl/        read-only redirect crawler (run with tsx), __fixtures__/, __tests__/
@@ -29,11 +29,14 @@ scripts/pricelist/    the pricelist check behind `npm run check:pricelist` (+ __
 src/
   content/            contract/ (Zod contract; contract.ts re-exports it), loader.ts, hues.ts,
                       routes.ts, rules.ts (+ completeness.ts), levels.ts, query.ts (+
-                      explainer.ts), media.ts, copy.ts, __tests__/
+                      explainer.ts), media.ts, copy.ts, seo.ts (the SEO files), __tests__/
   content.config.ts   every registered collection
+  integrations/       build-files.ts (finishes dist/ after the build: _redirects, the 404 moves,
+                      the image pruning), __tests__/
   components/         SiteHeader.astro, ThemeToggle.astro, LanguageSwitcher.astro,
                       SiteFooter.astro, FeatureButton.astro, LevelButton.astro, system-index.ts
-                      (the interim index's content), islands/ (MobileMenu.tsx + MobileMenu.css
+                      (the interim index's content), NotFoundPage.astro + not-found.ts (a 404
+                      page), islands/ (MobileMenu.tsx + MobileMenu.css
                       and menu-dialog.ts, its behaviour; Explainer.tsx + Explainer.css and
                       explainer-dialog.ts; dialog-focus.ts, the focus code both share;
                       __tests__/), __tests__/
@@ -42,19 +45,23 @@ src/
                       explainer island, reveal script), head.ts (what the head says), shell.ts
                       (what the header and footer say), explainer-content.ts (the explainer's
                       props), __tests__/
-  pages/[locale]/     index.astro, the only page (one per built language: /en/), the interim
-                      system index
+  pages/              404.astro (the root 404 page), sitemap-index.xml.ts, sitemap-[locale].xml.ts,
+                      robots.txt.ts (endpoints); [locale]/index.astro (one per built language:
+                      /en/, the interim system index) and [locale]/404.astro
   styles/             tokens.css (design tokens), base.css (element defaults, utilities, reveal
                       grammar), __tests__/
   test/               setup.ts (+ the jsdom <dialog> stand-in), container.ts (a Container API
-                      container that renders Preact islands), redirects.test.ts, fixtures/ (a
-                      test-only Preact island)
+                      container that renders Preact islands), fixtures/ (a test-only Preact
+                      island)
 ```
 
 ## Key Files
 
-- `astro.config.mjs` -- static output, `site`, Preact integration, the two font families (Fonts
-  API), i18n routing
+- `astro.config.mjs` -- static output, `site`, Preact integration, the build-files integration,
+  the two font families (Fonts API), i18n routing
+- `src/content/seo.ts` -- the SEO generators (sitemaps, robots.txt, `_redirects`, Organization
+  JSON-LD); `src/integrations/build-files.ts` -- what the build adds to `dist/` (see SEO files and
+  404 pages)
 - `src/layouts/BaseLayout.astro` -- the document shell of every page (see Styles, fonts and the
   page shell)
 - `src/content/contract.ts` -- the content contract (re-exports `src/content/contract/`)
@@ -86,9 +93,11 @@ src/
 
 ## Entry Points
 
-- Pages: `src/pages/` (file-based routing; one dynamic `[locale]` route)
+- Pages: `src/pages/` (file-based routing; `[locale]` routes, the root 404 page and three
+  endpoints)
 - Content: `src/content.config.ts` -> `src/content/loader.ts` -> `content-snapshot/*.json`
-- Build output: `dist/` (`dist/en/index.html`, `dist/_redirects`)
+- Build output: `dist/` (`dist/en/index.html`, `dist/en/404.html`, `dist/404.html`,
+  `dist/sitemap-index.xml`, `dist/sitemap-en.xml`, `dist/robots.txt`, `dist/_redirects`)
 - CI: `.github/workflows/ci.yml`, `.github/workflows/pr-title.yml`
 - Crawl: `npm run crawl` -> `scripts/crawl/crawl.ts` -> `redirects/crawl.json`; then
   `npm run crawl:summary` -> `scripts/crawl/summary.ts` -> `redirects/CRAWL.md`
@@ -294,12 +303,14 @@ types it; the snapshot readers in `scripts/` use the same type).
   reference is a field named `image`, `installImage`, `photo`, `gallery` or a rich-text image
   block's `media`.
 - **`rules.ts`:** `contentIn(data, L)` (the visible items, with fits, level systems and Finder
-  picks to products that are not visible dropped), `builtLanguages(languages, { preview })`
-  (preview: all four; otherwise the live ones; none live is an error),
+  picks to products that are not visible dropped), `liveLanguages(languages)` (none live is an
+  error), `builtLanguages(languages, { preview })` (preview: all four; otherwise the live ones),
   `languageGaps` / `assertLanguageReady(data, L)` (Site copy, the nav labels shown in `L`, the
   Finder and the fixed-key sets; one error listing every missing path), `rootLanguage` /
-  `rootRedirect(built)` (`/el/` 301 once Greek is built, else a 302 to the first built of en,
-  it, sq), and the pages of a `Site` (`createSite(data, { preview })`): `pageUrl`, `hasPage`
+  `rootRedirect(languages)` (from the live languages, never a preview build's list: `/el/` 301
+  once Greek is live, else a 302 to the first live of en, it, sq; browsers keep a 301, and the
+  target changes the day Greek goes live), and the pages of a `Site`
+  (`createSite(data, { preview })`): `pageUrl`, `hasPage`
   (spec `pageExists`), `pagesIn` (the pages of a type a language has), `alternates` (with
   `x-default` -> el, else en), `sitemapEntries` and `switcherTargets` (the page in each built
   language, else that language's home).
@@ -334,7 +345,10 @@ Spec §5 (P1-1): the one way pages read content.
   - `staticPaths(type)`: `{ params, props: { locale, page } }` per built language (and, for item
     page types, per item visible there), the params read back from the page's URL
     (`pathParams` in `routes.ts`), so they always match the links; a type not in
-    `BUILT_PAGE_TYPES` is an error;
+    `BUILT_PAGE_TYPES` is an error, except `notFound`: one 404 page per built language, listed
+    nowhere (A18);
+  - `rootLanguage()`: the root's language (`rules.ts`, from the live languages), the root 404
+    page's;
   - `pageUrl`, `alternates`, `switcherTargets`, `sitemapEntries`: the page rules over the build's
     `Site`.
   - Item links come from the query, never from a page: a product URL exists only for a product
@@ -384,12 +398,15 @@ Spec §6.
   from it, `CHECKED_FAMILIES`). The face names are `<family>-<hash>`: CSS reaches them only
   through `var(--display)` / `var(--body)`. BaseLayout preloads the latin face of each family.
 - **`src/layouts/BaseLayout.astro`** (props `locale`, `page`, `header` (`solid`, the default, or
-  `overlay`), and for every page but home its `name` and `description`, A5) builds its head
+  `overlay`), `hasExplainer` (default true; the 404 pages pass false), and for every page but
+  home its `name` and `description`, A5) builds its head
   with `pageHead()` (`head.ts`) from the query module: the title (home's own; else Site copy
   `common.titleTemplate` around `name`), the
   description, the absolute canonical URL (`pageUrl` against astro.config.mjs `site`), one
   `hreflang` link per alternate plus `x-default`, `og:title` / `og:description` / `og:url` /
-  `og:locale` (`OG_LOCALES`: `en_GB`, `el_GR`, `it_IT`, `sq_AL`), the favicon, the fonts. An
+  `og:locale` (`OG_LOCALES`: `en_GB`, `el_GR`, `it_IT`, `sq_AL`), on a language home the
+  Organization JSON-LD, the favicon, the fonts. A 404 page gets
+  `<meta name="robots" content="noindex">` and no canonical URL, alternate or `og:url`. An
   inline script before any stylesheet sets `html.js` and `data-theme` (the saved `theme` in
   localStorage when it is `dark`, else light; storage that throws means light, P1-6). The skip
   link (Site copy `common.skipLink`) shows only while focused and leads to
@@ -466,7 +483,8 @@ index's with `src/components/system-index.ts`. No component holds visible copy (
   per family), the theme toggle's script (ThemeToggle), the overlay header's script (SiteHeader,
   overlay pages only), Astro's island runtime with its `client:media` loader (and its `<style>`),
   which Astro writes beside the first island, its `client:idle` loader beside the explainer
-  island, and the reveal script at the end of `<body>`.
+  island, and the reveal script at the end of `<body>`. The Organization JSON-LD
+  (`type="application/ld+json"`) is a data block the browser never runs: no hash.
 
 ## Islands
 
@@ -516,7 +534,8 @@ JavaScript nothing an island renders is needed (A11).
   on the burger with the page's scrollbar shown), `e2e/forced-colors.spec.ts` (the bars and the X
   in forced colors) and `e2e/header-spacing.spec.ts`.
 - **`islands/Explainer.tsx`** (+ `Explainer.css`), in BaseLayout after the footer with
-  `client:idle`, so on every page: `Explainer.*.js` is 3.5 KB (1.4 KB gzip) and imports Preact,
+  `client:idle`, so on every page but one that passes `hasExplainer={false}` (the 404 pages, which
+  have no explainer button): `Explainer.*.js` is 3.5 KB (1.4 KB gzip) and imports Preact,
   its hooks and the shared chunk only; with the renderer and Preact about 9 KB gzip. Props
   (`ExplainerProps`, built by `explainerContent(query, L)` in `layouts/explainer-content.ts`):
   the labels (Site copy `common.explainer.*`, `howItWorks`, `matrix.included` / `optional`), one
@@ -577,15 +596,56 @@ JavaScript nothing an island renders is needed (A11).
   Greek included. `defaultLocale` exists only because Astro's routing requires one; English is
   the content source language.
 - Path segments stay English in every locale.
-- One page, `src/pages/[locale]/index.astro`. Its `getStaticPaths` is the query's
+- One page type, home: `src/pages/[locale]/index.astro`. Its `getStaticPaths` is the query's
   `staticPaths('home')`: one page per built (live) language, so the build has
   `dist/en/index.html` and no other locale. Setting `languages.el.live` makes the build fail
-  until Greek is complete (the readiness check).
-- There is no `src/pages/index.astro`. The root `/` is line 1 of `public/_redirects`,
-  `/  /en/  302`, applied by the static host. Astro's own `redirects` config would emit
-  meta-refresh pages, not HTTP redirects.
-- `astro preview` does not apply `_redirects` (`/` is a 404 there), so a unit test
-  (`src/test/redirects.test.ts`) checks the line, and the e2e server waits on `/en/`.
+  until Greek is complete (the readiness check). The 404 pages follow the same languages (see SEO
+  files and 404 pages).
+- There is no `src/pages/index.astro`. The root `/` is line 1 of `dist/_redirects`,
+  `/  /en/  302`, written by the build integration from the live languages and applied by the
+  static host. Astro's own `redirects` config would emit meta-refresh pages, not HTTP redirects.
+- `astro preview` does not apply `_redirects` (`/` is a 404 there; it serves the file as plain
+  text), so `seo.test.ts` checks the generator and `e2e/seo.spec.ts` the built line, and the e2e
+  server waits on `/en/`.
+
+## SEO files and 404 pages
+
+Spec §9, generated from the rules: no URL, name or fact is written in code (A6).
+
+- **`src/content/seo.ts`** (pure, no Astro import, so the build integration can use it):
+  `sitemapIndexXml` (one `<sitemap>` per built language: `/sitemap-{L}.xml`), `sitemapXml`
+  (the query's `sitemapEntries(L)`, each page with its hreflang alternates as `xhtml:link`,
+  `x-default` included; no `lastmod`, since no page has a real date of change), `robotsTxt`
+  (`User-agent: *`, `Allow: /`, the sitemap index), `redirectsFile(languages)` (the root
+  redirect) and `organizationJsonLd`. Every URL is absolute against astro.config.mjs `site`
+  and XML-escaped; the namespace names are built through `URL` (see gotchas).
+- **Endpoints:** `src/pages/sitemap-index.xml.ts`, `sitemap-[locale].xml.ts` (one file per built
+  language) and `robots.txt.ts`, prerendered by the static output into `dist/`.
+- **Organization JSON-LD**, in the head of each language home (`head.ts`): the footer company
+  block in the page's language (name, phone, email, a `PostalAddress` of street, locality and
+  postal code), the site root as `url` and the logo's original file as `logo`; no `sameAs` until
+  the social profiles have URLs, no country (the block has none). `scriptJson` writes every `<`
+  as its JSON escape, so no value can end the `<script>` element.
+- **404 pages** (P1-11): `src/pages/[locale]/404.astro` (the query's `staticPaths('notFound')`:
+  one per built language) and `src/pages/404.astro` (the root's, in `rootLanguage()`), both
+  `NotFoundPage.astro` over `notFoundContent()` (`components/not-found.ts`, Site copy
+  `notFound`: `name` for the title, "Page not found — INVETEC"; the heading as the h1; the text,
+  also the meta description; the link to the language home). `noindex`, no canonical URL,
+  alternate, `og:url` or JSON-LD, and no explainer island (no explainer button on the page, so no
+  Preact for it; the mobile menu's island stays). Never in a sitemap or an alternate (A18).
+- **`src/integrations/build-files.ts`** (`astro:build:done`, in `dist/`): writes `_redirects`
+  (`redirectsFile` over the snapshot's `languages`, read with `readSnapshot()`: `query.ts` needs
+  Vite and astro:content, which the hook does not have), moves each `{L}/404/index.html` to
+  `{L}/404.html` (Astro writes only the root `/404` as `404.html`; the build fails when a live
+  language has no 404 page), and deletes the images directly in `_astro/` that no other built
+  file names (HTML, CSS, JavaScript, XML, SVG; `media.ts` imports every media file, so Astro
+  writes all 92 originals). On the Phase 1 build that is 70 files, 3.1 MB: `dist/_astro` goes
+  from 4.30 MB to 1.08 MB. Fonts and `public/` files are never touched.
+- Tests: `content/__tests__/seo.test.ts` (fixtures with en, en + el, it and a preview build),
+  `seo-xml.test.ts` (the XML through a parser), `integrations/__tests__/build-files.test.ts`,
+  `components/__tests__/not-found.test.ts`, `layouts/__tests__/BaseLayout.test.ts`, and
+  `e2e/seo.spec.ts` (the served files, the built `dist/`, the JSON-LD, both 404 pages with axe in
+  both themes, an unknown URL, and every `/_astro/` file a page or its CSS names).
 
 ## Redirect crawl
 
@@ -712,14 +772,13 @@ Phase 0 limits:
 
 - Styling so far is the shell (tokens, base styles, fonts, skip link, header, footer, mobile
   menu, explainer) and the interim index.
-- No deploy: no hosting project, no `_headers`, no Functions. `public/_redirects` is the only
-  host file.
+- No deploy: no hosting project, no `_headers`, no Functions. `dist/_redirects` (generated by the
+  build) is the only host file.
 - `/en/` is the interim system index (the 16 systems visible in English), and only `/en/` is
   built; its system links 404 until Phase 2.
 - No CMS yet: `CONTENT_SOURCE=payload` throws until Phase 5.
-- No 404 page yet (Phase 1, with a per-locale strategy).
-- Two islands ship: the mobile menu (below 1120px only) and the explainer (every page, when
-  idle). The test fixture `src/test/fixtures/FixtureToggle.tsx` is imported by no page.
+- Two islands ship: the mobile menu (below 1120px only) and the explainer (every page but the 404
+  pages, when idle). The test fixture `src/test/fixtures/FixtureToggle.tsx` is imported by no page.
 - `redirects/crawl.json` is the inventory, not the redirect map: the crawler and the summary map
   no old URL to a new page (Phase 7 builds the map).
 

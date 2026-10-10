@@ -1,0 +1,11 @@
+---
+// The root 404 page (spec §9, P1-11): Astro writes it as dist/404.html, which the static host
+// serves for any URL it does not know. It is in the root's language (rules.ts `rootLanguage`, the
+// language the root redirect leads to: English while Greek is not live).
+import NotFoundPage from '../components/NotFoundPage.astro';
+import { siteQuery } from '../content/query';
+
+const query = await siteQuery();
+---
+
+<NotFoundPage locale={query.rootLanguage()} />

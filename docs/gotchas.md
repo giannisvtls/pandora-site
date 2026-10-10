@@ -169,6 +169,16 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Fix: cut HTML with `indexOf` (`between()` and `textOf()` in
     `src/components/__tests__/shell-fixtures.ts`); start such selectors with `:scope`
     (`':scope > main *'`); watch the element with an IntersectionObserver (the overlay header).
+- **Lint rules met by the SEO files (slice 11).**
+  - Symptom: `sonarjs/no-clear-text-protocols` rejects the sitemap namespace literal
+    (`'http://www.sitemaps.org/schemas/sitemap/0.9'`), and the name must stay `http://`;
+    `unicorn/consistent-boolean-name` rejects Astro's `export const prerender = true`;
+    `@typescript-eslint/naming-convention` rejects an integration's hook names
+    (`'astro:build:done'`); `unicorn/filename-case` rejects an endpoint with a parameter in its
+    name (`sitemap-[locale].xml.ts`).
+  - Fix: build a namespace name through `URL` (`namespaceName` in `src/content/seo.ts`); leave
+    `prerender` out (the static output prerenders every route); `eslint.config.js` lets quoted
+    method names and `[param]` route files keep their own spelling.
 - **Byte-exact fixtures.** Prettier formats `.html` files.
   - Symptom: `prettier --write .` would reformat `scripts/crawl/__fixtures__/*.html` and break
     the tests that compare bytes.
@@ -183,7 +193,8 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: an invisible byte-order mark (or other raw character) inside a regex or string.
   - Fix: write code points as `String.fromCodePoint(0xfe_ff)` and classes as `\p{ASCII}` or
     `\p{Script=Greek}`; keep Greek in fixtures as real UTF-8 and check them with a byte dump
-    (lead bytes `ce`/`cf`).
+    (lead bytes `ce`/`cf`). A JSON escape meant as text (a backslash, `u003c`) is written with
+    `String.fromCodePoint(0x5c)` too (`ESCAPED_LESS_THAN` in `src/content/seo.ts`).
 - **A test that forgets to inject `fetch` would crawl the live sites.** `runCli` defaults to the
   real hosts, the global `fetch` and the repo's `redirects/` folder (`runCrawl` has no defaults;
   its caller passes everything).
@@ -337,18 +348,23 @@ are about to touch. When you hit a new one, add it here in the same shape.
     `LanguageSwitcher.astro`). Check the built HTML.
 - **Every media file lands in `dist/_astro/`.** `MEDIA_FILES` (`src/content/media.ts`) imports
   every image under `src/assets/media/` eagerly, and Astro emits each imported image as a file;
-  it deletes an original only after `<Image>` optimized it and nothing used its raw `src`.
-  - Symptom: `dist/_astro/` holds the media originals no page shows (70 files, about 3.2 MB, with
-    the interim index showing 16 package shots).
-  - Fix: expected; visitors download only what a page references. A page that shows an image
-    goes through `<Image>` (A19), so its original is replaced by the optimized output.
+  it deletes an original only after `<Image>` optimized it and nothing used its raw `src`. A lazy
+  glob would not help: its dynamic imports still load, and so emit, every image.
+  - Symptom: without the build integration, `dist/_astro/` holds the media originals no page
+    shows (70 files, about 3.1 MB, with the interim index showing 16 package shots).
+  - Fix: `src/integrations/build-files.ts` deletes, after the build, every image directly in
+    `dist/_astro/` whose file name no other built file holds (`dist/_astro` 4.30 MB -> 1.08 MB).
+    A page that shows an image goes through `<Image>` (A19), so its original is replaced by the
+    optimized output; `e2e/seo.spec.ts` requests every `/_astro/` file the pages and their CSS
+    name.
 - **Reading a property of an imported image keeps its original in `dist/`.** An image import is a
   proxy: any property read in the page (`src.width`, `src.src`) marks the original as used, and
   the build then ships it beside the `<Image>` output.
   - Symptom: after `width={Math.min(640, image.src.width)}`, the 16 originals of the index's
     package shots (1.6 MB, a 2700 px PNG among them) are back in `dist/_astro/`.
   - Fix: pass the `ImageMetadata` to `<Image>` untouched; size it with props that need no read
-    (`widths`, `sizes`).
+    (`widths`, `sizes`). `head.ts` reads the logo's `src` on purpose: the Organization JSON-LD
+    names the original file (9 KB).
 - **`<Image widths>` without `width` writes the full-size image as `src`.** Astro keeps the
   original dimensions for `src` (converted to WebP) and caps `widths` at the original width.
   - Symptom: a 2700 px package shot ships a 2700 px `src` (149 KB) beside its 320w and 640w files,
@@ -485,11 +501,32 @@ are about to touch. When you hit a new one, add it here in the same shape.
     missing.
 - **Astro's own `redirects` config.**
   - Symptom: it emits meta-refresh HTML pages, not HTTP redirects.
-  - Fix: the root redirect lives in `public/_redirects` (`/  /en/  302`).
-- **`_redirects` is not served by `astro preview`.**
+  - Fix: the build integration (`src/integrations/build-files.ts`) writes the root redirect into
+    `dist/_redirects` (`/  /en/  302`) for the static host.
+- **`_redirects` is not applied by `astro preview`.**
   - Symptom: locally `/` returns 404 and `/_redirects` is served as a plain file.
-  - Fix: expected. The root redirect is covered by `src/test/redirects.test.ts`, and the e2e
-    server waits on `/en/`, not `/`.
+  - Fix: expected. `seo.test.ts` checks the generator, `e2e/seo.spec.ts` the built line, and the
+    e2e server waits on `/en/`, not `/`.
+- **Astro writes only the root `/404` route as `404.html`.** In the directory build format every
+  other page becomes `<path>/index.html` (`astro/dist/core/build/common.js`).
+  - Symptom: `src/pages/[locale]/404.astro` builds `dist/en/404/index.html`, not the
+    `dist/en/404.html` its URL (routes.ts) and the static host expect.
+  - Fix: the build integration moves each `{L}/404/index.html` to `{L}/404.html` and removes the
+    folder; the build fails when a live language has no 404 page. `astro preview` serves
+    `/en/404/` from `en/404.html` too (it maps `/x/` to `x.html`), so a check that the folder is
+    gone reads `dist/` or requests `/en/404/index.html` (`e2e/seo.spec.ts`).
+- **The query module cannot run in an integration hook.** `query.ts` needs Vite
+  (`import.meta.glob`) and astro:content, which `astro:build:done` does not have.
+  - Symptom: importing `query.ts` from `src/integrations/` fails while astro.config.mjs loads.
+  - Fix: the hook uses the pure modules (`rules.ts`, `seo.ts`) over the snapshot read with
+    `readSnapshot()`. Phase 5 (`CONTENT_SOURCE=payload`) must give the hook the CMS's
+    `languages` instead.
+- **The root redirect follows the live languages, not the built ones.** A preview build renders
+  every language.
+  - Symptom: from the build's language list, a preview build would send `/` to `/el/` with a 301
+    while Greek is not live, and browsers keep a 301.
+  - Fix: `rootLanguage` and `rootRedirect` take the `languages` global and read `live`
+    (`rules.ts`); a 301 only once Greek is live.
 - **`dist/_astro` holds more Preact chunks than a page loads.**
   - Symptom: `signals.module.*.js` (and the other Preact chunks) in `dist/_astro`.
   - Fix: expected. A page loads an island's chunk only where its directive asks: the mobile menu's
@@ -770,6 +807,13 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Fix: create the container with `createContainer()` (`src/test/container.ts`, the Preact
     renderer through `loadRenderers` from `astro:container`). The island renders as
     `<astro-island ... client="media" opts="...">` around its server markup.
+- **A jsdom test file cannot read the snapshot.** Under `@vitest-environment jsdom`, the URL that
+  `scripts/snapshot/paths.ts` builds for `REPO_ROOT` from `import.meta.url` is not a `file:` URL,
+  so `read-snapshot.ts` (and `rules-fixtures.ts`) fails while it loads.
+  - Symptom: `TypeError: The URL must be of scheme file` at `paths.ts` before any test runs.
+  - Fix: keep the fixture tests in the node environment and put what needs the DOM in a file of
+    its own that imports no snapshot reader (`seo-xml.test.ts` parses the sitemaps with
+    `DOMParser`; `seo.test.ts` runs the fixtures).
 - **jsdom workers under load.**
   - Symptom: jsdom test workers time out on a machine busy with other test runs.
   - Fix: `npm run test -- --maxWorkers=1`.
@@ -845,6 +889,13 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: best-practice rules (`region`, `landmark-one-main`, `heading-order`,
     `page-has-heading-one`, `skip-link`) never run, so page structure is not checked by axe.
   - Fix: review structure in code review, or add those rules deliberately.
+- **axe right after a theme toggle press.** The page's colours transition when the theme
+  changes.
+  - Symptom: an axe run straight after clicking the toggle reports color-contrast violations
+    with colours of neither theme (`#f2f6f8` on `#a1a6aa`, a 2.25 ratio).
+  - Fix: save the theme before the page loads (`page.addInitScript` setting
+    `localStorage.theme`), so the head script applies it before first paint, as
+    `e2e/shell.spec.ts` and `e2e/seo.spec.ts` do.
 - **Browsers live outside the repo.** `npm ci` does not install them; on Windows they go to
   `%LOCALAPPDATA%\ms-playwright`.
   - Symptom: on a new machine, or after a `@playwright/test` bump, e2e fails because the matching

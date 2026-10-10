@@ -81,15 +81,18 @@ export interface BuildOptions {
   readonly preview: boolean;
 }
 
-// The languages the build renders, in LOCALES order: all four in preview, else the live ones. No
-// live language is an error: the site would have no page at all.
-export function builtLanguages(languages: Languages, options: BuildOptions): Locale[] {
-  if (options.preview) return [...LOCALES];
+const NO_LIVE_LANGUAGE = 'No language is live: set "live": true for at least one in languages.json';
+
+// The live languages, in LOCALES order. None is an error: the site would have no page at all.
+export function liveLanguages(languages: Languages): Locale[] {
   const live = LOCALES.filter((locale) => languages[locale].live);
-  if (live.length === 0) {
-    throw new Error('No language is live: set "live": true for at least one in languages.json');
-  }
+  if (live.length === 0) throw new Error(NO_LIVE_LANGUAGE);
   return live;
+}
+
+// The languages the build renders, in LOCALES order: all four in preview, else the live ones.
+export function builtLanguages(languages: Languages, options: BuildOptions): Locale[] {
+  return options.preview ? [...LOCALES] : liveLanguages(languages);
 }
 
 const FIXED_KEY_SETS = [
@@ -138,11 +141,13 @@ export function assertLanguageReady(data: ContentData, locale: Locale): void {
 
 const ROOT_ORDER: readonly Locale[] = ['el', 'en', 'it', 'sq'];
 
-// The root's language: Greek once it is built, else the first built of English, Italian and
-// Albanian. The root 404 page uses it too.
-export function rootLanguage(built: readonly Locale[]): Locale {
-  const locale = ROOT_ORDER.find((candidate) => built.includes(candidate));
-  if (locale === undefined) throw new Error('No language is built, so the root has no language');
+// The root's language: Greek once it is live, else the first live one of English, Italian and
+// Albanian. It follows the live languages, never the languages a build renders: a preview build
+// renders all four, and the root must not lead visitors to a language that is not live. The root
+// 404 page uses it too.
+export function rootLanguage(languages: Languages): Locale {
+  const locale = ROOT_ORDER.find((candidate) => languages[candidate].live);
+  if (locale === undefined) throw new Error(NO_LIVE_LANGUAGE);
   return locale;
 }
 
@@ -152,9 +157,11 @@ export interface RootRedirect {
   readonly status: 301 | 302;
 }
 
-// `/` -> `/el/` 301 once Greek is built (live); otherwise a 302 to the root language's home.
-export function rootRedirect(built: readonly Locale[]): RootRedirect {
-  const locale = rootLanguage(built);
+// `/` -> the root language's home (spec §4): a 301 once Greek is live, since Greek is the root's
+// final language; a 302 before, because browsers keep a 301 and the target changes the day Greek
+// goes live.
+export function rootRedirect(languages: Languages): RootRedirect {
+  const locale = rootLanguage(languages);
   return { from: '/', to: routePath(locale, 'home', {}), status: locale === 'el' ? 301 : 302 };
 }
 

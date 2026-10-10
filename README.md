@@ -27,8 +27,8 @@ preview and the e2e run all use port 4321, so stop `npm run dev` before `npm run
 ## Routing
 
 Every locale has a path prefix (`/el/`, `/en/`, `/it/`, `/sq/`); only `/en/` is built so far.
-The root `/` redirects to `/en/` through `public/_redirects`. `astro preview` does not apply
-that file, so locally `/` returns 404.
+The root `/` redirects to `/en/` through `dist/_redirects`, which the build writes from the live
+languages. `astro preview` does not apply that file, so locally `/` returns 404.
 
 ## More
 
