@@ -6,10 +6,20 @@ import { describe, expect, it } from 'vitest';
 import { createQuery } from '../query';
 import { fixtureContent, snapshot } from './rules-fixtures';
 
-const english = createQuery(snapshot, { preview: false }).explainer('en');
+const site = createQuery(snapshot, { preview: false });
+const english = site.explainer('en');
 const preview = createQuery(fixtureContent(), { preview: true });
 
 const namesOf = (systems: readonly { name: string }[]) => systems.map(({ name }) => name);
+
+// A Level 3 entry of the snapshot in English: `path` is its page under /en/systems/.
+const system = (id: string, name: string, path: string, vehicle: string) => ({
+  id,
+  name,
+  url: `/en/systems/${path}/`,
+  vehicle,
+});
+const fleet = 'trucks & trackers';
 
 describe('a feature', () => {
   it('lists Wi-Fi positioning on Elite V3 alone, Included, with its page', () => {
@@ -66,30 +76,33 @@ describe('a feature', () => {
 });
 
 describe('a level', () => {
-  it('lists Level 3 on 11 systems, Finder and Tracer among them, with vehicle and page', () => {
+  it('lists Level 3 on 11 systems, Finder and Tracer among them, with vehicle word and page', () => {
     const level = english.levels['3'];
-    const systems = level.systems;
 
     expect(level).toMatchObject({ id: '3', title: 'Recovery' });
+    expect(level.systems).toEqual([
+      system('elite', 'Elite V3', 'car/elite-v3', 'car'),
+      system('professional', 'Professional V3', 'car/professional-v3', 'car'),
+      system('smartpro', 'Smart Pro V4 FD', 'car/smart-pro-v4-fd', 'car'),
+      system('smart', 'Smart V4', 'car/smart-v4', 'car'),
+      system('motoevo', 'Moto Evo V2', 'moto/moto-evo-v2', 'motorcycle'),
+      system('camperpro', 'Camper Pro V2', 'camper/camper-pro-v2', 'camper'),
+      system('camperv3', 'Camper V3', 'camper/camper-v3', 'camper'),
+      system('marine', 'Marine', 'marine/marine', 'boat'),
+      system('truck', 'Truck', 'fleet/truck', fleet),
+      system('finder', 'Finder', 'fleet/finder', fleet),
+      system('tracer', 'Tracer', 'fleet/tracer', fleet),
+    ]);
+  });
+
+  it("links every Level 3 system to its product's page", () => {
+    const urls = new Map(site.products('en').map(({ id, url }) => [id, url]));
+    const { systems } = english.levels['3'];
+
     expect(systems).toHaveLength(11);
-    expect(systems).toContainEqual({
-      id: 'finder',
-      name: 'Finder',
-      url: '/en/systems/fleet/finder/',
-      vehicle: 'trucks & trackers',
-    });
-    expect(systems).toContainEqual({
-      id: 'tracer',
-      name: 'Tracer',
-      url: '/en/systems/fleet/tracer/',
-      vehicle: 'trucks & trackers',
-    });
-    expect(systems).toContainEqual({
-      id: 'motoevo',
-      name: 'Moto Evo V2',
-      url: '/en/systems/moto/moto-evo-v2/',
-      vehicle: 'motorcycle',
-    });
+    for (const { id, url } of systems) {
+      expect(url, id).toBe(urls.get(id));
+    }
   });
 
   it('carries its texts and lists every system once, at the level levelOf gives it', () => {

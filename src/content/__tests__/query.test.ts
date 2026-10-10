@@ -1,7 +1,8 @@
 // The query module (spec §5) on fixtures (./rules-fixtures.ts) and on the snapshot: the items each
 // language shows, with their links; the static paths of the built languages; the readiness check
 // that fails a build; and the rule that only the adapter imports astro:content.
-import { readdirSync, readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -102,10 +103,30 @@ describe('the items a language shows', () => {
     });
   });
 
-  it('answers only for a built language', () => {
+  it('answers only for a built language: content and images', () => {
     expect(englishOnly.built).toEqual(['en']);
     expect(() => englishOnly.products('el')).toThrow('The language "el" is not built (built: en)');
     expect(() => englishOnly.explainer('it')).toThrow('The language "it" is not built');
+    // `car` is decorative: its empty alt would do in any language, but Greek is not built.
+    expect(englishOnly.image('car', 'en').alt).toBe('');
+    expect(() => englishOnly.image('car', 'el')).toThrow(
+      'The language "el" is not built (built: en)',
+    );
+  });
+
+  it('gives the page rules for the built languages only: nothing for another one', () => {
+    const home = { type: 'home' } as const;
+
+    expect(englishOnly.pageUrl(home, 'el')).toBeUndefined();
+    expect(englishOnly.sitemapEntries('el')).toEqual([]);
+    expect(englishOnly.alternates(home)).toEqual([
+      { hreflang: 'en', path: '/en/' },
+      { hreflang: 'x-default', path: '/en/' },
+    ]);
+    // On a page in a language that is not built, the switcher lists the built ones, none current.
+    expect(englishOnly.switcherTargets(home, 'el')).toEqual([
+      { locale: 'en', path: '/en/', isCurrent: false },
+    ]);
   });
 
   it('passes the page rules through for the built languages', () => {
@@ -189,21 +210,46 @@ describe('the readiness check', () => {
   });
 });
 
-// Every `.ts`, `.tsx` and `.astro` file under src/ but the tests, relative to src/, with `/`.
-function sourceFiles(): string[] {
-  return readdirSync(SRC_DIR, { recursive: true, withFileTypes: true })
-    .filter((entry) => entry.isFile() && /\.(?:ts|tsx|astro)$/u.test(entry.name))
-    .map((entry) => path.relative(SRC_DIR, path.join(entry.parentPath, entry.name)))
+// The files that can hold an import: every page and endpoint kind Astro accepts (`.astro`, `.md`,
+// `.mdx`, `.js` / `.ts` and their `c`, `m` and `x` forms).
+const SOURCE_FILE = /\.(?:[cm]?[jt]sx?|astro|mdx?)$/u;
+
+// Every such file under `root` but the tests, relative to `root`, with `/`.
+function sourceFiles(root: string): string[] {
+  return readdirSync(root, { recursive: true, withFileTypes: true })
+    .filter((entry) => entry.isFile() && SOURCE_FILE.test(entry.name))
+    .map((entry) => path.relative(root, path.join(entry.parentPath, entry.name)))
     .map((file) => file.replaceAll('\\', '/'))
     .filter((file) => !file.includes('__tests__/'));
 }
 
 const IMPORTS_CONTENT = /(?:from\s+|import\s*\(\s*)['"]astro:content['"]/u;
 
-describe('astro:content', () => {
-  const importers = sourceFiles().filter((file) =>
-    IMPORTS_CONTENT.test(readFileSync(path.join(SRC_DIR, file), 'utf8')),
+// The files under `root` that import astro:content.
+const importersIn = (root: string) =>
+  sourceFiles(root).filter((file) =>
+    IMPORTS_CONTENT.test(readFileSync(path.join(root, file), 'utf8')),
   );
+
+// A scratch src/ whose pages/ holds `files`, each importing astro:content.
+function probeImporters(files: readonly string[]): string[] {
+  const root = mkdtempSync(path.join(tmpdir(), 'content-guard-'));
+  try {
+    mkdirSync(path.join(root, 'pages'));
+    for (const file of files) {
+      writeFileSync(
+        path.join(root, 'pages', file),
+        "import { getCollection } from 'astro:content';",
+      );
+    }
+    return importersIn(root);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+describe('astro:content', () => {
+  const importers = importersIn(SRC_DIR);
 
   it('is imported by no page: pages read through the query module (P1-1)', () => {
     expect(importers.filter((file) => file.startsWith('pages/'))).toEqual([]);
@@ -217,5 +263,13 @@ describe('astro:content', () => {
     expect(IMPORTS_CONTENT.test("import { getCollection } from 'astro:content';")).toBe(true);
     expect(IMPORTS_CONTENT.test("await import('astro:content')")).toBe(true);
     expect(IMPORTS_CONTENT.test("import { z } from 'zod';")).toBe(false);
+  });
+
+  it('is found in every page and endpoint kind, a .js endpoint included', () => {
+    const kinds = ['feed.js', 'feed.mjs', 'feed.ts', 'list.astro', 'post.md', 'post.mdx'];
+
+    expect(probeImporters([...kinds, 'data.json', 'style.css']).toSorted(byCodeUnit)).toEqual(
+      kinds.map((file) => `pages/${file}`).toSorted(byCodeUnit),
+    );
   });
 });

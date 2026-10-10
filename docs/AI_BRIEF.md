@@ -45,7 +45,8 @@ src/
 - `src/content/routes.ts`, `rules.ts`, `levels.ts` -- the URL map, the publish rules and the level
   rule (spec §4), pure functions over content the caller passes in
 - `src/content/query.ts` -- the query module every page reads through (spec §5): `createQuery`
-  and the `siteQuery()` adapter, the only code that imports `astro:content`
+  and the `siteQuery()` adapter, the only code besides `content.config.ts` that imports
+  `astro:content`
 - `src/content/media.ts` -- the media resolver: a media id -> `ImageMetadata` + alt text
 - `src/content.config.ts` -- collections, each wired to `contentLoader`
 - `src/pages/[locale]/index.astro` -- the home page per locale
@@ -251,13 +252,18 @@ types it; the snapshot readers in `scripts/` use the same type).
   `ROUTE_PARAMS` in `contract/keys.ts`, which the Site copy `routeTarget` schema checks too
   (`{ route: 'category' }` without a vehicle fails at `params.vehicle`). Every value that fills a
   path follows one rule, `URL_SEGMENT` (`contract/primitives.ts`: lowercase words of a-z and 0-9
-  joined by single hyphens), in the contract (slugs, an accessory's id, link target params) and
-  in the builders. `systems` is the nav key of the car category page.
+  joined by single hyphens), in the contract (slugs, an accessory's id) and in the builders.
+  `systems` is the nav key of the car category page.
+- **Nav sections** lead to a page whose path takes no parameter, the 404 page excepted
+  (`NAV_ROUTE_KEYS` in `contract/nav-sections.ts`, derived from `ROUTE_PARAMS`): a section has no
+  vehicle, slug or id to fill one with, so `{ route: 'category' }` fails at `route` when the
+  snapshot loads, instead of failing every page of the language later.
 - **Site copy link targets** (`routeTarget`, the footer's links) name static and category pages
-  only. A target carries one slug or id for every language and nothing resolves it against the
-  item, so the item routes `product`, `accessory` and `post` fail at `route` (lead decision,
-  cycle 5); a later phase that needs such a link adds an id-based target resolved through the
-  page rules.
+  only. A target would carry one slug or id for every language and nothing resolves it against
+  the item, so the item routes `product`, `accessory` and `post` fail at `route` (lead decision,
+  cycle 5), and so does the 404 page (`notFound`), which no link leads to. The only parameter a
+  target can carry is therefore a `vehicle`; a `slug` or `id` key is unknown. A later phase that
+  needs an item link adds an id-based target resolved through the page rules.
 - **The item rule (`completeness.ts`, re-exported by `rules.ts`):** `gapsIn(value, L, media)`
   lists what a value lacks in `L`: every language map with a value in the source language
   (`showIn[0]` for items, English otherwise) and none in `L`, found by walking the value (a
@@ -287,8 +293,11 @@ Spec §5 (P1-1): the one way pages read content.
 - **`createQuery(data, { preview })`** (`query.ts`) is pure: tests call it on fixtures or on the
   snapshot (`readSnapshot()`). Unless `preview`, it first runs `assertLanguageReady` for every
   live language, so a live language with gaps throws one error listing every missing path; a
-  preview build shows all four languages without the check. It then answers for a built language
-  only (another one is an error), with the contract's types and the publish rules applied:
+  preview build shows all four languages without the check. It then answers with the contract's
+  types and the publish rules applied. The content answers and `image()` refuse a language that
+  is not built (an error); the page rules answer for the built languages only, so there `pageUrl`
+  is `undefined`, `sitemapEntries` is `[]`, and `alternates` and `switcherTargets` list the built
+  languages (none of the targets current):
   - `products(L)` (visible, each with `url` = its product page and `level` = `levelOf`),
     `categories(L)` (in order), `accessories(L)` (`url` under `vehicles[0]`, none without a
     vehicle), `posts(L)` (`url` with the slug in `L`), `navSections(L)` (in order, with `url`),
@@ -298,8 +307,8 @@ Spec §5 (P1-1): the one way pages read content.
     that highlight it, Included); per level its texts and its products with the vehicle word of
     their category (`common.vehicles.*.word`, the prototype's label there). Only products
     visible in `L`, each with its URL. A text `L` lacks (preview only) is `undefined`;
-  - `image(id, L)` (`media.ts`): `{ src: ImageMetadata, alt }` for `<Image>`; an unknown id, an id
-    with no file and a missing alt are errors; a decorative image gets `alt=""`;
+  - `image(id, L)` (`media.ts`): `{ src: ImageMetadata, alt }` for `<Image>`; an unknown id, an
+    item whose file is missing and a missing alt are errors; a decorative image gets `alt=""`;
   - `staticPaths(type)`: `{ params, props: { locale, page } }` per built language (and, for item
     page types, per item visible there), the params read back from the page's URL
     (`pathParams` in `routes.ts`), so they always match the links; a type not in
@@ -313,8 +322,10 @@ Spec §5 (P1-1): the one way pages read content.
   query (`preview: false`); every page shares that one promise, so the content is loaded and
   checked once per build. Pages call it in `getStaticPaths` and in their body.
 - **`media.ts`:** `MEDIA_FILES` is an eager `import.meta.glob` over `src/assets/media/**` (minus
-  `manifest.json`), keyed by `mediaIdOf`; `createMediaResolver(media, files?)` binds it to the
-  media items.
+  `manifest.json`), keyed by the path from the project root; `createMediaResolver(media, files?)`
+  finds each media item's image through the item's own `file`, so two files whose names give one
+  id (`car.png` beside `car.webp`) never stand in for each other; an item whose file is missing
+  is an error naming both.
 
 ## i18n routing
 

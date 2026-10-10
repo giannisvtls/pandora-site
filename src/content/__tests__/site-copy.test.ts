@@ -318,10 +318,14 @@ describe('the footer', () => {
     // The parameters each route needs, no more (ROUTE_PARAMS, shared with routes.ts).
     [{ route: 'category' }, '.params.vehicle'],
     [{ route: 'contact', params: { vehicle: 'car' } }, '.params.vehicle'],
-    // Static and category pages only: no item route (lead decision, cycle 5).
-    [{ route: 'product', params: { vehicle: 'car', slug: 'elite-v3' } }, '.route'],
-    [{ route: 'accessory', params: { vehicle: 'car', id: 'd-061' } }, '.route'],
-    [{ route: 'post', params: { slug: 'x' } }, '.route'],
+    // Static and category pages only: no item route (lead decision, cycle 5) and no 404 page, so
+    // no slug or id either.
+    [{ route: 'product' }, '.route'],
+    [{ route: 'accessory' }, '.route'],
+    [{ route: 'post' }, '.route'],
+    [{ route: 'notFound' }, '.route'],
+    [{ route: 'contact', params: { slug: 'x' } }, '.params'],
+    [{ route: 'contact', params: { id: 'd-061' } }, '.params'],
   ])('rejects the link target %j', (target, field) => {
     expect(pathsOf(siteCopyFooterSchema, footerWithFirstLink({ label, target }))).toEqual([
       `columns.0.links.0.target${field}`,

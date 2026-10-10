@@ -20,8 +20,6 @@ import {
   idSchema,
   plainText,
   plural,
-  segmentIdSchema,
-  slugSchema,
   template,
   type ByCountKey,
 } from './primitives';
@@ -60,35 +58,39 @@ export function isHttpsUrl(value: string): boolean {
 }
 export const httpsUrl = z.string().refine(isHttpsUrl, 'Expected an https:// URL');
 
-const isItemRoute = (route: RouteKey): boolean =>
-  (ITEM_ROUTE_KEYS as readonly RouteKey[]).includes(route);
+// Why a Site copy link cannot name `route`, or undefined when it can.
+function linkRefusal(route: RouteKey): string | undefined {
+  if ((ITEM_ROUTE_KEYS as readonly RouteKey[]).includes(route)) return `the item route "${route}"`;
+  return route === 'notFound' ? 'the 404 page' : undefined;
+}
 
 // A static or category page of the site by its route key (spec §4), with exactly the parameters
 // its path needs (ROUTE_PARAMS: `{ route: 'category' }` needs a vehicle) and an optional `#hash`;
 // routes.ts builds the URL. Item routes (product, accessory, post) are refused (lead decision,
 // cycle 5): a target carries one slug or id for every language and nothing resolves it against
 // the item, so a later phase that needs such a link adds an id-based target resolved through the
-// page rules.
+// page rules. The 404 page is refused too: no link leads there. So the only parameter a target
+// can carry is a vehicle; a route that needed another one could never pass.
 export const routeTarget = z
   .strictObject({
-    route: routeKey.refine((route) => !isItemRoute(route), {
-      error: (issue) =>
-        `A Site copy link names a static or category page, not the item route "${String(issue.input)}"`,
+    route: routeKey.superRefine((route, context) => {
+      const refusal = linkRefusal(route);
+      if (refusal !== undefined) {
+        context.addIssue({
+          code: 'custom',
+          message: `A Site copy link names a static or category page, not ${refusal}`,
+        });
+      }
     }),
-    params: z
-      .strictObject({
-        vehicle: categoryId.optional(),
-        slug: slugSchema.optional(),
-        id: segmentIdSchema.optional(),
-      })
-      .optional(),
+    params: z.strictObject({ vehicle: categoryId.optional() }).optional(),
     hash: idSchema.optional(),
   })
   .superRefine(
     ({ route, params = {} }, context) => {
       const needed: readonly RouteParamName[] = ROUTE_PARAMS[route];
+      const given: Partial<Record<RouteParamName, unknown>> = params;
       for (const name of ROUTE_PARAM_NAMES) {
-        const isGiven = params[name] !== undefined;
+        const isGiven = given[name] !== undefined;
         if (isGiven !== needed.includes(name)) {
           context.addIssue({
             code: 'custom',

@@ -51,9 +51,10 @@ const SPEC_TABLE: readonly (readonly [RouteKey, Readonly<Record<string, string>>
 // The URL segment rule, as the messages name it.
 const SEGMENT_RULE = 'lowercase words of a-z and 0-9 joined by single hyphens';
 
-// The item routes (lead decision, cycle 5: no Site copy link names one), and the others.
+// The item routes (lead decision, cycle 5: no Site copy link names one), the 404 page (no link
+// leads there), and the routes a link can name.
 const ITEM_ROUTES: ReadonlySet<RouteKey> = new Set(['product', 'accessory', 'post']);
-const LINK_ROUTES = ROUTE_KEYS.filter((route) => !ITEM_ROUTES.has(route));
+const LINK_ROUTES = ROUTE_KEYS.filter((route) => !ITEM_ROUTES.has(route) && route !== 'notFound');
 
 // Builds a route with loosely typed params (the tests break them on purpose).
 const looseRoutePath = (
@@ -151,7 +152,7 @@ describe('Site copy link targets', () => {
     expect(LINK_ROUTES).toContain('category');
     expect(LINK_ROUTES).toContain('accessoriesVehicle');
     for (const route of ITEM_ROUTES) {
-      const result = routeTarget.safeParse(targetFor(route));
+      const result = routeTarget.safeParse({ route });
 
       expect(result.error?.issues, route).toMatchObject([
         {
@@ -160,11 +161,19 @@ describe('Site copy link targets', () => {
         },
       ]);
     }
-    expect(targetIssuePaths({ route: 'post', params: { slug: 'x' } })).toEqual(['route']);
+  });
+
+  it('never name the 404 page', () => {
+    expect(routeTarget.safeParse({ route: 'notFound' }).error?.issues).toMatchObject([
+      {
+        path: ['route'],
+        message: 'A Site copy link names a static or category page, not the 404 page',
+      },
+    ]);
   });
 
   it('report an item route at the route of a footer link', () => {
-    const link = { label: { en: 'News' }, target: { route: 'post', params: { slug: 'x' } } };
+    const link = { label: { en: 'News' }, target: { route: 'post' } };
     const issues = linkItem.safeParse(link).error?.issues ?? [];
 
     expect(issues.map((issue) => issue.path.join('.'))).toEqual(['target.route']);
@@ -179,18 +188,22 @@ describe('Site copy link targets', () => {
     ]);
   });
 
-  it.each([
-    ['id', 'a--b', 'an id'],
-    ['id', '-x', 'an id'],
-    ['id', 'x-', 'an id'],
-    ['slug', 'a--b', 'a slug'],
-  ])('refuse the %s %s, which no path could hold', (name, value, noun) => {
-    const issues = routeTarget.safeParse({ route: 'contact', params: { [name]: value } }).error
-      ?.issues;
+  it('carry a vehicle at most: no route a link can name takes a slug or an id', () => {
+    for (const route of LINK_ROUTES) {
+      const names: readonly string[] = ROUTE_PARAMS[route];
+      expect(
+        names.filter((name) => name !== 'vehicle'),
+        route,
+      ).toEqual([]);
+    }
+    for (const name of ['slug', 'id']) {
+      const issues = routeTarget.safeParse({ route: 'contact', params: { [name]: 'x' } }).error
+        ?.issues;
 
-    expect(issues).toMatchObject([
-      { path: ['params', name], message: `Expected ${noun}: ${SEGMENT_RULE}` },
-    ]);
+      expect(issues, name).toMatchObject([
+        { code: 'unrecognized_keys', path: ['params'], keys: [name] },
+      ]);
+    }
   });
 
   it('add the hash after the path', () => {
@@ -216,6 +229,13 @@ describe('pathParams', () => {
     );
     expect(() => pathParams('blog', '/en/news/')).toThrow('is not a path of the page type "blog"');
     expect(() => pathParams('category', '/en/systems//')).toThrow('is not a path');
+    // One segment too few (no trailing slash) and one too many.
+    expect(() => pathParams('category', '/en/systems/car')).toThrow(
+      '"/en/systems/car" is not a path of the page type "category"',
+    );
+    expect(() => pathParams('category', '/en/systems/car//')).toThrow(
+      '"/en/systems/car//" is not a path of the page type "category"',
+    );
   });
 });
 

@@ -2,10 +2,12 @@
 // - `createQuery(data, options)` is pure: it checks that every live language is ready (a live
 //   language with gaps fails the build; a preview build shows all four without the check), then
 //   answers per built language with the contract's types, the publish rules applied (rules.ts),
-//   plus the links and levels those rules give.
+//   plus the links and levels those rules give. The content answers and `image()` refuse a
+//   language that is not built; the page rules (`pageUrl`, `alternates`, `switcherTargets`,
+//   `sitemapEntries`) answer for the built languages only.
 // - `siteQuery()` is the adapter: it loads every collection and global once per build through
-//   astro:content (the only code that imports it) and hands them to createQuery. Phase 6 puts a
-//   live backend behind the same functions.
+//   astro:content (the only code besides content.config.ts that imports it) and hands them to
+//   createQuery. Phase 6 puts a live backend behind the same functions.
 import {
   COLLECTIONS,
   GLOBAL_ENTRY_ID,
@@ -87,7 +89,7 @@ export interface Query {
   readonly siteCopy: (locale: Locale) => SiteCopy;
   readonly finder: (locale: Locale) => FinderIn;
   readonly explainer: (locale: Locale) => Explainer;
-  // A media id -> its image file and its alt text in a language (./media.ts).
+  // A media id -> its image file and its alt text in a built language (./media.ts).
   readonly image: MediaResolver;
   // One entry per built language and, for item page types, per item visible there.
   readonly staticPaths: <T extends PageType>(type: T) => StaticPath<T>[];
@@ -145,12 +147,16 @@ export function createQuery(data: ContentData, options: QueryOptions): Query {
   if (!options.preview) {
     for (const locale of site.built) assertLanguageReady(data, locale);
   }
-  const views = new Map<Locale, LocaleView>();
-  // The answers for a built language; asking for another one is an error.
-  const viewIn = (locale: Locale): LocaleView => {
+  // Asking for a language that is not built is an error.
+  const assertBuilt = (locale: Locale): void => {
     if (!site.built.includes(locale)) {
       throw new Error(`The language "${locale}" is not built (built: ${site.built.join(', ')})`);
     }
+  };
+  const views = new Map<Locale, LocaleView>();
+  // The answers for a built language.
+  const viewIn = (locale: Locale): LocaleView => {
+    assertBuilt(locale);
     const view = views.get(locale) ?? viewOf(site.contentIn(locale), locale);
     views.set(locale, view);
     return view;
@@ -168,6 +174,7 @@ export function createQuery(data: ContentData, options: QueryOptions): Query {
       })),
     );
   };
+  const resolveImage = createMediaResolver(data.media);
   return {
     built: site.built,
     products: (locale) => viewIn(locale).products,
@@ -178,7 +185,10 @@ export function createQuery(data: ContentData, options: QueryOptions): Query {
     siteCopy: (locale) => siteCopyOf(viewIn(locale).content),
     finder: (locale) => viewIn(locale).content.finder,
     explainer: (locale) => viewIn(locale).explainer,
-    image: createMediaResolver(data.media),
+    image: (id, locale) => {
+      assertBuilt(locale);
+      return resolveImage(id, locale);
+    },
     staticPaths,
     pageUrl: (page, locale) => pageUrl(site, page, locale),
     alternates: (page) => alternates(site, page),

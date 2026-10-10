@@ -1,10 +1,12 @@
 // The media resolver (spec §5) on the committed media: a media id gives the image as Astro
-// processes it and its alt text in a language; an unknown id is an error naming it. Vitest runs
-// through Astro's Vite config, so the image imports give real `ImageMetadata` (`src`, `width`,
-// `height`, `format`; `src` is a dev-server URL here, a hashed `/_astro/` file in the build).
+// processes it and its alt text in a language, always through the item's own file; an unknown id
+// is an error naming it. Vitest runs through Astro's Vite config, so the image imports give real
+// `ImageMetadata` (`src`, `width`, `height`, `format`; `src` is a dev-server URL here, a hashed
+// `/_astro/` file in the build).
 import { readdirSync } from 'node:fs';
 import path from 'node:path';
 
+import type { ImageMetadata } from 'astro';
 import { describe, expect, it } from 'vitest';
 
 import { byCodeUnit } from '../../../scripts/crawl/output';
@@ -20,6 +22,10 @@ function mediaOf(id: string) {
   if (item === undefined) throw new Error(`no media ${id}`);
   return item;
 }
+
+// A stand-in for an imported image, told apart by its file.
+const fakeImage = (file: string) =>
+  ({ src: `/${file}`, width: 1, height: 1, format: 'webp' }) satisfies ImageMetadata;
 
 // Every image file under src/assets/media/ on disk, as the glob keys them.
 function imageFilesOnDisk(): string[] {
@@ -44,7 +50,7 @@ describe('the media resolver', () => {
     expect(image.alt).toBe(mediaOf('pandora-elite-v3-package').alt?.en);
   });
 
-  it('keys nested files by the media id rule (pricelist/acc-band.png)', () => {
+  it('resolves a file in a sub-folder (pricelist/acc-band.png)', () => {
     expect(resolve('pricelist-acc-band', 'en').src).toMatchObject({ format: 'png' });
   });
 
@@ -62,10 +68,37 @@ describe('the media resolver', () => {
 
   it('throws for an unknown id, naming it', () => {
     expect(() => resolve('nope', 'en')).toThrow('Unknown media id "nope": no media item has it');
+  });
+
+  it('throws for an item whose file is missing, naming the item and the file', () => {
     const withoutFiles = createMediaResolver(snapshot.media, {} satisfies MediaFiles);
+
     expect(() => withoutFiles('car', 'en')).toThrow(
-      'Unknown media id "car": no image file under src/assets/media/ has it',
+      `The media "car" names the file ${mediaOf('car').file}, which is not on disk`,
     );
+  });
+
+  // Two files whose names give one media id: the item's own `file` decides, whatever order the
+  // glob lists them in.
+  it.each([
+    ['car', 'src/assets/media/car.webp', 'src/assets/media/car.png'],
+    [
+      'pricelist-acc-band',
+      'src/assets/media/pricelist/acc-band.png',
+      'src/assets/media/pricelist-acc-band.webp',
+    ],
+  ])('resolves %s through its own file, never a namesake', (id, own, namesake) => {
+    const item = { ...mediaOf(id), file: own };
+    const ownImage = fakeImage(own);
+    const namesakeImage = fakeImage(namesake);
+    const orders: MediaFiles[] = [
+      { [`/${own}`]: ownImage, [`/${namesake}`]: namesakeImage },
+      { [`/${namesake}`]: namesakeImage, [`/${own}`]: ownImage },
+    ];
+
+    for (const files of orders) {
+      expect(createMediaResolver([item], files)(id, 'en').src).toBe(ownImage);
+    }
   });
 
   it('throws when the image has no alt text in the language', () => {

@@ -370,14 +370,23 @@ are about to touch. When you hit a new one, add it here in the same shape.
     `{ route: 'contact', params: { vehicle: 'car' } }` at `target.params.vehicle` ("takes no
     vehicle"); `routePath` / `targetHref` throw the same messages.
   - Fix: give the route exactly the parameters its path has (spec §4 table).
-- **A Site copy link to a product, accessory or post fails at `route`.** A link target carries
-  one slug or id for every language, and nothing resolves it against the item (a post's slug
-  differs per language, an item can be hidden in a language), so `routeTarget` refuses the item
-  routes (lead decision, cycle 5).
-  - Symptom: `{ route: 'post', params: { slug: 'x' } }` fails at `target.route` ("A Site copy
-    link names a static or category page, not the item route "post"").
+- **A Site copy link to a product, accessory, post or the 404 page fails at `route`.** A link
+  target would carry one slug or id for every language, and nothing resolves it against the item
+  (a post's slug differs per language, an item can be hidden in a language), so `routeTarget`
+  refuses the item routes (lead decision, cycle 5); no link leads to the 404 page either. A
+  target's `params` therefore take a `vehicle` only.
+  - Symptom: `{ route: 'post' }` fails at `target.route` ("A Site copy link names a static or
+    category page, not the item route "post""), `{ route: 'notFound' }` likewise ("... not the
+    404 page"); a `slug` or `id` in `params` is an unknown key at `target.params`.
   - Fix: link to a static or category page; a later phase that needs an item link adds an
     id-based target resolved through the page rules.
+- **A nav section to a page with parameters fails at `route`.** A nav section has only a route
+  key, so it can lead only to a page whose path takes no parameter (`NAV_ROUTE_KEYS`,
+  `contract/nav-sections.ts`, derived from `ROUTE_PARAMS`), never the 404 page.
+  - Symptom: `content-snapshot/nav-sections.json` with `"route": "category"` fails to load at
+    `route` ("A nav section leads to a page whose path takes no parameter (home, systems, ...),
+    not "category"").
+  - Fix: use `systems` for the car category, or a parameter-free page.
 - **An id that is fine for the contract but not for a URL.** Ids follow `idSchema` (a-z, 0-9 and
   `-`), which accepts `a--b`, `-x` and `x-`; a value that fills a path follows the stricter
   `URL_SEGMENT` (`contract/primitives.ts`): lowercase words of a-z and 0-9 joined by single
@@ -385,8 +394,8 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: for the id `a--b`, `routePath` throws "The route "accessory" needs an id: …", with
     the rule and the value.
   - Fix: every value that becomes a path segment uses the segment rule in the contract (slugs,
-    an accessory's `id` through `segmentIdSchema`, the link target `params`), so the snapshot
-    fails to load before the build gets there. Use it for any new id that appears in a URL.
+    an accessory's `id` through `segmentIdSchema`), so the snapshot fails to load before the
+    build gets there. Use it for any new id that appears in a URL.
 - **Optional zod fields are `T | undefined` under `exactOptionalPropertyTypes`.** The contract's
   inferred types keep `undefined` in every optional field.
   - Symptom: `astro check` reports ts2379 when a parsed value (a link target's `params`) goes
