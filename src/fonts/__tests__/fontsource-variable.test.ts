@@ -1,14 +1,30 @@
 // The font provider (A12) on the installed packages: the faces of the subsets the family asks for,
 // each a woff2 file of the pinned package with its unicode range and subset, no network; the
-// Greek faces cover the Greek and Coptic block (U+0370-03FF).
-import { existsSync, readFileSync } from 'node:fs';
+// Greek faces cover the Greek and Coptic block (U+0370-03FF). A family whose package lacks a
+// subset, style or file fails when astro.config.mjs loads (`fontsourceFamily`), since the Fonts
+// API only logs the provider's own error and builds without the family.
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import type { FontProvider } from 'astro';
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 
 import config from '../../../astro.config.mjs';
-import { fontsourceVariable } from '../fontsource-variable';
+import {
+  fontsourceFamily,
+  fontsourceVariable,
+  type FontsourceFamily,
+} from '../fontsource-variable';
 
 type ResolveOptions = Parameters<FontProvider['resolveFont']>[0];
 type InitContext = Parameters<NonNullable<FontProvider['init']>>[0];
@@ -19,12 +35,18 @@ const PACKAGES = [
   '@fontsource-variable/sofia-sans',
 ] as const;
 
-const SUBSETS = ['latin', 'latin-ext', 'greek'];
+const SUBSETS: [string, ...string[]] = ['latin', 'latin-ext', 'greek'];
 
-// The faces the provider gives for `pkg`, as the Fonts API asks for them when the build starts.
-async function facesOf(pkg: string, subsets = SUBSETS, styles: readonly string[] = ['normal']) {
+// The faces the provider gives for `pkg`, as the Fonts API asks for them when the build starts;
+// `root` is the project root it resolves the package from.
+async function facesOf(
+  pkg: string,
+  subsets = SUBSETS,
+  styles: readonly string[] = ['normal'],
+  root = ROOT,
+) {
   const provider = fontsourceVariable(pkg);
-  await provider.init?.({ root: ROOT } as InitContext);
+  await provider.init?.({ root } as InitContext);
   const result = await provider.resolveFont({
     familyName: pkg,
     weights: ['400'],
@@ -122,6 +144,83 @@ describe('the font families of astro.config.mjs', () => {
     }
     expect(families.map(({ provider }) => provider.config)).toEqual(
       PACKAGES.map((pkg) => ({ package: pkg })),
+    );
+  });
+});
+
+// The body family as astro.config.mjs declares it, with a package to read.
+const FAMILY: FontsourceFamily = {
+  package: '@fontsource-variable/sofia-sans',
+  name: 'Sofia Sans',
+  cssVariable: '--body',
+  subsets: SUBSETS,
+  styles: ['normal'],
+  fallbacks: ['sans-serif'],
+};
+
+// A scratch project root whose node_modules holds a copy of `pkg` without its file `missing`.
+function packageCopyWithout(pkg: string, missing: string): URL {
+  const root = mkdtempSync(path.join(tmpdir(), 'fontsource-copy-'));
+  const from = fileURLToPath(new URL(`node_modules/${pkg}/`, ROOT));
+  const to = path.join(root, 'node_modules', pkg);
+  mkdirSync(path.join(to, 'files'), { recursive: true });
+  for (const file of ['package.json', 'metadata.json', 'unicode.json']) {
+    copyFileSync(path.join(from, file), path.join(to, file));
+  }
+  const files = readdirSync(path.join(from, 'files'));
+  for (const file of files) {
+    if (file === missing) continue;
+    copyFileSync(path.join(from, 'files', file), path.join(to, 'files', file));
+  }
+  return pathToFileURL(`${root}${path.sep}`);
+}
+
+describe('a package without one of the woff2 files a family asks for', () => {
+  const missing = 'sofia-sans-greek-wght-normal.woff2';
+  const root = packageCopyWithout(FAMILY.package, missing);
+  afterAll(() => {
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  it('makes the provider refuse the family, naming the file', async () => {
+    await expect(facesOf(FAMILY.package, SUBSETS, ['normal'], root)).rejects.toThrow(
+      `${FAMILY.package} has no file ${missing}`,
+    );
+    // The copy itself is sound: a subset whose file is there resolves.
+    expect(await facesOf(FAMILY.package, ['latin'], ['normal'], root)).toHaveLength(1);
+  });
+
+  it('stops astro.config.mjs while it loads (fontsourceFamily)', () => {
+    expect(() => fontsourceFamily(FAMILY, root)).toThrow(
+      `${FAMILY.package} has no file ${missing}`,
+    );
+    expect(fontsourceFamily({ ...FAMILY, subsets: ['latin'] }, root).name).toBe('Sofia Sans');
+  });
+});
+
+describe('fontsourceFamily (astro.config.mjs)', () => {
+  it('gives the Fonts API family, served by the provider of its package', () => {
+    const family = fontsourceFamily(FAMILY);
+
+    expect(family).toEqual({
+      name: 'Sofia Sans',
+      cssVariable: '--body',
+      subsets: SUBSETS,
+      styles: ['normal'],
+      fallbacks: ['sans-serif'],
+      provider: expect.objectContaining({
+        name: 'fontsource-variable',
+        config: { package: FAMILY.package },
+      }) as unknown,
+    });
+  });
+
+  it('refuses a subset or a style the package does not have, before any build step', () => {
+    expect(() => fontsourceFamily({ ...FAMILY, subsets: ['latin', 'klingon'] })).toThrow(
+      `${FAMILY.package} has no subset "klingon"`,
+    );
+    expect(() => fontsourceFamily({ ...FAMILY, styles: ['oblique'] })).toThrow(
+      `${FAMILY.package} has no style "oblique"`,
     );
   });
 });

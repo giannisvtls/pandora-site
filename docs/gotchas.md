@@ -481,6 +481,14 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Fix: use the repo's provider, `fontsourceVariable(pkg)` (`src/fonts/fontsource-variable.ts`),
     which gives Astro the package's own files as absolute paths. The built-in `local` provider
     reads files too, but its faces carry no subset, so `<Font preload>` cannot pick the latin one.
+- **The Fonts API swallows a provider's error.** Astro runs providers through unifont with
+  `throwOnError: false`.
+  - Symptom: a subset, style or file the package lacks is logged ("Could not resolve font face
+    ... No data found for font family"), and `astro build` exits 0 with no faces for that family:
+    the site falls back to system fonts.
+  - Fix: declare every family through `fontsourceFamily()` in `astro.config.mjs`; it runs the
+    provider's check while the config loads, so a missing subset, style or file stops the build
+    with "Unable to load your Astro config" and the reason.
 - **A custom font provider is one instance per name and config.** The Fonts API keys providers by
   a hash of `name` and `config`.
   - Symptom: two families with `fontsourceVariable()` and no distinct `config` both resolve from
@@ -502,7 +510,12 @@ are about to touch. When you hit a new one, add it here in the same shape.
   `rootMargin: '0px 0px -10% 0px'`.
   - Symptom: a small `.rv` element in the bottom tenth of a page that cannot scroll further never
     gets `.in` and stays invisible.
-  - Fix: BaseLayout observes with `threshold: 0.1` and no negative margin; keep it so.
+  - Fix: BaseLayout observes with thresholds `0` and `0.1` and no negative margin; keep it so.
+- **A reveal element taller than ten viewports.** Its in-view share never reaches a tenth.
+  - Symptom: with a `0.1` threshold alone, a very tall `.rv` element stays invisible while it
+    covers the screen.
+  - Fix: BaseLayout's reveal script gives `.in` at once to an element taller than nine
+    viewports; without IntersectionObserver it gives `.in` to every reveal element.
 
 ## Unit tests (Vitest)
 

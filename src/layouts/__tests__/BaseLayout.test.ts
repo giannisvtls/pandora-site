@@ -20,9 +20,12 @@ vi.mock(import('../../content/query'), async (importOriginal) => ({
   },
 }));
 
-// Site copy the fixtures change, so the test can tell it was read from Site copy.
+// Site copy the fixtures change, so the test can tell it was read from Site copy, and in which
+// language: every value differs between English and Greek.
 const SKIP_LINK = { en: 'Skip to the content (fixture)', el: 'Skip (el fixture)' };
 const TITLE_TEMPLATE = { en: '{page} | INVETEC (fixture)', el: '{page} | INVETEC (el)' };
+const HOME_TITLE = { en: 'Home title (en fixture)', el: 'Home title (el fixture)' };
+const HOME_DESCRIPTION = { en: 'Home description (en)', el: 'Home description (el)' };
 
 function fixtureQuery(): Query {
   const content = withLanguage(fixtureContent(['en', 'el']), 'el');
@@ -31,8 +34,13 @@ function fixtureQuery(): Query {
     skipLink: SKIP_LINK,
     titleTemplate: TITLE_TEMPLATE,
   };
+  const siteCopyHome = {
+    ...content.siteCopyHome,
+    title: HOME_TITLE,
+    metaDescription: HOME_DESCRIPTION,
+  };
   return createQuery(
-    { ...content, siteCopyCommon },
+    { ...content, siteCopyCommon, siteCopyHome },
     { preview: false, pageTypes: ['home', 'compare'] },
   );
 }
@@ -54,15 +62,18 @@ const render = (props: RenderProps) =>
   });
 
 const HOME = { type: 'home' } as const;
-const homeCopy = state.query.siteCopy('el').home;
 
 describe('BaseLayout', () => {
-  it('sets the language and the title and description of home (A5)', async () => {
-    const html = await render({ locale: 'el', page: HOME });
+  it('sets the language and the title and description of home in that language (A5)', async () => {
+    const greek = await render({ locale: 'el', page: HOME });
+    const english = await render({ locale: 'en', page: HOME });
 
-    expect(html).toMatch(/<html lang="el"[^>]*>/u);
-    expect(html).toContain(`<title>${homeCopy.title.el!}</title>`);
-    expect(html).toContain(`<meta name="description" content="${homeCopy.metaDescription.el!}">`);
+    expect(greek).toMatch(/<html lang="el"[^>]*>/u);
+    expect(greek).toContain('<title>Home title (el fixture)</title>');
+    expect(greek).toContain('<meta name="description" content="Home description (el)">');
+    expect(english).toMatch(/<html lang="en"[^>]*>/u);
+    expect(english).toContain('<title>Home title (en fixture)</title>');
+    expect(english).toContain('<meta name="description" content="Home description (en)">');
   });
 
   it("titles another page with the common template around the page's name (A5)", async () => {
@@ -72,10 +83,18 @@ describe('BaseLayout', () => {
       name: 'Compare',
       description: 'Compare up to four systems.',
     });
+    const greek = await render({
+      locale: 'el',
+      page: { type: 'compare' },
+      name: 'Compare (el name)',
+      description: 'Compare (el).',
+    });
 
     expect(html).toContain('<title>Compare | INVETEC (fixture)</title>');
     expect(html).toContain('<meta name="description" content="Compare up to four systems.">');
     expect(html).toContain('<link rel="canonical" href="https://invetec.eu/en/compare/">');
+    expect(greek).toContain('<title>Compare (el name) | INVETEC (el)</title>');
+    expect(greek).toContain('<link rel="canonical" href="https://invetec.eu/el/compare/">');
   });
 
   it('refuses a page other than home without its name and description', async () => {
@@ -95,14 +114,21 @@ describe('BaseLayout', () => {
     ]);
   });
 
-  it('gives the og: tags of the page', async () => {
-    const html = await render({ locale: 'el', page: HOME });
+  it('gives the og: tags of the page, the locale in its language_TERRITORY form', async () => {
+    const greek = await render({ locale: 'el', page: HOME });
+    const english = await render({ locale: 'en', page: HOME });
 
-    expect(html.match(/<meta property="og:[^>]*>/gu)).toEqual([
-      `<meta property="og:title" content="${homeCopy.title.el!}">`,
-      `<meta property="og:description" content="${homeCopy.metaDescription.el!}">`,
+    expect(greek.match(/<meta property="og:[^>]*>/gu)).toEqual([
+      '<meta property="og:title" content="Home title (el fixture)">',
+      '<meta property="og:description" content="Home description (el)">',
       '<meta property="og:url" content="https://invetec.eu/el/">',
       '<meta property="og:locale" content="el_GR">',
+    ]);
+    expect(english.match(/<meta property="og:[^>]*>/gu)).toEqual([
+      '<meta property="og:title" content="Home title (en fixture)">',
+      '<meta property="og:description" content="Home description (en)">',
+      '<meta property="og:url" content="https://invetec.eu/en/">',
+      '<meta property="og:locale" content="en_GB">',
     ]);
   });
 

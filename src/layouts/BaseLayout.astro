@@ -70,24 +70,32 @@ const head = pageHead(await siteQuery(), Astro.site, { locale, page, name, descr
       <slot />
     </main>
     {/*
-        The reveal grammar (base.css): `.in` once a tenth of an element is in view. No negative
-        bottom margin (the design's -10%): a small element at the end of a page that cannot scroll
-        further would never reach the band and would stay hidden.
+        The reveal grammar (base.css): `.in` once a tenth of an element is in view. An element
+        taller than nine viewports (a tenth of it barely fits, over ten it never does) gets `.in` as
+        soon as it is in view. No negative bottom margin (the design's -10%): a small element at the end of a
+        page that cannot scroll further would never reach the band and would stay hidden. Without
+        IntersectionObserver every element is revealed at once.
       */}
     <script is:inline>
       {
-        const observer = new IntersectionObserver(
-          (entries) => {
-            for (const entry of entries) {
-              if (!entry.isIntersecting) continue;
-              entry.target.classList.add('in');
-              observer.unobserve(entry.target);
-            }
-          },
-          { threshold: 0.1 },
-        );
-        for (const target of document.querySelectorAll('.rv, .zoom, .wipe, .line-rv')) {
-          observer.observe(target);
+        const targets = document.querySelectorAll('.rv, .zoom, .wipe, .line-rv');
+        if ('IntersectionObserver' in globalThis) {
+          const observer = new IntersectionObserver(
+            (entries) => {
+              for (const entry of entries) {
+                if (!entry.isIntersecting) continue;
+                const view = entry.rootBounds?.height ?? innerHeight;
+                const canShowTenth = entry.boundingClientRect.height <= view * 9;
+                if (canShowTenth && entry.intersectionRatio < 0.1) continue;
+                entry.target.classList.add('in');
+                observer.unobserve(entry.target);
+              }
+            },
+            { threshold: [0, 0.1] },
+          );
+          for (const target of targets) observer.observe(target);
+        } else {
+          for (const target of targets) target.classList.add('in');
         }
       }
     </script>

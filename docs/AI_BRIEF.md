@@ -360,7 +360,10 @@ Spec §6.
   `node_modules` (its woff2 files, `unicode.json`, `metadata.json`), so the build makes no
   request; Astro copies the files to `dist/_astro/fonts/` and the browser loads them from the
   site. The built-in `npm` provider downloads the files from a CDN, and `local` knows no subsets
-  (see gotchas). The face names are `<family>-<hash>`: CSS reaches them only through
+  (see gotchas). Each family is declared through `fontsourceFamily({ package, ... })`, which
+  checks its subsets, styles and files while `astro.config.mjs` loads: a missing one stops the
+  build ("Unable to load your Astro config"), where the Fonts API would only log the provider's
+  error and build without the family. The face names are `<family>-<hash>`: CSS reaches them only through
   `var(--display)` / `var(--body)`. BaseLayout preloads the latin face of each family.
 - **`src/layouts/BaseLayout.astro`** (props `locale`, `page`, and for every page but home its
   `name` and `description`, A5) builds its head with `pageHead()` (`head.ts`) from the query
@@ -372,7 +375,9 @@ Spec §6.
   localStorage when it is `dark`, else light; storage that throws means light, P1-6). The skip
   link (Site copy `common.skipLink`) shows only while focused and leads to
   `<main id="main" tabindex="-1">`. An inline script at the end of `<body>` adds `.in` to each
-  reveal element once a tenth of it is in view (IntersectionObserver).
+  reveal element once a tenth of it is in view (IntersectionObserver), to an element taller than
+  nine viewports as soon as it is in view, and to every reveal element at once where the browser
+  has no IntersectionObserver.
 - **`src/content/copy.ts`:** `textIn(text, L, field)` (a Site copy value, or an error naming the
   field) and `fill(template, values)` (a template's `{name}` placeholders, nothing else).
 

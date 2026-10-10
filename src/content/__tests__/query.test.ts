@@ -1,6 +1,7 @@
 // The query module (spec §5) on fixtures (./rules-fixtures.ts) and on the snapshot: the items each
 // language shows, with their links; the static paths of the built languages; the readiness check
-// that fails a build; and the rule that only the adapter imports astro:content.
+// that fails a build; and the rule that under src/ only content.config.ts and query.ts (the
+// adapter) import astro:content, no page among them.
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
