@@ -1,0 +1,19 @@
+{
+  "heading": {
+    "lead": {
+      "en": "News &"
+    },
+    "payload": {
+      "en": "technology."
+    }
+  },
+  "lead": {
+    "en": "News from INVETEC and the technologies behind the systems."
+  },
+  "articleMeta": {
+    "en": "{date} · {category}"
+  },
+  "backToAll": {
+    "en": "Back to all news"
+  }
+}

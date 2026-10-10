@@ -29,3 +29,6 @@ playwright-report/
 
 # Redirect crawl resume cache and request log
 redirects/.crawl-cache/
+
+# A media:fetch write cut short (removed on error; ignored in case a process is killed mid-write)
+*.partial

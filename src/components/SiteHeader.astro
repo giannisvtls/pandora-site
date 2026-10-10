@@ -1,0 +1,261 @@
+---
+// The site header (spec §7): the logo link to the language home, the primary nav with the page's
+// section marked, the compare link (its count badge stays hidden until Phase 2 fills it), the
+// theme toggle, the language switcher and the mobile menu (spec §8). `variant`: `solid` sits on
+// the page's own background; `overlay` is transparent over the page's first section (Phase 2's
+// hero) and turns solid once that section has scrolled up under it. It is transparent only where
+// that can happen: with JavaScript (html.js) and an IntersectionObserver, and while the header is
+// fixed over the section; without JavaScript, and in the page flow below 1120px, it has the solid
+// background. Everything it shows comes from `content` (layouts/shell.ts, through the query
+// module).
+// From 1120px the header is one fixed row. Below, it sits in the page flow and may wrap, so it
+// never covers the content: with JavaScript the burger (the mobile menu island, hydrated only
+// there) stands in for the nav and the switcher; without JavaScript they stay inline (A11).
+// 1120px, not the design's 900px: under WCAG 1.4.12 text spacing the one-row header needs 957px
+// in English, 997px with two language codes and 1076px with all four, and a fixed row cannot
+// scroll to what overflows; the rest is room for a classic scrollbar (up to 17px) and rendering.
+import { Image } from 'astro:assets';
+
+import MobileMenu from './islands/MobileMenu';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+import ThemeToggle from './ThemeToggle.astro';
+import logoWhite from '../assets/brand/invetec-logo-lettering-white.webp';
+import logoDark from '../assets/brand/invetec-logo.webp';
+import type { HeaderContent } from '../layouts/shell';
+
+interface Props {
+  content: HeaderContent;
+  variant: 'solid' | 'overlay';
+}
+
+const { content, variant } = Astro.props;
+const { home, nav, compare, theme, language, menu } = content;
+---
+
+<header class:list={['hdr', variant]}>
+  <a class="home" href={home.href} aria-label={home.label}>
+    <Image
+      class="lw"
+      src={logoWhite}
+      alt={home.logoAlt}
+      height={28}
+      densities={[1, 2]}
+      loading="eager"
+    />
+    <Image
+      class="ld"
+      src={logoDark}
+      alt={home.logoAlt}
+      height={28}
+      densities={[1, 2]}
+      loading="eager"
+    />
+  </a>
+  <nav aria-label={nav.label}>
+    {nav.links.map(({ label, href, isCurrent }) => (
+      <a href={href} aria-current={isCurrent ? 'page' : undefined}>
+        {label}
+      </a>
+    ))}
+  </nav>
+  <div class="hdr-right">
+    <a class="cmp-link" href={compare.href} aria-label={compare.label}>
+      {compare.text}
+      <b hidden>0</b>
+    </a>
+    <ThemeToggle toDark={theme.toDark} toLight={theme.toLight} />
+    <LanguageSwitcher label={language.label} targets={language.targets} />
+    {/* The island's script loads only where the media query matches: keep it the CSS breakpoint. */}
+    <MobileMenu client:media="(max-width: 1119px)" {...menu} />
+  </div>
+  {variant === 'overlay' && <script is:inline>
+    {
+      // The overlay header stays transparent while the page's first section (the hero) is
+      // under it, and turns solid once that section has scrolled up past it. A browser without
+      // IntersectionObserver, or a page without a first section, gets the solid header at once.
+      const header = document.currentScript?.parentElement;
+      if ('IntersectionObserver' in globalThis) {
+        document.addEventListener('DOMContentLoaded', () => {
+          const first = document.querySelector('main > :first-child');
+          if (first === null) {
+            header.classList.add('solid');
+            return;
+          }
+          const observer = new IntersectionObserver(
+            ([entry]) => header.classList.toggle('solid', !entry.isIntersecting),
+            { rootMargin: `-${String(header.offsetHeight)}px 0px 0px 0px` },
+          );
+          observer.observe(first);
+        });
+      } else {
+        header.classList.add('solid');
+      }
+    }
+  </script>}
+</header>
+{/* The solid header is fixed (out of the flow): this spacer starts the page below it. */}
+{variant === 'solid' && <div class="hdr-space" />}
+
+<style>
+  /* nightwatch.css "header", the rules this header uses. Its background is the design's
+     `.hdr.solid` look, for the solid variant and for the overlay wherever the overlay cannot be
+     transparent (below); an overlay without `.solid` keeps the night tokens of tokens.css. */
+  .hdr {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    min-height: var(--hdr);
+    padding: 22px var(--gutter);
+    background: rgba(var(--night-rgb), 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule-2);
+    color: var(--ink);
+    transition: background 0.4s;
+  }
+
+  /* The design's transparent `.hdr` over the page's first section: only with JavaScript, whose
+     script turns the header solid once the section has gone (the IntersectionObserver fallback
+     adds `.solid` at once), and only where the header is fixed over the section. Without
+     JavaScript, and in the page flow below 1120px, the overlay keeps the solid look above. */
+  @media not all and (max-width: 1119px) {
+    :global(html.js) .hdr.overlay:not(.solid) {
+      background: linear-gradient(rgba(10, 15, 20, 0.85), rgba(10, 15, 20, 0));
+      backdrop-filter: none;
+      border-bottom-color: transparent;
+    }
+  }
+
+  .hdr-space {
+    height: var(--hdr);
+  }
+
+  .home {
+    flex: none;
+  }
+
+  .hdr img {
+    height: 28px;
+    width: auto;
+  }
+
+  .hdr img.lw {
+    display: var(--lw);
+  }
+
+  .hdr img.ld {
+    display: var(--ld);
+  }
+
+  nav {
+    display: flex;
+    gap: clamp(18px, 2vw, 28px);
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  nav a {
+    position: relative;
+    padding: 6px 0;
+    white-space: nowrap;
+  }
+
+  nav a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.5s var(--ease);
+  }
+
+  nav a:hover::after,
+  nav a[aria-current]::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  .hdr-right {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+  }
+
+  .cmp-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    border: 1px solid var(--rule);
+    min-height: 36px;
+  }
+
+  .cmp-link b {
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background: var(--blue-soft);
+    color: var(--night);
+    display: inline-grid;
+    place-items: center;
+    font-size: 11px;
+  }
+
+  /* The badge shows only once something is selected (Phase 2). */
+  .cmp-link b[hidden] {
+    display: none;
+  }
+
+  /* Below 1120px (the header's comment says why not 900px): the header sits in the page flow and
+     wraps when it must, so it never covers the content or the focused element, and no control is
+     pushed out of reach. With JavaScript the mobile menu holds the nav and the switcher (its burger
+     shows, MobileMenu.css); without it they stay inline (A11). */
+  @media (max-width: 1119px) {
+    .hdr {
+      position: relative;
+      flex-wrap: wrap;
+    }
+
+    nav {
+      flex-wrap: wrap;
+    }
+
+    .hdr-space {
+      display: none;
+    }
+
+    .cmp-link {
+      min-height: 44px;
+    }
+
+    /* The header's own switcher only: the menu's sits inside the island. */
+    :global(html.js) nav,
+    :global(html.js) .hdr-right > :global(.lang) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hdr {
+      gap: 12px;
+      padding-inline: clamp(16px, 4vw, 24px);
+    }
+
+    .hdr-right {
+      gap: 10px;
+    }
+  }
+</style>

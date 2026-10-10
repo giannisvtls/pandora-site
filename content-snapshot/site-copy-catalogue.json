@@ -1,0 +1,16 @@
+{
+  "systemCount": {
+    "one": {
+      "en": "{count} system for {vehicle}"
+    },
+    "other": {
+      "en": "{count} systems for {vehicle}"
+    }
+  },
+  "levelFilterLabel": {
+    "en": "Filter by level"
+  },
+  "noSystemAtLevel": {
+    "en": "No system at this level for this vehicle."
+  }
+}

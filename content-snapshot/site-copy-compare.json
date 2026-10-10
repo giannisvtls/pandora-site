@@ -1,0 +1,251 @@
+{
+  "heading": {
+    "lead": {
+      "en": "Compare"
+    },
+    "payload": {
+      "en": "systems."
+    }
+  },
+  "vehiclePrompt": {
+    "en": "Compare picks for my"
+  },
+  "picker": {
+    "comparing": {
+      "en": "Comparing {count} of {max}"
+    },
+    "choose": {
+      "en": "Choose up to {max} {vehicle} systems"
+    },
+    "change": {
+      "en": "Change systems"
+    },
+    "done": {
+      "en": "Done"
+    },
+    "poolLabel": {
+      "en": "{vehicle} systems to compare"
+    }
+  },
+  "suggestions": {
+    "heading": {
+      "lead": {
+        "en": "Add a"
+      },
+      "payload": {
+        "en": "similar system"
+      }
+    },
+    "note": {
+      "en": "Same vehicle type first, then the nearest protection level."
+    },
+    "add": {
+      "en": "Add +"
+    }
+  },
+  "table": {
+    "label": {
+      "en": "Comparing {names}"
+    },
+    "feature": {
+      "en": "Feature"
+    },
+    "open": {
+      "en": "Open"
+    },
+    "remove": {
+      "en": "Remove"
+    },
+    "barLabel": {
+      "en": "Comparing"
+    },
+    "differ": {
+      "one": {
+        "en": "{count} of {total} differ"
+      },
+      "other": {
+        "en": "{count} of {total} differ"
+      }
+    },
+    "identical": {
+      "en": "Identical on every row."
+    },
+    "allInclude": {
+      "2": {
+        "en": "Both include:"
+      },
+      "3": {
+        "en": "All three include:"
+      },
+      "4": {
+        "en": "All four include:"
+      }
+    },
+    "allOptional": {
+      "2": {
+        "en": "Optional on both:"
+      },
+      "3": {
+        "en": "Optional on all three:"
+      },
+      "4": {
+        "en": "Optional on all four:"
+      }
+    },
+    "noneHas": {
+      "2": {
+        "en": "Neither has:"
+      },
+      "3": {
+        "en": "None of them has:"
+      },
+      "4": {
+        "en": "None of them has:"
+      }
+    },
+    "extraRows": {
+      "one": {
+        "en": "{count} row"
+      },
+      "other": {
+        "en": "{count} rows"
+      }
+    },
+    "extraDiffer": {
+      "one": {
+        "en": "{count} differ"
+      },
+      "other": {
+        "en": "{count} differ"
+      }
+    },
+    "show": {
+      "en": "Show"
+    },
+    "hide": {
+      "en": "Hide"
+    }
+  },
+  "tools": {
+    "showAll": {
+      "one": {
+        "en": "Show all {count} rows"
+      },
+      "other": {
+        "en": "Show all {count} rows"
+      }
+    },
+    "installerDetails": {
+      "en": "Installer details"
+    }
+  },
+  "list": {
+    "two": {
+      "en": "{first} and {second}"
+    },
+    "more": {
+      "one": {
+        "en": "{first}, {second} and {count} more"
+      },
+      "other": {
+        "en": "{first}, {second} and {count} more"
+      }
+    }
+  },
+  "standout": {
+    "alone": {
+      "en": "The only {vehicle} system, so there is nothing to compare it with."
+    },
+    "addSecond": {
+      "en": "Add a second system to see what sets this one apart."
+    },
+    "noImmobilizer": {
+      "en": "Doesn't stop the engine."
+    },
+    "noTracking": {
+      "en": "No tracking."
+    },
+    "noTrackingOptional": {
+      "en": "No tracking unless you add the optional GPS module."
+    },
+    "onlyOneWith": {
+      "strong": {
+        "en": "The only one here with"
+      },
+      "rest": {
+        "en": "{features}."
+      }
+    },
+    "findsIt": {
+      "strong": {
+        "en": "Finds it"
+      },
+      "gps": {
+        "en": "with GPS."
+      },
+      "gpsAndLte": {
+        "en": "with GPS and 4G."
+      }
+    },
+    "stopsEngine": {
+      "strong": {
+        "en": "Stops the engine"
+      },
+      "rest": {
+        "en": "with the immobilizer."
+      }
+    },
+    "missing": {
+      "en": "Missing: {features}."
+    },
+    "sameFeatures": {
+      "strong": {
+        "en": "Same features"
+      },
+      "asOne": {
+        "en": "as {name}."
+      },
+      "asOthers": {
+        "en": "as the others here."
+      },
+      "partsDifferOne": {
+        "en": "as {name}; the parts differ (turn on {toggle})."
+      },
+      "partsDifferOthers": {
+        "en": "as the others here; the parts differ (turn on {toggle})."
+      }
+    }
+  },
+  "empty": {
+    "heading": {
+      "lead": {
+        "en": "Nothing"
+      },
+      "payload": {
+        "en": "selected."
+      }
+    },
+    "picks": {
+      "2": {
+        "en": "Two {vehicle} picks, from the lightest to the complete system. Or choose your own above."
+      },
+      "3": {
+        "en": "Three {vehicle} picks, from the lightest to the complete system. Or choose your own above."
+      }
+    },
+    "seed": {
+      "2": {
+        "en": "Compare these two"
+      },
+      "3": {
+        "en": "Compare these three"
+      }
+    },
+    "onlyOne": {
+      "en": "{name} is the only {vehicle} system, so there is nothing to compare it with."
+    },
+    "see": {
+      "en": "See {name}"
+    }
+  }
+}

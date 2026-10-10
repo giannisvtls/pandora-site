@@ -1,0 +1,157 @@
+/* The mobile menu island (MobileMenu.tsx, spec §8), from nightwatch.css `.menu-btn` and `.m-nav`.
+   Global rules: the markup of a Preact island carries no Astro scope. `(max-width: 1119px)` is
+   SiteHeader.astro's breakpoint and the island's `client:media`; tokens.css gives `.m-nav` the night
+   tokens. */
+
+/* The burger and the close button (the design's open burger, drawn at once: the design's
+   burger-to-X morph is not ported, since the close button is a control of its own inside the modal
+   dialog). Button styles are reset one by one, never with `all` (base.test.ts). */
+.menu-btn {
+  appearance: none;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Each bar is a 2px top border in the button's text colour (`currentColor`), not a background: in
+   forced-colors mode (Windows High Contrast) the browser paints backgrounds with the Canvas colour,
+   which would leave two empty boxes, while a border takes the forced text colour. */
+.menu-btn span {
+  display: block;
+  width: 20px;
+  height: 0;
+  border-top: 2px solid;
+}
+
+/* The burger shows only with JavaScript, below 1120px: without JavaScript the header keeps its
+   inline nav and switcher there (A11). */
+@media (max-width: 1119px) {
+  html.js .menu-open {
+    display: flex;
+  }
+}
+
+/* The close button, over the burger (menu-dialog.ts measures it on opening and on every resize
+   while open). Fixed to the screen, so it stays in reach while the menu scrolls; on the night
+   background, so it stays legible over the links passing under it. */
+.menu-close {
+  display: flex;
+  position: fixed;
+  top: var(--burger-top, 22px);
+  left: var(--burger-left, calc(100% - var(--gutter) - 44px));
+  z-index: 1;
+  background: var(--night);
+}
+
+.menu-close span:first-child {
+  transform: translateY(4px) rotate(45deg);
+}
+
+.menu-close span:last-child {
+  transform: translateY(-4px) rotate(-45deg);
+}
+
+/* The menu: a modal dialog over the whole screen (the browser draws a modal dialog as a small
+   centred box). `display` only while open: a closed dialog stays hidden. */
+.m-nav {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0 var(--gutter);
+  border: 0;
+  background: var(--night);
+  color: var(--ink);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.m-nav[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Centred on the screen as the design's `justify-content: center` (the same space above and
+   below), yet scrollable from its top when it is taller than the screen (large text, text spacing,
+   a phone held sideways); clear of the close button at the top. */
+.m-nav-body {
+  margin-block: auto;
+  padding-block: calc(var(--burger-top, 22px) + 44px + 24px);
+}
+
+/* A link that takes focus while the menu scrolls stops below the close button. */
+.m-nav-body a {
+  scroll-margin-top: calc(var(--burger-top, 22px) + 44px + 8px);
+}
+
+.m-nav nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.m-nav nav a {
+  font-family: var(--display);
+  font-size: 56px;
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule-2);
+}
+
+/* nightwatch.css `.lang`, in the menu. */
+.m-nav .lang {
+  display: flex;
+  gap: 10px;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.m-nav .lang a,
+.m-nav .lang span[aria-current] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+}
+
+.m-nav .lang a {
+  color: var(--ink-2);
+}
+
+.m-nav .lang a:hover,
+.m-nav .lang span[aria-current] {
+  color: var(--ink);
+}
+
+/* The page under the open menu does not scroll; the lock follows `open`, so every way out lifts
+   it. */
+html:has(.m-nav[open]) {
+  overflow: hidden;
+}
+
+@media (max-width: 400px) {
+  .m-nav nav a {
+    font-size: 44px;
+  }
+}

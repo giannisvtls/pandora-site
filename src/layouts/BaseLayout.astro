@@ -1,25 +1,153 @@
 ---
+// The document shell of every page (spec §6, §7, §8, §9): the head (title, description, robots,
+// canonical, hreflang alternates, og: tags, the Organization JSON-LD on a language home, favicon,
+// fonts), the theme applied before first paint, the localized skip link, the site header, <main>,
+// the site footer, the explainer island and the reveal script. Everything it says comes through
+// the query module.
+import { Font } from 'astro:assets';
+
+import { explainerContent } from './explainer-content';
+import { pageHead } from './head';
+import { footerContent, headerContent } from './shell';
+import Explainer from '../components/islands/Explainer';
+import SiteFooter from '../components/SiteFooter.astro';
+import SiteHeader from '../components/SiteHeader.astro';
 import type { Locale } from '../content/contract';
+import { siteQuery } from '../content/query';
+import type { Page } from '../content/rules';
+import '../styles/tokens.css';
+import '../styles/base.css';
 
 interface Props {
-  lang: Locale;
-  title: string;
+  locale: Locale;
+  // The page, for its canonical URL and its alternates.
+  page: Page;
+  // The page's own name for the title template, and its description (its lead or blurb, A5).
+  // Home passes neither: its title and description are its own Site copy.
+  name?: string;
+  description?: string;
+  // The header: `solid` (the default) on the page's background, `overlay` over a dark hero.
+  header?: 'solid' | 'overlay';
+  // Whether the page mounts the explainer island (the default); a page without explainer buttons
+  // (the 404 pages) passes false and loads no island script for it.
+  hasExplainer?: boolean;
 }
 
-const { lang, title } = Astro.props;
+const { locale, page, name, description, header = 'solid', hasExplainer = true } = Astro.props;
+if (Astro.site === undefined) throw new Error('astro.config.mjs sets no site');
+const query = await siteQuery();
+const head = pageHead(query, Astro.site, { locale, page, name, description });
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={locale}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
+    {/*
+        Before any stylesheet, so the first paint already has the theme (P1-6): the saved choice,
+        else light; storage that throws means light. `js` gates the reveal start states (A11).
+      */}
+    <script is:inline>
+      {
+        const root = document.documentElement;
+        root.classList.add('js');
+        let theme = 'light';
+        try {
+          if (localStorage.getItem('theme') === 'dark') theme = 'dark';
+        } catch {
+          // Storage is blocked: the first-visit default.
+        }
+        root.dataset.theme = theme;
+      }
+    </script>
+    <title>{head.title}</title>
+    <meta name="description" content={head.description} />
+    {!head.isIndexed && <meta name="robots" content="noindex" />}
+    {head.canonical !== undefined && <link rel="canonical" href={head.canonical} />}
+    {head.alternates.map(({ hreflang, href }) => (
+      <link rel="alternate" hreflang={hreflang} href={href} />
+    ))}
+    <meta property="og:title" content={head.title} />
+    <meta property="og:description" content={head.description} />
+    {head.canonical !== undefined && <meta property="og:url" content={head.canonical} />}
+    <meta property="og:locale" content={head.ogLocale} />
+    {/* A data block, not a script: no CSP hash needed. `scriptJson` escapes every `<`. */}
+    {head.organization !== undefined && (
+      <script is:inline type="application/ld+json" set:html={head.organization} />
+    )}
+    <link rel="icon" href="/favicon.webp" type="image/webp" />
+    <Font cssVariable="--display" preload={[{ subset: 'latin', weight: 800 }]} />
+    <Font cssVariable="--body" preload={[{ subset: 'latin', weight: 400 }]} />
   </head>
   <body>
-    <a href="#main">Skip to main content</a>
+    <a class="skip" href="#main">
+      {head.skipLink}
+    </a>
+    <SiteHeader content={headerContent(query, page, locale)} variant={header} />
     <main id="main" tabindex="-1">
       <slot />
     </main>
+    <SiteFooter content={footerContent(query, locale, new Date().getFullYear())} />
+    {/*
+        The explainer (spec §8): one dialog for every feature and level button on the page,
+        hydrated once the browser is idle; its markup is a closed dialog until a button opens it.
+      */}
+    {hasExplainer && <Explainer client:idle {...explainerContent(query, locale)} />}
+    {/*
+        The reveal grammar (base.css): `.in` once a tenth of an element is in view. An element
+        taller than nine viewports (a tenth of it barely fits, over ten it never does) gets `.in`
+        as soon as it is in view. No negative bottom margin (the design's -10%): a small element at
+        the end of a page that cannot scroll further would never reach the band and would stay
+        hidden. Without IntersectionObserver every element is revealed at once.
+      */}
+    <script is:inline>
+      {
+        const targets = document.querySelectorAll('.rv, .zoom, .wipe, .line-rv');
+        if ('IntersectionObserver' in globalThis) {
+          const observer = new IntersectionObserver(
+            (entries) => {
+              for (const entry of entries) {
+                if (!entry.isIntersecting) continue;
+                const view = entry.rootBounds?.height ?? innerHeight;
+                const canShowTenth = entry.boundingClientRect.height <= view * 9;
+                if (canShowTenth && entry.intersectionRatio < 0.1) continue;
+                entry.target.classList.add('in');
+                observer.unobserve(entry.target);
+              }
+            },
+            { threshold: [0, 0.1] },
+          );
+          for (const target of targets) observer.observe(target);
+        } else {
+          for (const target of targets) target.classList.add('in');
+        }
+      }
+    </script>
   </body>
 </html>
+
+<style>
+  /* The skip link: the first focusable element, shown only while it has focus. */
+  .skip {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 100;
+    padding: 12px 18px;
+    background: var(--field);
+    color: var(--ink);
+    border: 1px solid var(--rule);
+    font-weight: 700;
+  }
+
+  .skip:not(:focus) {
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+</style>

@@ -1,0 +1,46 @@
+[
+  {
+    "id": "faq-1",
+    "order": 1,
+    "showIn": ["en", "el", "it", "sq"],
+    "question": {
+      "en": "What is the difference between an alarm and an immobilizer?"
+    },
+    "answer": {
+      "en": "An alarm tells you something is happening. An immobilizer stops the vehicle from moving. The first is detection, the second is prevention — which is why serious systems have both."
+    }
+  },
+  {
+    "id": "faq-2",
+    "order": 2,
+    "showIn": ["en", "el", "it", "sq"],
+    "question": {
+      "en": "Do I need GPS tracking if I already have an alarm?"
+    },
+    "answer": {
+      "en": "An alarm protects while the vehicle is still there. Tracking works after it has gone. If the vehicle is high-value or parked on the street, tracking is the level that separates a theft from a recovery."
+    }
+  },
+  {
+    "id": "faq-3",
+    "order": 3,
+    "showIn": ["en", "el", "it", "sq"],
+    "question": {
+      "en": "Can I install the system myself?"
+    },
+    "answer": {
+      "en": "No. All Pandora systems are installed exclusively by certified Pandora Specialists. The installation decides whether the system is found in two minutes or not at all, and it involves the vehicle's CAN-bus."
+    }
+  },
+  {
+    "id": "faq-4",
+    "order": 4,
+    "showIn": ["en", "el", "it", "sq"],
+    "question": {
+      "en": "Does the system fit my vehicle model?"
+    },
+    "answer": {
+      "en": "Compatibility depends on make, model, year and bus protocol (CAN or FD-CAN). Check your model in the compatibility database before choosing a system."
+    }
+  }
+]

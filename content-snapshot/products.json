@@ -1,8 +1,1759 @@
 [
   {
-    "id": "camperv3",
+    "id": "elite",
+    "slug": "elite-v3",
+    "category": "car",
+    "order": 1,
+    "brand": "Pandora",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Elite V3"
+    },
+    "tag": {
+      "en": "The elite of car alarm systems"
+    },
+    "blurb": {
+      "en": "The ultimate car security system with advanced tracking and anti-theft protection — flagship-grade hardware for vehicles that deserve nothing less."
+    },
+    "priceEur": 1499,
+    "highlights": [
+      "immo",
+      "nodisarm",
+      "gps",
+      "lte",
+      "twoway",
+      "blackbox",
+      "jammer",
+      "hijack",
+      "app",
+      "accel",
+      "addons"
+    ],
+    "specGroups": [
+      {
+        "title": {
+          "en": "Protection"
+        },
+        "items": [
+          {
+            "en": "Driver recognition by PIN and Tag (NO TAG → NO DRIVE, NO PIN → NO DRIVE)"
+          },
+          {
+            "en": "Disarming Prevention Technology against relay attacks and key cloning"
+          },
+          {
+            "en": "Anti-hijack: brief drive, then engine block"
+          },
+          {
+            "en": "Digital 3D sensor: two shock zones plus tilt detection, adjustable in the app"
+          },
+          {
+            "en": "Anti-jammer via Active Protection with server-side alerts"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Control and connectivity"
+        },
+        "items": [
+          {
+            "en": "Multi-channel GSM modem (4G/3G/2G), Wi-Fi, Bluetooth 5.0"
+          },
+          {
+            "en": "GNSS/GPS receiver plus Wi-Fi positioning for enclosed spaces"
+          },
+          {
+            "en": "Black Box recording synced to the server"
+          },
+          {
+            "en": "Pandora Connect app and free Self Call-Center"
+          },
+          {
+            "en": "Commander remote: vertical OLED, LoRa, Bluetooth 5.0, wireless charging, SOS button"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Vehicle integration"
+        },
+        "items": [
+          {
+            "en": "CAN FD, CAN, LIN, IMMO-KEY and Toyota BEAN BUS"
+          },
+          {
+            "en": "Compatible with EV, PHEV, HEV and ICE vehicles"
+          },
+          {
+            "en": "Over 20 Bluetooth accessories for extended protection"
+          },
+          {
+            "en": "2× FD CAN, 2× CAN, 2× LIN, BEAN bus, analog and IMMO-key connections; 14 inputs / 20 outputs (pricelist comparison)"
+          }
+        ]
+      }
+    ],
+    "box": [
+      {
+        "en": "Central unit"
+      },
+      {
+        "en": "RFM-470 antenna module"
+      },
+      {
+        "en": "External GSM antenna"
+      },
+      {
+        "en": "Wire harnesses"
+      },
+      {
+        "en": "External VALET V3 button"
+      },
+      {
+        "en": "IMO 10 blocking relay"
+      },
+      {
+        "en": "PS-332 piezoelectric siren"
+      },
+      {
+        "en": "Audio notifier"
+      },
+      {
+        "en": "Engine temperature sensor"
+      },
+      {
+        "en": "D-061 remote control"
+      },
+      {
+        "en": "2× BT-790 immobilizer tags"
+      },
+      {
+        "en": "Personal owner card"
+      },
+      {
+        "en": "User manual and wiring diagram"
+      }
+    ],
+    "warranty": {
+      "en": "Lifetime warranty (see warranty activation)"
+    },
+    "specSource": "invetec",
+    "matrix": {
+      "accel": 1,
+      "siren": 1,
+      "immo": 1,
+      "bt": 1,
+      "pin": 1,
+      "smarttag": 1,
+      "nodisarm": 1,
+      "hijack": 1,
+      "jammer": 1,
+      "gps": 1,
+      "wifi": 1,
+      "lbs": 1,
+      "lte": 1,
+      "blackbox": 1,
+      "app": 1,
+      "push": 1,
+      "selfcall": 1,
+      "oem": 1,
+      "remote": 1,
+      "start": 2,
+      "keyless": 1,
+      "preheater": 1
+    },
+    "matrixNotes": {
+      "siren": "PS-332 BT",
+      "bt": "BT-785 + BT-775",
+      "gps": "2 GNSS antennas",
+      "lte": "4G · BT 5.0 · LoRa · 2 GSM antennas",
+      "remote": "D-061",
+      "start": "with RMD-5M"
+    },
+    "image": "pandora-elite-v3-package",
+    "gallery": ["pandora-commander-remote-control", "pandora-d-061-lora-868mhzbluetooth5-gr"],
+    "installImage": "works-2025-pandora-elite-v3-porsche-911-turbo-s"
+  },
+  {
+    "id": "professional",
+    "slug": "professional-v3",
+    "category": "car",
+    "order": 2,
+    "brand": "Pandora",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Professional V3"
+    },
+    "tag": {
+      "en": "Professional-grade protection with telemetry"
+    },
+    "blurb": {
+      "en": "Advanced security and telemetry for demanding daily use, with real-time alerts and smart immobilizer logic."
+    },
+    "priceEur": 989,
+    "highlights": [
+      "immo",
+      "nodisarm",
+      "gps",
+      "lte",
+      "blackbox",
+      "jammer",
+      "hijack",
+      "app",
+      "accel",
+      "siren",
+      "addons"
+    ],
+    "specGroups": [
+      {
+        "title": {
+          "en": "Protection"
+        },
+        "items": [
+          {
+            "en": "Driver recognition by PIN and Tag"
+          },
+          {
+            "en": "Disarm prevention against relay attacks and key cloning"
+          },
+          {
+            "en": "Anti-hijack: brief drive, then engine block"
+          },
+          {
+            "en": "Digital 3D sensor with two vibration zones and false-alarm filtering"
+          },
+          {
+            "en": "Anti-jammer: server alerts and automatic wireless siren"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Control and connectivity"
+        },
+        "items": [
+          {
+            "en": "4G LTE modem, high-sensitivity GNSS receiver, Bluetooth 5.0"
+          },
+          {
+            "en": "Two-way LoRa HS communication with the D-062 remote"
+          },
+          {
+            "en": "Black Box recording synced to the server"
+          },
+          {
+            "en": "Pandora Connect app and free Self Call-Center"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Vehicle integration"
+        },
+        "items": [
+          {
+            "en": "CAN FD, CAN, LIN and IMMO-KEY"
+          },
+          {
+            "en": "Compatible with EV, PHEV, HEV and ICE vehicles"
+          },
+          {
+            "en": "Over 20 Bluetooth accessories for extended protection"
+          },
+          {
+            "en": "1× FD CAN, 2× CAN, LIN bus, analog and IMMO-key connections; 11 inputs / 14 outputs (pricelist comparison)"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Hardware"
+        },
+        "items": [
+          {
+            "en": "PS-332 BT wireless siren: backup battery, Jammer Ready, above 120 dB, waterproof"
+          },
+          {
+            "en": "Hood switch and engine temperature sensor"
+          }
+        ]
+      }
+    ],
+    "box": [
+      {
+        "en": "Central unit"
+      },
+      {
+        "en": "Cable harnesses"
+      },
+      {
+        "en": "External VALET button"
+      },
+      {
+        "en": "IMO 10 lock relay"
+      },
+      {
+        "en": "Engine temperature sensor"
+      },
+      {
+        "en": "Hood switch"
+      },
+      {
+        "en": "D-062 remote control"
+      },
+      {
+        "en": "BT-790 immobilizer tag"
+      },
+      {
+        "en": "Owner's card"
+      },
+      {
+        "en": "User manual and wiring diagram"
+      }
+    ],
+    "warranty": {
+      "en": "Lifetime warranty (see warranty activation)"
+    },
+    "specSource": "invetec",
+    "matrix": {
+      "accel": 1,
+      "siren": 1,
+      "immo": 1,
+      "bt": 1,
+      "pin": 1,
+      "smarttag": 1,
+      "nodisarm": 1,
+      "hijack": 1,
+      "jammer": 1,
+      "gps": 1,
+      "wifi": 0,
+      "lbs": 1,
+      "lte": 1,
+      "blackbox": 1,
+      "app": 1,
+      "push": 1,
+      "selfcall": 1,
+      "oem": 1,
+      "remote": 1,
+      "start": 2,
+      "keyless": 1,
+      "preheater": 1
+    },
+    "matrixNotes": {
+      "siren": "PS-332 BT",
+      "bt": "BT-780 + BT-770",
+      "lte": "4G · BT 5.0 · LoRa HS",
+      "remote": "D-062",
+      "start": "with RMD-5M"
+    },
+    "image": "pandora-professional-v3-package-commander",
+    "gallery": ["pandora-ultimate-d-060", "pandora-professional-v3-connectivity"],
+    "installImage": "works-2025-pandora-professional-v3-land-rover-range-rover-sport-p400e-hse"
+  },
+  {
+    "id": "smartpro",
+    "slug": "smart-pro-v4-fd",
+    "category": "car",
+    "order": 3,
+    "brand": "Pandora",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Smart Pro V4 FD"
+    },
+    "tag": {
+      "en": "Next-generation telemetry with FD CAN support"
+    },
+    "blurb": {
+      "en": "Built for the newest vehicles: FD CAN support, LTE telemetry and remote engine start in one compact system."
+    },
+    "priceEur": 689,
+    "highlights": ["lte", "app", "blackbox", "can", "gps", "jammer", "siren", "nodisarm", "hijack"],
+    "specGroups": [
+      {
+        "title": {
+          "en": "Protection"
+        },
+        "items": [
+          {
+            "en": "Dual-zone shock and digital tilt/lift sensor"
+          },
+          {
+            "en": "Remote engine blocking"
+          },
+          {
+            "en": "Prohibit disarming with ID-tag"
+          },
+          {
+            "en": "Anti-jammer protection"
+          },
+          {
+            "en": "Wireless Bluetooth siren"
+          },
+          {
+            "en": "Multiple encryption protocols"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Control and connectivity"
+        },
+        "items": [
+          {
+            "en": "4G LTE/3G/2G modem for faster telemetry"
+          },
+          {
+            "en": "Smartphone app (Apple and Android) and web interface"
+          },
+          {
+            "en": "BT tags for automatic arming and disarming (keyless hands-free); 2 included, up to 4"
+          },
+          {
+            "en": "GPS location on Google Maps and Yandex"
+          },
+          {
+            "en": "Integrated GLONASS/GPS/BeiDou receiver"
+          },
+          {
+            "en": "Factory remote control operation"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Vehicle integration"
+        },
+        "items": [
+          {
+            "en": "Four simultaneous CAN connections, two of them CAN FD"
+          },
+          {
+            "en": "Dual processor architecture, 300 MHz main processor"
+          },
+          {
+            "en": "Automatic window closing on arming (optional equipment)"
+          },
+          {
+            "en": "OBD door locking"
+          },
+          {
+            "en": "Remote engine start and climate activation (optional equipment)"
+          },
+          {
+            "en": "Digital cabin sensor connection"
+          },
+          {
+            "en": "Compatible with existing systems"
+          },
+          {
+            "en": "2× FD CAN, 2× CAN, 2× LIN, BEAN bus, analog and IMMO-key connections; 11 inputs / 14 outputs (pricelist comparison)"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Service and warranty"
+        },
+        "items": [
+          {
+            "en": "Lifetime warranty with immediate central unit replacement"
+          },
+          {
+            "en": "Free annual upgrades and automatic updates"
+          },
+          {
+            "en": "Transfer to another vehicle by software update"
+          },
+          {
+            "en": "E-Mark, CE and IATF 16949:2016"
+          }
+        ]
+      }
+    ],
+    "box": [
+      {
+        "en": "Central unit"
+      },
+      {
+        "en": "System wiring harness"
+      },
+      {
+        "en": "IMO 10 relay"
+      },
+      {
+        "en": "Engine temperature sensor"
+      },
+      {
+        "en": "External VALET button (BS4 Pro)"
+      },
+      {
+        "en": "Beeper"
+      },
+      {
+        "en": "2× BT-790 immobilizer tags"
+      },
+      {
+        "en": "2× CR2032 batteries"
+      },
+      {
+        "en": "Owner card"
+      },
+      {
+        "en": "User manual and wiring diagram"
+      }
+    ],
+    "warranty": {
+      "en": "Lifetime warranty"
+    },
+    "specSource": "invetec",
+    "matrix": {
+      "accel": 1,
+      "siren": 1,
+      "immo": 1,
+      "bt": 1,
+      "pin": 1,
+      "smarttag": 1,
+      "nodisarm": 1,
+      "hijack": 1,
+      "jammer": 1,
+      "gps": 1,
+      "wifi": 0,
+      "lbs": 1,
+      "lte": 1,
+      "blackbox": 1,
+      "app": 1,
+      "push": 1,
+      "selfcall": 1,
+      "oem": 1,
+      "remote": 0,
+      "start": 2,
+      "keyless": 1,
+      "preheater": 1
+    },
+    "matrixNotes": {
+      "siren": "PS-331 BT",
+      "bt": "2× BT-775",
+      "lte": "4G · BT 5.0",
+      "start": "with RMD-5M"
+    },
+    "image": "pandora-smart-pro-v4-package",
+    "gallery": ["pandora-ps-330", "pandora-nav-035-bt"],
+    "installImage": "works-2024-pandora-smart-pro-v4-porsche-taycan-turbo"
+  },
+  {
+    "id": "smart",
+    "slug": "smart-v4",
+    "category": "car",
+    "order": 4,
+    "brand": "Pandora",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Smart V4"
+    },
+    "tag": {
+      "en": "Smart security, controlled from anywhere"
+    },
+    "blurb": {
+      "en": "A connected alarm system with app control, tracking and flexible expansion options."
+    },
+    "priceEur": 519,
+    "highlights": ["lte", "app", "blackbox", "gps", "jammer", "siren", "nodisarm", "hijack"],
+    "specGroups": [
+      {
+        "title": {
+          "en": "Protection"
+        },
+        "items": [
+          {
+            "en": "Dual-zone vibration and digital tilt/lift sensor"
+          },
+          {
+            "en": "Remote engine blocking"
+          },
+          {
+            "en": "Prohibit disarming with ID-tag"
+          },
+          {
+            "en": "Anti-jammer protection"
+          },
+          {
+            "en": "Multiple encryption protocols"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Control and connectivity"
+        },
+        "items": [
+          {
+            "en": "4G LTE/2G modem for faster telemetry"
+          },
+          {
+            "en": "Smartphone app (Apple and Android) and web interface"
+          },
+          {
+            "en": "BT tags for keyless hands-free arming; 2 included, up to 4"
+          },
+          {
+            "en": "Geolocation on Google Maps and Yandex"
+          },
+          {
+            "en": "External GPS/GLONASS/BeiDou antenna (NAV-035 BT)"
+          },
+          {
+            "en": "Factory remote control operation"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Vehicle integration"
+        },
+        "items": [
+          {
+            "en": "CAN-bus"
+          },
+          {
+            "en": "Automatic window closing on arming (optional equipment)"
+          },
+          {
+            "en": "OBD door lock"
+          },
+          {
+            "en": "Remote engine start and climate activation (optional equipment)"
+          },
+          {
+            "en": "Digital cabin sensor connection"
+          },
+          {
+            "en": "Compatible with existing systems"
+          },
+          {
+            "en": "2× CAN, 2× LIN, analog and IMMO-key connections; 7 inputs / 11 outputs (pricelist comparison)"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Service and warranty"
+        },
+        "items": [
+          {
+            "en": "Lifetime warranty with immediate central unit replacement"
+          },
+          {
+            "en": "Free annual upgrades and automatic updates"
+          },
+          {
+            "en": "Transfer to another vehicle by software update"
+          },
+          {
+            "en": "E-Mark, CE and IATF 16949:2016"
+          }
+        ]
+      }
+    ],
+    "box": [
+      {
+        "en": "Central unit"
+      },
+      {
+        "en": "Wire harnesses"
+      },
+      {
+        "en": "IMO 10 blocking relay"
+      },
+      {
+        "en": "Engine temperature sensor"
+      },
+      {
+        "en": "External VALET button (BS4)"
+      },
+      {
+        "en": "Audio alert device"
+      },
+      {
+        "en": "BT-790 immobilizer tag"
+      },
+      {
+        "en": "2× CR2032 batteries"
+      },
+      {
+        "en": "NAV-035 BT GPS/GLONASS receiver"
+      },
+      {
+        "en": "Owner identification card"
+      },
+      {
+        "en": "User manual and wiring diagram"
+      }
+    ],
+    "warranty": {
+      "en": "Lifetime warranty"
+    },
+    "specSource": "invetec",
+    "matrix": {
+      "accel": 1,
+      "siren": 1,
+      "immo": 1,
+      "bt": 1,
+      "pin": 1,
+      "smarttag": 1,
+      "nodisarm": 1,
+      "hijack": 1,
+      "jammer": 1,
+      "gps": 1,
+      "wifi": 0,
+      "lbs": 1,
+      "lte": 1,
+      "blackbox": 1,
+      "app": 1,
+      "push": 1,
+      "selfcall": 1,
+      "oem": 1,
+      "remote": 0,
+      "start": 2,
+      "keyless": 1,
+      "preheater": 1
+    },
+    "matrixNotes": {
+      "siren": "PS-330",
+      "bt": "BT-775 + BT-765",
+      "gps": "NAV-035 BT receiver",
+      "lte": "4G · BT 5.0",
+      "start": "with RMD-5M"
+    },
+    "image": "pandora-smart-v4-package-web",
+    "gallery": ["pandora-nav-035-bt", "pandora-ps-330"],
+    "installImage": "pandora-smart-v4-homepage-frame"
+  },
+  {
+    "id": "lightpro",
+    "slug": "light-pro-v2",
+    "category": "car",
+    "order": 5,
+    "brand": "Pandora",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Light Pro V2"
+    },
+    "tag": {
+      "en": "Upgraded protection at an accessible price"
+    },
+    "blurb": {
+      "en": "The sweet spot of the range: Bluetooth authorization and solid perimeter protection without the telemetry extras."
+    },
+    "priceEur": 399,
+    "highlights": [
+      "nodisarm",
+      "bt",
+      "start",
+      "twoway",
+      "aes",
+      "hijack",
+      "app",
+      "siren",
+      "certs",
+      "unit"
+    ],
+    "specGroups": [
+      {
+        "title": {
+          "en": "Protection"
+        },
+        "items": [
+          {
+            "en": "Pin Drive driver identification"
+          },
+          {
+            "en": "Digital dual-zone vibration and tilt/lift sensor"
+          },
+          {
+            "en": "Accepts a 2-zone adjustable volumetric sensor"
+          },
+          {
+            "en": "Panic siren designed for the driver area"
+          },
+          {
+            "en": "Anti-hijack engine lockout"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Control and connectivity"
+        },
+        "items": [
+          {
+            "en": "Two-way operation from the OLED remote, up to 1000 m"
+          },
+          {
+            "en": "Multi-channel 868 MHz communication with AES-128"
+          },
+          {
+            "en": "Control via factory remotes"
+          },
+          {
+            "en": "Pandora Connect over Bluetooth (about 50 m)"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Vehicle integration"
+        },
+        "items": [
+          {
+            "en": "Dual built-in high-speed CAN-bus up to 1 Mbit/s and LIN-bus"
+          },
+          {
+            "en": "Analog inputs and outputs for non-CAN vehicles"
+          },
+          {
+            "en": "Automatic closing of windows and roof on arming (if the vehicle supports it)"
+          },
+          {
+            "en": "Remote engine start and climate (requires additional equipment)"
+          },
+          {
+            "en": "Immobilizer bypass technology and built-in turbo timer"
+          },
+          {
+            "en": "Safe for vehicle electronics, no diagnostic interference"
+          },
+          {
+            "en": "2× CAN, 2× LIN, analog and IMMO-key connections; 7 inputs / 11 outputs (pricelist comparison)"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Hardware"
+        },
+        "items": [
+          {
+            "en": "ARM Cortex-M4 processor"
+          },
+          {
+            "en": "Keonix accelerometer (Japan)"
+          },
+          {
+            "en": "USB port for ALARM STUDIO"
+          },
+          {
+            "en": "Small central unit for hidden placement"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Service and warranty"
+        },
+        "items": [
+          {
+            "en": "Lifetime warranty with immediate central unit replacement"
+          },
+          {
+            "en": "Free annual upgrade"
+          },
+          {
+            "en": "Transfer to another vehicle by software update"
+          },
+          {
+            "en": "CE, E-mark, IATF 16949:2016 and Thatcham"
+          }
+        ]
+      }
+    ],
+    "warranty": {
+      "en": "Lifetime warranty"
+    },
+    "specSource": "invetec",
+    "matrix": {
+      "accel": 1,
+      "siren": 1,
+      "immo": 1,
+      "bt": 1,
+      "pin": 1,
+      "smarttag": 1,
+      "nodisarm": 1,
+      "hijack": 1,
+      "jammer": 0,
+      "gps": 2,
+      "wifi": 0,
+      "lbs": 0,
+      "lte": 0,
+      "blackbox": 0,
+      "app": 1,
+      "push": 1,
+      "selfcall": 0,
+      "oem": 1,
+      "remote": 1,
+      "start": 2,
+      "keyless": 1,
+      "preheater": 1
+    },
+    "matrixNotes": {
+      "siren": "PS-330",
+      "bt": "BT-760",
+      "gps": "with NAV-X",
+      "remote": "D-022 LoRa",
+      "start": "with RMD-5M"
+    },
+    "image": "pandora-light-pro-v2",
+    "gallery": ["pro-v2", "light-pro-v2"],
+    "installImage": "works-2024-pandora-light-pro-v2-toyota-c-hr"
+  },
+  {
+    "id": "light",
+    "slug": "light-v3",
+    "category": "car",
+    "order": 6,
+    "brand": "Pandora",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Light V3"
+    },
+    "tag": {
+      "en": "Reliable essential protection"
+    },
+    "blurb": {
+      "en": "Essential, dependable alarm protection with modern authorization — the accessible entry to the Pandora range."
+    },
+    "priceEur": 269,
+    "highlights": ["start", "can", "twoway", "immo", "hijack", "aes", "siren", "certs"],
+    "specGroups": [
+      {
+        "title": {
+          "en": "Protection"
+        },
+        "items": [
+          {
+            "en": "PIN code immobilizer"
+          },
+          {
+            "en": "Digital dual-zone shock and tilt/lift sensor"
+          },
+          {
+            "en": "Accepts a dual-zone adjustable volumetric sensor"
+          },
+          {
+            "en": "Panic siren for the driver area"
+          },
+          {
+            "en": "Anti-hijack engine lockout"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Control and connectivity"
+        },
+        "items": [
+          {
+            "en": "Two-way OLED remote, up to 1000 m, with telemetry readouts"
+          },
+          {
+            "en": "Multi-channel 868 MHz communication with AES-128"
+          },
+          {
+            "en": "Control via factory remotes"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Vehicle integration"
+        },
+        "items": [
+          {
+            "en": "Integrated high-speed CAN-bus up to 1 Mbit/s and LIN-bus"
+          },
+          {
+            "en": "Analog inputs and outputs for non-CAN vehicles"
+          },
+          {
+            "en": "Automatic window and roof closing on arming (as applicable)"
+          },
+          {
+            "en": "Engine start with immobilizer bypass (requires the RMD-5M module)"
+          },
+          {
+            "en": "Integrated turbo timer"
+          },
+          {
+            "en": "Safe for vehicle electronics"
+          },
+          {
+            "en": "2× CAN, 2× LIN, analog and IMMO-key connections; 7 inputs / 11 outputs (pricelist comparison)"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Hardware"
+        },
+        "items": [
+          {
+            "en": "USB port for ALARM STUDIO"
+          },
+          {
+            "en": "Compact central unit for hidden placement"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Service and warranty"
+        },
+        "items": [
+          {
+            "en": "Lifetime warranty with direct central unit replacement"
+          },
+          {
+            "en": "Free annual software updates"
+          },
+          {
+            "en": "Transfer to another vehicle by software update"
+          },
+          {
+            "en": "CE, E-mark, IATF 16949:2016 and Thatcham"
+          }
+        ]
+      }
+    ],
+    "warranty": {
+      "en": "Lifetime warranty"
+    },
+    "specSource": "invetec",
+    "matrix": {
+      "accel": 1,
+      "siren": 1,
+      "immo": 1,
+      "bt": 0,
+      "pin": 1,
+      "smarttag": 0,
+      "nodisarm": 0,
+      "hijack": 1,
+      "jammer": 0,
+      "gps": 0,
+      "wifi": 0,
+      "lbs": 0,
+      "lte": 0,
+      "blackbox": 0,
+      "app": 0,
+      "push": 0,
+      "selfcall": 0,
+      "oem": 1,
+      "remote": 1,
+      "start": 2,
+      "keyless": 1,
+      "preheater": 1
+    },
+    "matrixNotes": {
+      "siren": "PS-330",
+      "remote": "D-010 RF 868",
+      "start": "with RMD-5M"
+    },
+    "image": "pandora-light-v3",
+    "gallery": ["pandora-light-remote", "light-v3-part"]
+  },
+  {
+    "id": "primo",
+    "slug": "primo",
+    "category": "car",
+    "order": 7,
+    "brand": "Pandora",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Primo"
+    },
+    "tag": {
+      "en": "Compact system with telemetry options"
+    },
+    "blurb": {
+      "en": "A compact security system with optional tracking — big-system features in a small footprint."
+    },
+    "priceEur": 299,
+    "highlights": ["jammer", "immo", "nodisarm", "siren", "hijack", "addons", "accel", "warranty"],
+    "specGroups": [
+      {
+        "title": {
+          "en": "Protection"
+        },
+        "items": [
+          {
+            "en": "Driver recognition by ID-tag or PIN on factory buttons"
+          },
+          {
+            "en": "Prohibit disarm when the ID-tag is away"
+          },
+          {
+            "en": "Anti-jammer: wireless siren sounds on lost contact"
+          },
+          {
+            "en": "Anti-hijack: engine block after one minute"
+          },
+          {
+            "en": "MultiSensor: vibration, movement and inclination, adjustable per sensor in the app"
+          },
+          {
+            "en": "PUK code to disable in case of a lost phone"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Control and connectivity"
+        },
+        "items": [
+          {
+            "en": "Bluetooth app: arm, disarm, breach alerts, sensor settings, reports, event history"
+          },
+          {
+            "en": "Hands-free arming and disarming"
+          },
+          {
+            "en": "Arming and disarming from the factory keys"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Vehicle integration"
+        },
+        "items": [
+          {
+            "en": "Automatic closing of windows and roof on arming (compatible vehicles)"
+          },
+          {
+            "en": "Suitable for all CAN-bus types"
+          },
+          {
+            "en": "Safe for the car's electronics, no diagnostic interference"
+          },
+          {
+            "en": "Wireless peripherals: engine and door immobilizers, GPS/GSM controllers, sensors"
+          },
+          {
+            "en": "2× CAN and analog connections; 6 inputs / 8 outputs (pricelist comparison)"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Hardware"
+        },
+        "items": [
+          {
+            "en": "Very small central unit: 45 × 25 × 8 mm, for hard-to-access placement"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Service and warranty"
+        },
+        "items": [
+          {
+            "en": "Lifetime warranty with immediate central unit replacement"
+          },
+          {
+            "en": "Free annual upgrade"
+          },
+          {
+            "en": "Transfer to another vehicle by software update"
+          }
+        ]
+      }
+    ],
+    "warranty": {
+      "en": "Lifetime warranty"
+    },
+    "specSource": "invetec",
+    "matrix": {
+      "accel": 1,
+      "siren": 1,
+      "immo": 1,
+      "bt": 1,
+      "pin": 1,
+      "smarttag": 1,
+      "nodisarm": 1,
+      "hijack": 1,
+      "jammer": 1,
+      "gps": 2,
+      "wifi": 0,
+      "lbs": 0,
+      "lte": 0,
+      "blackbox": 0,
+      "app": 1,
+      "push": 1,
+      "selfcall": 0,
+      "oem": 1,
+      "remote": 0,
+      "start": 0,
+      "keyless": 0,
+      "preheater": 0
+    },
+    "matrixNotes": {
+      "siren": "PS-331 BT",
+      "bt": "BT-780 + BT-770",
+      "gps": "with NAV-X"
+    },
+    "image": "pandora-primo",
+    "gallery": ["pandora-primo-bt", "antijammer-primo"]
+  },
+  {
+    "id": "immo",
+    "slug": "immo",
+    "category": "car",
+    "order": 8,
+    "brand": "Pandora",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Immo"
+    },
+    "tag": {
+      "en": "Invisible immobilizer with owner recognition"
+    },
+    "blurb": {
+      "en": "A hidden immobilizer that recognizes the owner automatically — invisible protection with zero daily friction."
+    },
+    "priceEur": 179,
+    "highlights": ["immo", "accel", "bt", "app"],
+    "specGroups": [
+      {
+        "title": {
+          "en": "Protection"
+        },
+        "items": [
+          {
+            "en": "Embedded blocking relay"
+          },
+          {
+            "en": "Three-axis accelerometer blocks the engine on movement"
+          },
+          {
+            "en": "Invisible operation: the engine starts normally for the owner"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Control and connectivity"
+        },
+        "items": [
+          {
+            "en": "Bluetooth 4.2 link to smartphone and RF tags"
+          },
+          {
+            "en": "Keyless hands-free arming and disarming by tag"
+          },
+          {
+            "en": "App sensor sensitivity adjustment and live status"
+          },
+          {
+            "en": "Programmable owner proximity detection"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Vehicle integration"
+        },
+        "items": [
+          {
+            "en": "Analog connection (pricelist comparison)"
+          }
+        ]
+      }
+    ],
+    "box": [
+      {
+        "en": "Central unit"
+      },
+      {
+        "en": "Wire harnesses"
+      },
+      {
+        "en": "Audio notifier"
+      },
+      {
+        "en": "BT-790 radio tag with leather case"
+      },
+      {
+        "en": "Personal owner card"
+      },
+      {
+        "en": "User manual and wiring diagram"
+      },
+      {
+        "en": "Mounting kit"
+      }
+    ],
+    "warranty": {
+      "en": "See warranty activation"
+    },
+    "specSource": "invetec",
+    "matrix": {
+      "accel": 1,
+      "siren": 0,
+      "immo": 1,
+      "bt": 1,
+      "pin": 0,
+      "smarttag": 0,
+      "nodisarm": 0,
+      "hijack": 1,
+      "jammer": 0,
+      "gps": 0,
+      "wifi": 0,
+      "lbs": 0,
+      "lte": 0,
+      "blackbox": 0,
+      "app": 1,
+      "push": 0,
+      "selfcall": 0,
+      "oem": 0,
+      "remote": 0,
+      "start": 0,
+      "keyless": 0,
+      "preheater": 0
+    },
+    "matrixNotes": {
+      "bt": "2× BT-760",
+      "app": "Pandect BT app"
+    },
+    "image": "pandora-immo",
+    "gallery": []
+  },
+  {
+    "id": "motoevo",
+    "slug": "moto-evo-v2",
+    "category": "moto",
+    "order": 9,
+    "brand": "Pandora",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Moto Evo V2"
+    },
+    "tag": {
+      "en": "Ultimate motorcycle security & control"
+    },
+    "blurb": {
+      "en": "4G, GPS/GLONASS, Bluetooth 5.0 and the Pandora Connect app in a waterproof unit, for security and comfort on the motorcycle.",
+      "el": "Το Pandora Moto Evo V2 με 4G, GPS/GLONASS, Bluetooth 5.0 και app Pandora Connect σε αδιάβροχη μονάδα για ασφάλεια και άνεση στη μοτοσυκλέτα."
+    },
+    "priceEur": 499,
+    "highlights": [
+      "lte",
+      "gps",
+      "app",
+      "immo",
+      "bt",
+      "hijack",
+      "jammer",
+      "blackbox",
+      "accel",
+      "siren"
+    ],
+    "specGroups": [
+      {
+        "title": {
+          "en": "Connectivity and tracking"
+        },
+        "items": [
+          {
+            "en": "High-speed 4G GSM modem"
+          },
+          {
+            "en": "GNSS satellite tracking receiver with assisted GPS"
+          },
+          {
+            "en": "Bluetooth 5.0 interface"
+          },
+          {
+            "en": "Real-time location, route tracking and status updates"
+          },
+          {
+            "en": "Pandora Connect mobile app for full control"
+          },
+          {
+            "en": "Web-based system management via pandora-on.com"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Protection"
+        },
+        "items": [
+          {
+            "en": "Anti-jammer active security function"
+          },
+          {
+            "en": "Anti-hijack function for safe engine lockdown"
+          },
+          {
+            "en": "ID tag immobilizer for keyless protection"
+          },
+          {
+            "en": "Hands-free arming and disarming"
+          },
+          {
+            "en": "Stealth mode for invisible tracking protection"
+          },
+          {
+            "en": "Multi-axis 3D motion, shock, tilt and movement sensors"
+          },
+          {
+            "en": "Wireless perimeter protection with the optional Pandora VS-22"
+          },
+          {
+            "en": "Remote engine blocking and ignition control"
+          },
+          {
+            "en": "Piezo siren for immediate threat response"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Power and integration"
+        },
+        "items": [
+          {
+            "en": "Li-Po backup battery"
+          },
+          {
+            "en": "Ultra-low power consumption with adaptive algorithms"
+          },
+          {
+            "en": "CAN-bus and CAN FD integration for advanced motorcycles"
+          },
+          {
+            "en": "Wireless accessories via Bluetooth with AES-128 encryption"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Installation"
+        },
+        "items": [
+          {
+            "en": "Certified installation by Pandora specialist partners"
+          }
+        ]
+      }
+    ],
+    "specSource": "pricelist",
+    "matrix": {
+      "accel": 1,
+      "siren": 1,
+      "immo": 1,
+      "bt": 1,
+      "pin": 1,
+      "smarttag": 1,
+      "nodisarm": 0,
+      "hijack": 1,
+      "jammer": 1,
+      "gps": 1,
+      "wifi": 0,
+      "lbs": 1,
+      "lte": 1,
+      "blackbox": 1,
+      "app": 1,
+      "push": 1,
+      "selfcall": 1,
+      "oem": 0,
+      "remote": 1,
+      "start": 0,
+      "keyless": 0,
+      "preheater": 0
+    },
+    "matrixNotes": {
+      "siren": "PS-330",
+      "bt": "BT-780",
+      "lte": "4G · BT 5.0",
+      "remote": "R-468 BT"
+    },
+    "image": "pandora-moto-evo-v2-package",
+    "gallery": [],
+    "installImage": "works-2025-pandora-moto-evo-suzuki-katana"
+  },
+  {
+    "id": "motov2",
+    "slug": "moto-v2",
+    "category": "moto",
+    "order": 10,
+    "brand": "Pandora",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Moto V2"
+    },
+    "tag": {
+      "en": "Advanced protection for every motorcycle"
+    },
+    "blurb": {
+      "en": "Advanced protection, reliability and comfort for every motorcycle, with exclusive technologies and certified installation.",
+      "el": "Το Pandora Moto V2 προσφέρει προηγμένη προστασία, αξιοπιστία και άνεση σε κάθε μοτοσυκλέτα, με αποκλειστικές τεχνολογίες και πιστοποιημένη εγκατάσταση."
+    },
+    "priceEur": 319,
+    "highlights": ["accel", "siren", "aes", "app"],
+    "specGroups": [
+      {
+        "title": {
+          "en": "Protection"
+        },
+        "items": [
+          {
+            "en": "Instant alerts for vibration, movement or battery disconnection"
+          },
+          {
+            "en": "High-sensitivity 3D sensor for tilt and vibration"
+          },
+          {
+            "en": "Backup battery triggers the alarm if the main battery is disconnected"
+          },
+          {
+            "en": "Advanced encryption against electronic hacking"
+          },
+          {
+            "en": "Compact, waterproof, powerful piezo siren"
+          },
+          {
+            "en": "Optional perimeter sensor detects external movement"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Control"
+        },
+        "items": [
+          {
+            "en": "Compact OLED remote with AES 128-bit encryption"
+          },
+          {
+            "en": "Pandora Connect app for monitoring, history and GPS"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Power and upgrades"
+        },
+        "items": [
+          {
+            "en": "Minimal power consumption: protection for months without recharge"
+          },
+          {
+            "en": "Compatible with Pandora Moto Evo for easy upgrades"
+          }
+        ]
+      }
+    ],
+    "specSource": "pricelist",
+    "matrix": {
+      "accel": 1,
+      "siren": 1,
+      "immo": 0,
+      "bt": 0,
+      "pin": 0,
+      "smarttag": 0,
+      "nodisarm": 0,
+      "hijack": 0,
+      "jammer": 0,
+      "gps": 0,
+      "wifi": 0,
+      "lbs": 0,
+      "lte": 0,
+      "blackbox": 0,
+      "app": 1,
+      "push": 0,
+      "selfcall": 0,
+      "oem": 0,
+      "remote": 1,
+      "start": 0,
+      "keyless": 0,
+      "preheater": 0
+    },
+    "matrixNotes": {
+      "siren": "PS-330",
+      "remote": "D-10 RF 868"
+    },
+    "image": "pandora-moto-eu-v2-package",
+    "gallery": ["honda-adv350"]
+  },
+  {
+    "id": "camperpro",
+    "slug": "camper-pro-v2",
     "category": "camper",
-    "priceEur": 899,
+    "order": 11,
+    "brand": "Pandora",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Camper Pro V2"
+    },
+    "tag": {
+      "en": "The highest technology for caravan & camper van"
+    },
+    "blurb": {
+      "en": "For those who need more than the best. Camper Pro V2 is designed to meet the most demanding needs and, like every Pandora camper system, it is made for campers, not for cars.",
+      "el": "Για όσους χρειάζονται κάτι περισσότερο από το καλύτερο. Το Pandora Camper Pro έχει σχεδιαστεί για να ικανοποιεί τις πιο απαιτητικές ανάγκες των πελατών."
+    },
+    "priceEur": 1499,
+    "highlights": [
+      "lte",
+      "gps",
+      "twoway",
+      "app",
+      "jammer",
+      "hijack",
+      "immo",
+      "nodisarm",
+      "blackbox",
+      "accel",
+      "siren",
+      "start"
+    ],
+    "specGroups": [
+      {
+        "title": {
+          "en": "Control and connectivity"
+        },
+        "items": [
+          {
+            "en": "4G modem with 2 GSM antennas"
+          },
+          {
+            "en": "GNSS (Global Navigation Satellite System) receiver"
+          },
+          {
+            "en": "Real-time location and movement tracking"
+          },
+          {
+            "en": "Bluetooth 5.0"
+          },
+          {
+            "en": "Free internet server and SelfCall Center"
+          },
+          {
+            "en": "Pandora Connect mobile app"
+          },
+          {
+            "en": "Control by factory key, smartphone or the two-way LoRa remote D-061"
+          },
+          {
+            "en": "Hands-free mode"
+          },
+          {
+            "en": "Remote control display info: voltage, fuel level, temperature, mileage"
+          },
+          {
+            "en": "SOS button with emergency notifications"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Protection"
+        },
+        "items": [
+          {
+            "en": "«Anchor» security algorithm"
+          },
+          {
+            "en": "Anti-jammer active security function"
+          },
+          {
+            "en": "Pandora Tag immobilizer and PIN code immobilizer"
+          },
+          {
+            "en": "Engine immobilizer and anti-hijack functions"
+          },
+          {
+            "en": "App-adjustable built-in shock/tilt/motion sensor"
+          },
+          {
+            "en": "Siren PS-330"
+          },
+          {
+            "en": "Five wireless DMS-100 BT sensors (pricelist comparison)"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Comfort"
+        },
+        "items": [
+          {
+            "en": "Remote engine start ready, with the «Start engine» button upgrade option"
+          },
+          {
+            "en": "Keyless bypass of a standard immobilizer"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Vehicle integration"
+        },
+        "items": [
+          {
+            "en": "CAN-bus and analog connection"
+          },
+          {
+            "en": "3× CAN, 2× LIN and IMMO-key connections; 9 inputs / 19 outputs (pricelist comparison)"
+          }
+        ]
+      }
+    ],
+    "specSource": "pricelist",
+    "matrix": {
+      "accel": 1,
+      "siren": 1,
+      "immo": 1,
+      "bt": 1,
+      "pin": 1,
+      "smarttag": 1,
+      "nodisarm": 1,
+      "hijack": 1,
+      "jammer": 1,
+      "gps": 1,
+      "wifi": 0,
+      "lbs": 1,
+      "lte": 1,
+      "blackbox": 1,
+      "app": 1,
+      "push": 1,
+      "selfcall": 1,
+      "oem": 1,
+      "remote": 1,
+      "start": 2,
+      "keyless": 1,
+      "preheater": 1
+    },
+    "matrixNotes": {
+      "siren": "PS-330",
+      "bt": "BT-775",
+      "lte": "4G · BT 5.0 · LoRa · 2 GSM antennas",
+      "remote": "D-061 Camper",
+      "start": "with RMD-5M"
+    },
+    "image": "pandora-camper-pro",
+    "gallery": ["pandora-camper-pro-v2-features", "pandora-commander-remote-control"],
+    "installImage": "works-2025-pandora-camper-pro-mercedes-hymen"
+  },
+  {
+    "id": "camperv3",
+    "slug": "camper-v3",
+    "category": "camper",
+    "order": 12,
+    "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {
       "en": "Camper V3"
@@ -13,6 +1764,585 @@
     "blurb": {
       "en": "The first telemetric security system for recreational vehicles, with wireless sensors that detect every attempt.",
       "el": "Το Pandora Camper είναι το πρώτο τηλεμετρικό σύστημα ασφαλείας για οχήματα αναψυχής, με ασύρματους αισθητήρες που ανιχνεύουν κάθε απόπειρα."
-    }
+    },
+    "priceEur": 899,
+    "highlights": [
+      "lte",
+      "gps",
+      "app",
+      "jammer",
+      "hijack",
+      "immo",
+      "nodisarm",
+      "blackbox",
+      "accel",
+      "siren",
+      "start"
+    ],
+    "specGroups": [
+      {
+        "title": {
+          "en": "Control and connectivity"
+        },
+        "items": [
+          {
+            "en": "4G modem"
+          },
+          {
+            "en": "GPS/GLONASS satellite receiver"
+          },
+          {
+            "en": "Real-time location and movement tracking"
+          },
+          {
+            "en": "Bluetooth 5.0"
+          },
+          {
+            "en": "Free internet server and SelfCall Center"
+          },
+          {
+            "en": "Pandora Connect mobile app"
+          },
+          {
+            "en": "Control by factory key or smartphone"
+          },
+          {
+            "en": "Hands-free mode"
+          },
+          {
+            "en": "Mobile visualization info: voltage, fuel level, temperature, mileage"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Protection"
+        },
+        "items": [
+          {
+            "en": "Anti-jammer active security function"
+          },
+          {
+            "en": "Pandora Tag immobilizer and PIN code immobilizer"
+          },
+          {
+            "en": "Engine immobilizer and anti-hijack functions"
+          },
+          {
+            "en": "App-adjustable built-in shock/tilt/motion sensor"
+          },
+          {
+            "en": "Siren PS-330"
+          },
+          {
+            "en": "Two wireless DMS-100 BT sensors (pricelist comparison)"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Comfort"
+        },
+        "items": [
+          {
+            "en": "Remote engine start ready, with the «Start engine» button upgrade option"
+          },
+          {
+            "en": "Keyless bypass of a standard immobilizer"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Vehicle integration"
+        },
+        "items": [
+          {
+            "en": "CAN-bus and analog connection"
+          },
+          {
+            "en": "2× CAN, LIN and IMMO-key connections; 9 inputs / 11 outputs (pricelist comparison)"
+          }
+        ]
+      }
+    ],
+    "specSource": "pricelist",
+    "matrix": {
+      "accel": 1,
+      "siren": 1,
+      "immo": 1,
+      "bt": 1,
+      "pin": 1,
+      "smarttag": 1,
+      "nodisarm": 1,
+      "hijack": 1,
+      "jammer": 1,
+      "gps": 1,
+      "wifi": 0,
+      "lbs": 1,
+      "lte": 1,
+      "blackbox": 1,
+      "app": 1,
+      "push": 1,
+      "selfcall": 1,
+      "oem": 1,
+      "remote": 1,
+      "start": 2,
+      "keyless": 1,
+      "preheater": 1
+    },
+    "matrixNotes": {
+      "siren": "PS-330",
+      "bt": "BT-775",
+      "lte": "4G · BT 5.0",
+      "remote": "R-500 BT",
+      "start": "with RMD-5M"
+    },
+    "image": "pandora-camper-2",
+    "gallery": []
+  },
+  {
+    "id": "marine",
+    "slug": "marine",
+    "category": "marine",
+    "order": 13,
+    "brand": "Pandora",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Marine"
+    },
+    "tag": {
+      "en": "Ultimate security for boats & speedboats"
+    },
+    "blurb": {
+      "en": "A top anti-theft system for boats. GPS Anchor alerts you at once if the boat drifts at anchor, and Dual Mode Protection sets the protection zones to the boat's situation, backed by 4G, GNSS with assisted GPS, Bluetooth 5.0, anti-jammer and anti-hijack.",
+      "el": "Το Pandora Marine αποτελεί ένα κορυφαίο αντικλεπτικό σύστημα ασφαλείας για σκάφη. Περιλαμβάνει τις πιο σύγχρονες τεχνολογίες: GPS Anchor για πλήρη προστασία και άμεση ενημέρωση σε περίπτωση που ξεσύρει το σκάφος όταν είναι αγκυροβολημένο. Το Dual mode Protection σου δίνει την δυνατότητα της παραμετροποίησης των ζωνών προστασίας αναλόγως της κατάστασης του σκάφους, modem 4G GSM υψηλής ταχύτητας, ακριβή δέκτη εντοπισμού δορυφόρων GNSS με assisted GPS, interface Bluetooth 5.0 νέας γενιάς, καθώς και anti-jammer και Anti-hijack modes για μέγιστη προστασία από βίαιη αρπαγή και παρεμβολές."
+    },
+    "priceEur": 799,
+    "highlights": ["lte", "gps", "app", "immo", "hijack", "jammer", "blackbox", "accel", "siren"],
+    "specGroups": [
+      {
+        "title": {
+          "en": "Connectivity and tracking"
+        },
+        "items": [
+          {
+            "en": "High-speed 4G LTE GSM modem"
+          },
+          {
+            "en": "GNSS satellite tracking receiver with assisted GPS"
+          },
+          {
+            "en": "Bluetooth 5.0 interface for wireless accessories"
+          },
+          {
+            "en": "Real-time location, route tracking and status updates"
+          },
+          {
+            "en": "Pandora Connect mobile app for full system control"
+          },
+          {
+            "en": "Web-based management via pandora-on.com"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Protection"
+        },
+        "items": [
+          {
+            "en": "GPS Anchor for movement detection at anchor"
+          },
+          {
+            "en": "Dual Mode Protection with Parking and Sea modes"
+          },
+          {
+            "en": "Anti-jammer active security function"
+          },
+          {
+            "en": "Anti-hijack function for safe engine lockdown"
+          },
+          {
+            "en": "ID tag immobilizer for keyless protection"
+          },
+          {
+            "en": "Hands-free arming and disarming via Bluetooth"
+          },
+          {
+            "en": "Multi-axis 3D accelerometer for motion, tilt and shock detection"
+          },
+          {
+            "en": "Wireless perimeter protection with the waterproof DMS-105 BT sensor"
+          },
+          {
+            "en": "Microwave sensor for deck and cockpit volumetric protection"
+          },
+          {
+            "en": "Remote engine blocking and ignition control"
+          },
+          {
+            "en": "Independent wireless Bluetooth siren for immediate alerts"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Power and integration"
+        },
+        "items": [
+          {
+            "en": "Integrated Li-Po backup battery for power-failure alerts"
+          },
+          {
+            "en": "Ultra-low power consumption with Parking Mode"
+          },
+          {
+            "en": "Wireless accessories via Bluetooth with AES-128 encryption"
+          }
+        ]
+      }
+    ],
+    "specSource": "pricelist",
+    "matrix": {
+      "accel": 1,
+      "siren": 1,
+      "immo": 1,
+      "bt": 1,
+      "pin": 1,
+      "smarttag": 1,
+      "nodisarm": 0,
+      "hijack": 1,
+      "jammer": 1,
+      "gps": 1,
+      "wifi": 0,
+      "lbs": 1,
+      "lte": 1,
+      "blackbox": 1,
+      "app": 1,
+      "push": 1,
+      "selfcall": 1,
+      "oem": 0,
+      "remote": 1,
+      "start": 0,
+      "keyless": 0,
+      "preheater": 0
+    },
+    "matrixNotes": {
+      "siren": "PS-331 BT",
+      "bt": "BT-780",
+      "lte": "4G · BT 5.0",
+      "remote": "R-468 BT"
+    },
+    "image": "pandora-marine",
+    "gallery": ["marine-connect"],
+    "installImage": "works-2024-pandora-marine-sea-ray-sdx-250"
+  },
+  {
+    "id": "truck",
+    "slug": "truck",
+    "category": "fleet",
+    "order": 14,
+    "brand": "Pandora",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Truck"
+    },
+    "tag": {
+      "en": "Next-level security for commercial vehicles"
+    },
+    "blurb": {
+      "en": "Security and tracking for trucks and machinery: built-in 4G for remote control, GPS/GLONASS for reliable tracking and Bluetooth 5.0 for wireless door and temperature sensors. Fuel monitoring over RS-485 and fleet-management compatibility make it built for professional use.",
+      "el": "Το Pandora Truck είναι η σύγχρονη λύση για την ασφάλεια και παρακολούθηση φορτηγών και μηχανημάτων. Διαθέτει ενσωματωμένο 4G για απομακρυσμένο έλεγχο και GPS/GLONASS για αξιόπιστη παρακολούθηση. Με Bluetooth 5.0, υποστηρίζει ασύρματους αισθητήρες για πόρτες και θερμοκρασία φορτηγού. Το σύστημα περιλαμβάνει ρελέ για μπλοκάρισμα κινητήρα και απομακρυσμένη εκκίνηση, ενώ η κρυπτογράφηση AES 128-bit προστατεύει από ηλεκτρονικές επιθέσεις. Η παρακολούθηση καυσίμου μέσω RS-485 και η συμβατότητα με συστήματα διαχείρισης στόλου κάνουν το Pandora Truck ιδανικό για επαγγελματική χρήση."
+    },
+    "priceEur": 799,
+    "highlights": [
+      "lte",
+      "gps",
+      "app",
+      "bt",
+      "immo",
+      "hijack",
+      "jammer",
+      "blackbox",
+      "start",
+      "can"
+    ],
+    "specGroups": [
+      {
+        "title": {
+          "en": "Connectivity and tracking"
+        },
+        "items": [
+          {
+            "en": "Built-in 4G interface for remote control and notifications"
+          },
+          {
+            "en": "Integrated GPS/GLONASS receiver with low power consumption"
+          },
+          {
+            "en": "Bluetooth 5.0 interface for wireless accessories"
+          },
+          {
+            "en": "Support for online and fleet management services"
+          },
+          {
+            "en": "Compatibility with fleet management systems"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Protection and control"
+        },
+        "items": [
+          {
+            "en": "Remote control with a jam-resistant 868 MHz radio link"
+          },
+          {
+            "en": "Bluetooth tag for hands-free arming and disarming"
+          },
+          {
+            "en": "Four built-in relays for engine blocking and remote start"
+          },
+          {
+            "en": "AES 128-bit encryption for digital protection"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Vehicle integration"
+        },
+        "items": [
+          {
+            "en": "CAN/LIN and RS-485 interfaces for additional sensors"
+          },
+          {
+            "en": "Fuel monitoring via the RS-485 interface"
+          },
+          {
+            "en": "2× CAN, RS-485, LIN and analog connections; 6 inputs / 4 outputs (pricelist comparison)"
+          },
+          {
+            "en": "Energy-efficient design for low power consumption"
+          },
+          {
+            "en": "Reliable operation in harsh conditions"
+          },
+          {
+            "en": "Certified for compliance with automotive industry standards"
+          }
+        ]
+      }
+    ],
+    "specSource": "pricelist",
+    "matrix": {
+      "accel": 1,
+      "siren": 1,
+      "immo": 1,
+      "bt": 1,
+      "pin": 1,
+      "smarttag": 1,
+      "nodisarm": 1,
+      "hijack": 1,
+      "jammer": 1,
+      "gps": 1,
+      "wifi": 0,
+      "lbs": 1,
+      "lte": 1,
+      "blackbox": 1,
+      "app": 1,
+      "push": 1,
+      "selfcall": 1,
+      "oem": 1,
+      "remote": 1,
+      "start": 1,
+      "keyless": 0,
+      "preheater": 0
+    },
+    "matrixNotes": {
+      "siren": "PS-330 24 V",
+      "bt": "BT-780",
+      "lte": "4G · BT 5.0",
+      "remote": "868 MHz remote",
+      "start": "built-in relays"
+    },
+    "image": "pricelist-truck",
+    "gallery": []
+  },
+  {
+    "id": "finder",
+    "slug": "finder",
+    "category": "fleet",
+    "order": 15,
+    "brand": "Pandora",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Finder"
+    },
+    "tag": {
+      "en": "Compact monitoring solution"
+    },
+    "blurb": {
+      "en": "A miniature GPS/GLONASS tracker (54 × 45 × 18 mm) that runs up to three years on AAA batteries and reports its position when it detects movement."
+    },
+    "priceEur": 195,
+    "highlights": ["gps", "app", "accel"],
+    "specGroups": [
+      {
+        "title": {
+          "en": "Tracking"
+        },
+        "items": [
+          {
+            "en": "GPS/GLONASS and LBS tracking"
+          },
+          {
+            "en": "Coordinates on movement detection"
+          },
+          {
+            "en": "Continuous tracking in online mode"
+          },
+          {
+            "en": "Tracking with periodic location updates"
+          },
+          {
+            "en": "Beacon mode for power saving"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Control"
+        },
+        "items": [
+          {
+            "en": "Pandora Connect app (iOS and Android)"
+          },
+          {
+            "en": "Pandora-on.com online service"
+          },
+          {
+            "en": "SMS control for settings"
+          },
+          {
+            "en": "Wireless Bluetooth configuration"
+          },
+          {
+            "en": "Easy setup with Pandora Nav BT"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Hardware"
+        },
+        "items": [
+          {
+            "en": "Miniature size: 54 × 45 × 18 mm"
+          },
+          {
+            "en": "Built-in accelerometer for alerts"
+          },
+          {
+            "en": "Built-in microphone for audio monitoring"
+          },
+          {
+            "en": "AAA battery powered, 3 years of life"
+          }
+        ]
+      }
+    ],
+    "specSource": "pricelist",
+    "image": "pandora-finder-1",
+    "gallery": ["pandora-finder-2", "pandora-finder-3"]
+  },
+  {
+    "id": "tracer",
+    "slug": "tracer",
+    "category": "fleet",
+    "order": 16,
+    "brand": "Pandora",
+    "showIn": ["en", "el", "it", "sq"],
+    "name": {
+      "en": "Tracer"
+    },
+    "tag": {
+      "en": "Advanced security tracking solution"
+    },
+    "blurb": {
+      "en": "A 4G GPS/GLONASS tracker with its own Li-Po battery for 12/24 V vehicles: autonomous beacon mode, an output for a blocking relay and push alerts through the Pandora Connect app."
+    },
+    "priceEur": 219,
+    "highlights": ["lte", "gps", "app", "accel", "preheater"],
+    "specGroups": [
+      {
+        "title": {
+          "en": "Tracking and connectivity"
+        },
+        "items": [
+          {
+            "en": "4G (LTE) modem for a fast connection"
+          },
+          {
+            "en": "Accurate GPS/GLONASS tracking"
+          },
+          {
+            "en": "Bluetooth 5.0 for device pairing"
+          },
+          {
+            "en": "Autonomous beacon mode"
+          },
+          {
+            "en": "Push notifications for alarms"
+          },
+          {
+            "en": "Pandora Connect mobile app"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Protection"
+        },
+        "items": [
+          {
+            "en": "Built-in accelerometer: shock, tilt and motion sensor"
+          },
+          {
+            "en": "Output for a blocking relay"
+          },
+          {
+            "en": "Support for 2 radio relays"
+          },
+          {
+            "en": "Up to 3 authorization devices"
+          }
+        ]
+      },
+      {
+        "title": {
+          "en": "Vehicle integration"
+        },
+        "items": [
+          {
+            "en": "12/24 V vehicle compatibility"
+          },
+          {
+            "en": "Built-in Li-Po battery"
+          },
+          {
+            "en": "Programmable input for sensors"
+          },
+          {
+            "en": "Supports Webasto/Eberspächer heaters"
+          }
+        ]
+      }
+    ],
+    "specSource": "pricelist",
+    "image": "pricelist-tracer",
+    "gallery": []
   }
 ]

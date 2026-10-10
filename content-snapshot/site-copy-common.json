@@ -1,0 +1,179 @@
+{
+  "skipLink": {
+    "en": "Skip to main content"
+  },
+  "titleTemplate": {
+    "en": "{page} — INVETEC"
+  },
+  "pages": {
+    "home": {
+      "en": "Home"
+    },
+    "systems": {
+      "en": "Systems"
+    },
+    "compare": {
+      "en": "Compare"
+    },
+    "accessories": {
+      "en": "Accessories"
+    },
+    "installers": {
+      "en": "Installers"
+    },
+    "blog": {
+      "en": "Blog"
+    },
+    "contact": {
+      "en": "Contact"
+    },
+    "partners": {
+      "en": "Partners"
+    },
+    "warranty": {
+      "en": "Warranty"
+    }
+  },
+  "level": {
+    "en": "Level {n} · {title}"
+  },
+  "levelShort": {
+    "en": "Level {n}"
+  },
+  "matrix": {
+    "included": {
+      "en": "Included"
+    },
+    "optional": {
+      "en": "Optional"
+    },
+    "notIncluded": {
+      "en": "Not included"
+    }
+  },
+  "specGroups": {
+    "control": {
+      "en": "Control"
+    },
+    "comfort": {
+      "en": "Comfort"
+    }
+  },
+  "vehicles": {
+    "car": {
+      "tab": {
+        "en": "Car"
+      },
+      "word": {
+        "en": "car"
+      },
+      "noun": {
+        "en": "car"
+      }
+    },
+    "moto": {
+      "tab": {
+        "en": "Motorcycle"
+      },
+      "word": {
+        "en": "motorcycle"
+      },
+      "noun": {
+        "en": "motorcycle"
+      }
+    },
+    "camper": {
+      "tab": {
+        "en": "Camper"
+      },
+      "word": {
+        "en": "camper"
+      },
+      "noun": {
+        "en": "camper"
+      }
+    },
+    "marine": {
+      "tab": {
+        "en": "Boat"
+      },
+      "word": {
+        "en": "boat"
+      },
+      "noun": {
+        "en": "boat"
+      }
+    },
+    "fleet": {
+      "tab": {
+        "en": "Trucks & trackers"
+      },
+      "word": {
+        "en": "trucks & trackers"
+      },
+      "noun": {
+        "en": "truck"
+      }
+    }
+  },
+  "vehicleTabsLabel": {
+    "en": "Vehicle"
+  },
+  "all": {
+    "en": "All"
+  },
+  "postCategories": {
+    "news": {
+      "en": "News"
+    },
+    "tech": {
+      "en": "Tech"
+    }
+  },
+  "seeSystem": {
+    "en": "See the system"
+  },
+  "seeAccessories": {
+    "en": "See the accessories"
+  },
+  "findCertifiedInstaller": {
+    "en": "Find a certified installer"
+  },
+  "becomePartner": {
+    "en": "Become a partner"
+  },
+  "allVehicleSystems": {
+    "en": "All {vehicle} systems"
+  },
+  "accessoryCount": {
+    "one": {
+      "en": "{count} accessory"
+    },
+    "other": {
+      "en": "{count} accessories"
+    }
+  },
+  "howItWorks": {
+    "en": "How it works"
+  },
+  "explainer": {
+    "close": {
+      "en": "Close"
+    },
+    "needs": {
+      "en": "Needs"
+    },
+    "onTheseSystems": {
+      "en": "On these systems"
+    },
+    "whatYouGet": {
+      "en": "What you get"
+    },
+    "whereItStops": {
+      "en": "Where it stops"
+    },
+    "systemsAtLevel": {
+      "en": "Systems that reach this level"
+    }
+  }
+}

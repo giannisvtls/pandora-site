@@ -1,0 +1,101 @@
+---
+// A 404 page in `locale` (spec §9): the notFound heading as the h1, its text and a link to the
+// language home, in the site shell, the look of the design's page head (nightwatch.css
+// `.pg-head`). BaseLayout gives it `noindex` and no canonical URL or alternates (A18), and no
+// explainer island: the page has no explainer button. The root 404 page and each language's use it.
+import { notFoundContent } from './not-found';
+import type { Locale } from '../content/contract';
+import { siteQuery } from '../content/query';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const { name, heading, text, home } = notFoundContent(await siteQuery(), locale);
+---
+
+<BaseLayout
+  locale={locale}
+  page={{ type: 'notFound' }}
+  name={name}
+  description={text}
+  hasExplainer={false}
+>
+  <div class="nf wrap">
+    {/* Site copy's heading join: `lead <span class="b">payload</span>`, a space between. */}
+    <h1>
+      {heading.lead}
+      {heading.payload !== undefined && (
+        <>
+          {' '}
+          <span class="b">{heading.payload}</span>
+        </>
+      )}
+    </h1>
+    <p class="lead">{text}</p>
+    <a class="cta" href={home.href}>
+      {home.label}
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M7 17 17 7M8 7h9v9" />
+      </svg>
+    </a>
+  </div>
+</BaseLayout>
+
+<style>
+  /* nightwatch.css: the page head (`.pg-head`, its h1 and lead) and the arrow link (`.cta`). The
+     solid header's spacer stands in for the design's `var(--hdr)` top padding. */
+  .nf {
+    padding-block: clamp(40px, 8vh, 96px) clamp(72px, 10vh, 140px);
+  }
+
+  h1 {
+    font-size: clamp(56px, 9vw, 140px);
+  }
+
+  .lead {
+    font-size: 19px;
+    color: var(--ink-2);
+    max-width: 54ch;
+    margin: 22px 0 0;
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 36px;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 6px;
+  }
+
+  .cta svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.5s var(--ease);
+  }
+
+  .cta:hover svg {
+    transform: translate(4px, -4px);
+  }
+
+  @media (max-width: 400px) {
+    h1 {
+      font-size: clamp(44px, 13vw, 56px);
+    }
+  }
+</style>

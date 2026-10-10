@@ -1,0 +1,82 @@
+/* The Night Watch design tokens (spec §6), with the values of the design's nightwatch.css. Light is
+   the default; dark applies to the whole page under html[data-theme="dark"] (set before first paint
+   by BaseLayout's head script) and, in both themes, to the surfaces that are always night.
+   The two type tokens, --display and --body, are declared by the Fonts API (astro.config.mjs): the
+   self-hosted face first, then the design's fallback list. */
+
+:root {
+  /* LIGHT (default). Brand blue from the INVETEC colour system: light #3077AC, dark #60A1D2 */
+  --night: #f4f7fa;
+  --night-rgb: 244, 247, 250;
+  --field: #ffffff;
+  --field-2: #e9eef3;
+  --petrol: #003a55;
+  /* Light accents are contrast-gated for 12–15px bold labels on white: blue-soft 5.0:1, armed 5.1:1,
+     alert 5.6:1, ink-3 5.0:1 */
+  --blue: #3077ac;
+  --blue-soft: #2b6d9e;
+  --armed: #177a43;
+  --alert: #9a5400;
+  --ink: #0e1a24;
+  --ink-2: rgba(14, 26, 36, 0.74);
+  --ink-3: rgba(14, 26, 36, 0.64);
+  --rule: rgba(14, 26, 36, 0.16);
+  --rule-2: rgba(14, 26, 36, 0.09);
+  --plate: #eef2f5;
+  --gap-fill: rgba(154, 84, 0, 0.07); /* compare: a feature one system lacks and another has */
+  --lw: none;
+  --ld: block;
+  --map-filter: none;
+  --ease: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --gutter: clamp(20px, 4vw, 64px);
+  --hdr: 88px;
+  color-scheme: light;
+}
+
+/* DARK scope: the whole page when data-theme="dark", plus the surfaces that are always night (hero
+   video, the 02:14 log, photo heads, petrol band, photo captions, the transparent header over the
+   hero, the mobile menu). */
+:root[data-theme='dark'],
+.hero,
+#log,
+.pg-head.img,
+.band,
+.shot,
+.hdr:not(.solid),
+.m-nav {
+  --night: #111a22;
+  --night-rgb: 17, 26, 34;
+  --field: #1a2530;
+  --field-2: #223040;
+  --petrol: #003a55;
+  --blue: #60a1d2;
+  --blue-soft: #60a1d2;
+  --armed: #38e07b;
+  --alert: #ffb02e;
+  --ink: #f2f6f8;
+  --ink-2: rgba(242, 246, 248, 0.78);
+  --ink-3: rgba(242, 246, 248, 0.6);
+  --rule: rgba(242, 246, 248, 0.16);
+  --rule-2: rgba(242, 246, 248, 0.09);
+  --lw: block;
+  --ld: none;
+  --gap-fill: rgba(255, 176, 46, 0.08);
+  --map-filter: invert(1) hue-rotate(185deg) brightness(0.8) saturate(0.35) contrast(0.95);
+  color-scheme: dark;
+}
+
+/* The always-night surfaces take their text colour from the dark scope above. */
+.hero,
+#log,
+.pg-head.img,
+.band,
+.shot,
+.hdr:not(.solid),
+.m-nav {
+  color: var(--ink);
+}
+
+/* The thesis section is a night feed in both themes. */
+#log {
+  background: var(--night);
+}

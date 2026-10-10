@@ -1,25 +1,226 @@
 ---
-import type { GetStaticPaths, InferGetStaticParamsType } from 'astro';
-import { getCollection } from 'astro:content';
+// The language home. Until Phase 2 builds the real home it is the interim system index (P1-8,
+// spec §7): the home's h1, then every category with its systems, each with its package shot, level
+// and feature buttons (they open the explainer) and a link to its page (404 until Phase 2).
+import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
+import { Image } from 'astro:assets';
 
-import ProductSummary from '../../components/ProductSummary.astro';
+import FeatureButton from '../../components/FeatureButton.astro';
+import LevelButton from '../../components/LevelButton.astro';
+import { systemIndex } from '../../components/system-index';
+import { siteQuery } from '../../content/query';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
-// Phase 0 builds only the English tree; the other locales are added when their content exists.
-// `as const` keeps the param a literal, so the Locale-typed props below check it.
-export const getStaticPaths = (() => [
-  { params: { locale: 'en' as const } },
-]) satisfies GetStaticPaths;
+// One page per built language (the live ones), from the query module (P1-1).
+export const getStaticPaths = (async () => {
+  const query = await siteQuery();
+  return query.staticPaths('home');
+}) satisfies GetStaticPaths;
 
-type Params = InferGetStaticParamsType<typeof getStaticPaths>;
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
-const { locale } = Astro.params as Params;
-const products = await getCollection('products');
+const { locale, page } = Astro.props as Props;
+const { heading, seeSystem, categories } = systemIndex(await siteQuery(), locale);
 ---
 
-<BaseLayout lang={locale} title="INVETEC — Pandora vehicle security">
-  <h1>Your car is not going anywhere without you.</h1>
-  {products.map(({ data }) => (
-    <ProductSummary product={data} locale={locale} />
+<BaseLayout locale={locale} page={page} header="solid">
+  <div class="idx-head wrap">
+    {/* Site copy's heading join: `lead <span class="b">payload</span>`, a space between. */}
+    <h1>
+      {heading.lead}
+      {heading.payload !== undefined && (
+        <>
+          {' '}
+          <span class="b">{heading.payload}</span>
+        </>
+      )}
+    </h1>
+  </div>
+  {categories.map((category) => (
+    <section class="cat wrap" aria-labelledby={`cat-${category.id}`}>
+      <h2 id={`cat-${category.id}`}>{category.title}</h2>
+      <ul class="systems">
+        {category.systems.map((system) => (
+          <li class="sys">
+            <div class="plate">
+              <Image
+                src={system.image.src}
+                alt={system.image.alt}
+                widths={[320, 640]}
+                sizes="(max-width: 640px) 80vw, 320px"
+                loading="lazy"
+              />
+            </div>
+            <h3 id={`sys-${system.id}`}>{system.name}</h3>
+            {system.level !== undefined && (
+              <div class="meta">
+                <LevelButton level={system.level.id} label={system.level.label} />
+              </div>
+            )}
+            <p class="why">{system.tag}</p>
+            <ul class="features">
+              {system.features.map(({ key, title }) => (
+                <li>
+                  <FeatureButton feature={key} title={title} />
+                </li>
+              ))}
+            </ul>
+            <a class="cta go" href={system.url} aria-describedby={`sys-${system.id}`}>
+              {seeSystem}
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M7 17 17 7M8 7h9v9" />
+              </svg>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
   ))}
 </BaseLayout>
+
+<style>
+  /* nightwatch.css: the page head, the section heads and the systems grid with its cards. */
+  .idx-head {
+    padding-block: clamp(40px, 8vh, 96px) clamp(36px, 6vh, 64px);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  h1 {
+    font-size: clamp(56px, 9vw, 140px);
+  }
+
+  .cat {
+    padding-block: clamp(72px, 10vh, 140px) 0;
+  }
+
+  .cat:last-child {
+    padding-bottom: clamp(72px, 10vh, 140px);
+  }
+
+  h2 {
+    font-size: clamp(48px, 7.5vw, 112px);
+  }
+
+  .systems {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2px;
+    margin: clamp(36px, 6vh, 64px) 0 0;
+    padding: 0;
+    list-style: none;
+    background: var(--rule-2);
+  }
+
+  .sys {
+    background: var(--field);
+    padding: 28px 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border-top: 4px solid var(--blue-soft);
+  }
+
+  /* `min-height: 0` keeps the plate square: a flex item's automatic minimum height (the card is a
+     flex column) is its content's, so a portrait shot (the truck's) would stretch it. */
+  .plate {
+    min-height: 0;
+    aspect-ratio: 1;
+    background: color-mix(in srgb, var(--blue-soft) 18%, var(--plate));
+    display: grid;
+    place-items: center;
+    padding: 10%;
+  }
+
+  .plate img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  h3 {
+    font-size: 40px;
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .why {
+    color: var(--ink-2);
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 14px;
+    color: var(--ink-2);
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 6px;
+  }
+
+  .cta svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.5s var(--ease);
+  }
+
+  .cta:hover svg {
+    transform: translate(4px, -4px);
+  }
+
+  .go {
+    margin-top: auto;
+    align-self: flex-start;
+  }
+
+  /* The touch-sized layout (FeatureButton.astro): the feature buttons' 44px targets reach 10px
+     above and below their 24px line, so the rows are 20px apart and neighbouring targets never
+     overlap; the "See the system" link gets 8px more above, as the design's `.cta` below its 900px. */
+  @media (max-width: 1119px) {
+    .features {
+      row-gap: 20px;
+    }
+
+    .cta {
+      padding-top: 8px;
+    }
+  }
+
+  @media (max-width: 980px) {
+    .systems {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .systems {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

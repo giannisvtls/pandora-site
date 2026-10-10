@@ -1,0 +1,686 @@
+{
+  "media": [
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2026/01/20260122-INVETEC-Pandora-featured-on-Affari-e-Finanza-by-La-Repubblica.webp",
+      "file": "src/assets/media/20260122-invetec-pandora-featured-on-affari-e-finanza-by-la-repubblica.webp",
+      "uses": [
+        "postImg.repubblica"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2026/02/20260218-MotoDays-2026_GR.webp",
+      "file": "src/assets/media/20260218-motodays-2026-gr.webp",
+      "uses": [
+        "postImg.motodays"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Antijammer-Primo.webp",
+      "file": "src/assets/media/antijammer-primo.webp",
+      "uses": [
+        "productGallery.primo[1]"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Camper.webp",
+      "file": "src/assets/media/camper.webp",
+      "uses": [
+        "catImg.camper"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/CAR.webp",
+      "file": "src/assets/media/car.webp",
+      "uses": [
+        "catImg.car"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/fleet-final.webp",
+      "file": "src/assets/media/fleet-final.webp",
+      "uses": [
+        "catImg.fleet",
+        "postImg.salone-camper"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/10/Honda-ADV350.webp",
+      "file": "src/assets/media/honda-adv350.webp",
+      "uses": [
+        "productGallery.motov2[0]"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Light-Pro-v2.webp",
+      "file": "src/assets/media/light-pro-v2.webp",
+      "uses": [
+        "productGallery.lightpro[1]"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Light-v3-part.webp",
+      "file": "src/assets/media/light-v3-part.webp",
+      "uses": [
+        "productGallery.light[1]"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Marine-Connect.webp",
+      "file": "src/assets/media/marine-connect.webp",
+      "uses": [
+        "productGallery.marine[0]"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Motori.webp",
+      "file": "src/assets/media/motori.webp",
+      "uses": [
+        "catImg.moto"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2024/11/Pandora-Accessories-Remote-controllers-Pandora-R-468BT-Pandora-R-500-BT.webp",
+      "file": "src/assets/media/pandora-accessories-remote-controllers-pandora-r-468bt-pandora-r-500-bt.webp",
+      "uses": [
+        "productImg.moto-acc",
+        "productImg.marine-acc"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2024/11/Pandora-Accessories-Sirens-Pandora-PS-330-Pandora-PS-331-BT-Pandora-PS-332-BT.webp",
+      "file": "src/assets/media/pandora-accessories-sirens-pandora-ps-330-pandora-ps-331-bt-pandora-ps-332-bt.webp",
+      "uses": [
+        "productImg.pandora-acc"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Camper-2.webp",
+      "file": "src/assets/media/pandora-camper-2.webp",
+      "uses": [
+        "productImg.camperv3"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/04/Pandora-Camper-Pro-V2-features.webp",
+      "file": "src/assets/media/pandora-camper-pro-v2-features.webp",
+      "uses": [
+        "productGallery.camperpro[0]"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Camper-Pro.webp",
+      "file": "src/assets/media/pandora-camper-pro.webp",
+      "uses": [
+        "productImg.camperpro"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/03/Pandora-Commander-remote-control.webp",
+      "file": "src/assets/media/pandora-commander-remote-control.webp",
+      "uses": [
+        "productGallery.elite[0]",
+        "productGallery.camperpro[1]"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/03/Pandora-D-061-LoRa-868MHzBluetooth5_GR.webp",
+      "file": "src/assets/media/pandora-d-061-lora-868mhzbluetooth5-gr.webp",
+      "uses": [
+        "productGallery.elite[1]"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/04/Pandora-DMS-100-BT-black.webp",
+      "file": "src/assets/media/pandora-dms-100-bt-black.webp",
+      "uses": [
+        "productImg.camper-acc"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/03/Pandora-Elite-V3-package.webp",
+      "file": "src/assets/media/pandora-elite-v3-package.webp",
+      "uses": [
+        "productImg.elite"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Finder-1.webp",
+      "file": "src/assets/media/pandora-finder-1.webp",
+      "uses": [
+        "productImg.finder"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Finder-2.webp",
+      "file": "src/assets/media/pandora-finder-2.webp",
+      "uses": [
+        "productGallery.finder[0]"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Finder-3.webp",
+      "file": "src/assets/media/pandora-finder-3.webp",
+      "uses": [
+        "productGallery.finder[1]"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Immo.webp",
+      "file": "src/assets/media/pandora-immo.webp",
+      "uses": [
+        "productImg.immo"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2026/02/Pandora-KeyCard-context-scaled-e1770714262162.webp",
+      "file": "src/assets/media/pandora-keycard-context.webp",
+      "uses": [
+        "postImg.keycard"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Light-Pro-V2.webp",
+      "file": "src/assets/media/pandora-light-pro-v2.webp",
+      "uses": [
+        "productImg.lightpro"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Light-remote.webp",
+      "file": "src/assets/media/pandora-light-remote.webp",
+      "uses": [
+        "productGallery.light[0]"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Light-V3.webp",
+      "file": "src/assets/media/pandora-light-v3.webp",
+      "uses": [
+        "productImg.light"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Marine.webp",
+      "file": "src/assets/media/pandora-marine.webp",
+      "uses": [
+        "productImg.marine"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/10/Pandora-Moto-EU-V2-package.webp",
+      "file": "src/assets/media/pandora-moto-eu-v2-package.webp",
+      "uses": [
+        "productImg.motov2"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2026/04/Pandora-Moto-Evo-V2-package.webp",
+      "file": "src/assets/media/pandora-moto-evo-v2-package.webp",
+      "uses": [
+        "productImg.motoevo"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2024/10/Pandora-NAV-035-BT.webp",
+      "file": "src/assets/media/pandora-nav-035-bt.webp",
+      "uses": [
+        "productGallery.smartpro[1]",
+        "productGallery.smart[0]"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Primo-BT.webp",
+      "file": "src/assets/media/pandora-primo-bt.webp",
+      "uses": [
+        "productGallery.primo[0]"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Primo.webp",
+      "file": "src/assets/media/pandora-primo.webp",
+      "uses": [
+        "productImg.primo"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/04/Pandora-Professional-V3-connectivity.webp",
+      "file": "src/assets/media/pandora-professional-v3-connectivity.webp",
+      "uses": [
+        "productGallery.professional[1]"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/04/Pandora-Professional-V3-package-Commander.webp",
+      "file": "src/assets/media/pandora-professional-v3-package-commander.webp",
+      "uses": [
+        "productImg.professional"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2024/10/Pandora-PS-330.webp",
+      "file": "src/assets/media/pandora-ps-330.webp",
+      "uses": [
+        "productGallery.smartpro[0]",
+        "productGallery.smart[1]"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2024/09/Pandora-Smart-Pro-v4-package.webp",
+      "file": "src/assets/media/pandora-smart-pro-v4-package.webp",
+      "uses": [
+        "productImg.smartpro"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2024/11/Pandora-Smart-V4-homepage-frame-1536x864.webp",
+      "file": "src/assets/media/pandora-smart-v4-homepage-frame.webp",
+      "uses": [
+        "installImg.smart",
+        "smartFrame (home hero poster)"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2024/09/Pandora-Smart-v4-package-web.png",
+      "file": "src/assets/media/pandora-smart-v4-package-web.png",
+      "uses": [
+        "productImg.smart"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2026/07/Pandora-Ultimate-D-060.webp",
+      "file": "src/assets/media/pandora-ultimate-d-060.webp",
+      "uses": [
+        "productGallery.professional[0]"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pro-v2.webp",
+      "file": "src/assets/media/pro-v2.webp",
+      "uses": [
+        "productGallery.lightpro[0]"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2024-Pandora-Light-Pro-V2-Toyota-C-HR.jpg",
+      "file": "src/assets/media/works-2024-pandora-light-pro-v2-toyota-c-hr.jpg",
+      "uses": [
+        "installImg.lightpro"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2024-Pandora-Marine-Sea-Ray-SDX-250.jpg",
+      "file": "src/assets/media/works-2024-pandora-marine-sea-ray-sdx-250.jpg",
+      "uses": [
+        "installImg.marine"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2024-Pandora-Smart-Pro-V4-Cupra-Formentor-2025-FD-CAN.jpg",
+      "file": "src/assets/media/works-2024-pandora-smart-pro-v4-cupra-formentor-2025-fd-can.jpg",
+      "uses": [
+        "postImg.charger",
+        "postImg.electric-vehicles"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2024-Pandora-Smart-Pro-V4-Porsche-Taycan-Turbo.jpg",
+      "file": "src/assets/media/works-2024-pandora-smart-pro-v4-porsche-taycan-turbo.jpg",
+      "uses": [
+        "installImg.smartpro",
+        "proofImg.Porsche Taycan Turbo (home proof rail)"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2025-Pandora-Camper-Pro-Mercedes-Hymen.jpg",
+      "file": "src/assets/media/works-2025-pandora-camper-pro-mercedes-hymen.jpg",
+      "uses": [
+        "installImg.camperpro"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2025-Pandora-Elite-V3-Audi-RS6.jpg",
+      "file": "src/assets/media/works-2025-pandora-elite-v3-audi-rs6.jpg",
+      "uses": [
+        "postImg.remote-start-bmw-mini",
+        "postImg.alarm-studio"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2025-Pandora-Elite-V3-Porsche-911-Turbo-S.jpg",
+      "file": "src/assets/media/works-2025-pandora-elite-v3-porsche-911-turbo-s.jpg",
+      "uses": [
+        "installImg.elite",
+        "proofImg.Porsche 911 Turbo S (home proof rail)"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/06/Works-2025-Pandora-Marine-Sea-Doo-RXT-XRS-scaled.jpg",
+      "file": "src/assets/media/works-2025-pandora-marine-sea-doo-rxt-xrs.jpg",
+      "uses": [
+        "proofImg.Sea-Doo RXT XRS (home proof rail)"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2025-Pandora-Moto-Evo-Suzuki-Katana.jpg",
+      "file": "src/assets/media/works-2025-pandora-moto-evo-suzuki-katana.jpg",
+      "uses": [
+        "installImg.motoevo",
+        "proofImg.Suzuki Katana (home proof rail)"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2025-Pandora-Professional-V3-Land-Rover-Range-Rover-Sport-P400E-HSE.jpg",
+      "file": "src/assets/media/works-2025-pandora-professional-v3-land-rover-range-rover-sport-p400e-hse.jpg",
+      "uses": [
+        "installImg.professional"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2026/03/Works-2026-Pandora-Elite-V3-Ferrari-F355-Berlinetta.jpg",
+      "file": "src/assets/media/works-2026-pandora-elite-v3-ferrari-f355-berlinetta.jpg",
+      "uses": [
+        "proofImg.Ferrari F355 Berlinetta (home proof rail)"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Yaucht.webp",
+      "file": "src/assets/media/yaucht.webp",
+      "uses": [
+        "catImg.marine"
+      ]
+    }
+  ],
+  "chrome": [
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/05/favi.webp",
+      "file": "public/favicon.webp",
+      "uses": [
+        "favicon (site chrome; the prototype page has none)"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/INVETEC-Logo-Lettering-white-300x90.webp",
+      "file": "src/assets/brand/invetec-logo-lettering-white.webp",
+      "uses": [
+        "header logo (img.lw)",
+        "footer logo (img.lw)"
+      ]
+    },
+    {
+      "url": "https://invetec.eu/wp-content/uploads/2023/02/Invetec-logo.webp",
+      "file": "src/assets/brand/invetec-logo.webp",
+      "uses": [
+        "header logo (img.ld)",
+        "footer logo (img.ld)"
+      ]
+    }
+  ],
+  "designFiles": [
+    {
+      "designFile": "img/pricelist/acc-band.png",
+      "file": "src/assets/media/pricelist/acc-band.png",
+      "uses": [
+        "accessories.band"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-bt-01.png",
+      "file": "src/assets/media/pricelist/acc-bt-01.png",
+      "uses": [
+        "accessories.bt-01"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-bt-02.png",
+      "file": "src/assets/media/pricelist/acc-bt-02.png",
+      "uses": [
+        "accessories.bt-02"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-bt-790.png",
+      "file": "src/assets/media/pricelist/acc-bt-790.png",
+      "uses": [
+        "accessories.bt-790"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-btr-101.png",
+      "file": "src/assets/media/pricelist/acc-btr-101.png",
+      "uses": [
+        "accessories.btr-101"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-d-010-cover.png",
+      "file": "src/assets/media/pricelist/acc-d-010-cover.png",
+      "uses": [
+        "accessories.d-010-cover"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-d-010.png",
+      "file": "src/assets/media/pricelist/acc-d-010.png",
+      "uses": [
+        "accessories.d-010"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-d-011.png",
+      "file": "src/assets/media/pricelist/acc-d-011.png",
+      "uses": [
+        "accessories.d-011"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-d-022-cover.png",
+      "file": "src/assets/media/pricelist/acc-d-022-cover.png",
+      "uses": [
+        "accessories.d-022-cover"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-d-022-lora.png",
+      "file": "src/assets/media/pricelist/acc-d-022-lora.png",
+      "uses": [
+        "accessories.d-022-lora"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-d-061-camper.png",
+      "file": "src/assets/media/pricelist/acc-d-061-camper.png",
+      "uses": [
+        "accessories.d-061-camper"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-d-061.png",
+      "file": "src/assets/media/pricelist/acc-d-061.png",
+      "uses": [
+        "accessories.d-061"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-d-062.png",
+      "file": "src/assets/media/pricelist/acc-d-062.png",
+      "uses": [
+        "accessories.d-062"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-di-02.png",
+      "file": "src/assets/media/pricelist/acc-di-02.png",
+      "uses": [
+        "accessories.di-02"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-di-03.png",
+      "file": "src/assets/media/pricelist/acc-di-03.png",
+      "uses": [
+        "accessories.di-03"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-di-04.png",
+      "file": "src/assets/media/pricelist/acc-di-04.png",
+      "uses": [
+        "accessories.di-04"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-dms-100-bt.png",
+      "file": "src/assets/media/pricelist/acc-dms-100-bt.png",
+      "uses": [
+        "accessories.dms-100-bt"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-dms-101-bt.png",
+      "file": "src/assets/media/pricelist/acc-dms-101-bt.png",
+      "uses": [
+        "accessories.dms-101-bt"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-dms-105-bt.png",
+      "file": "src/assets/media/pricelist/acc-dms-105-bt.png",
+      "uses": [
+        "accessories.dms-105-bt"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-lc-d-010.png",
+      "file": "src/assets/media/pricelist/acc-lc-d-010.png",
+      "uses": [
+        "accessories.lc-d-010"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-led-valet-2.png",
+      "file": "src/assets/media/pricelist/acc-led-valet-2.png",
+      "uses": [
+        "accessories.led-valet-2"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-nav-035-bt.png",
+      "file": "src/assets/media/pricelist/acc-nav-035-bt.png",
+      "uses": [
+        "accessories.nav-035-bt"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-nav-x.png",
+      "file": "src/assets/media/pricelist/acc-nav-x.png",
+      "uses": [
+        "accessories.nav-x"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-pir-100-bt.png",
+      "file": "src/assets/media/pricelist/acc-pir-100-bt.png",
+      "uses": [
+        "accessories.pir-100-bt"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-pir-100-btm.png",
+      "file": "src/assets/media/pricelist/acc-pir-100-btm.png",
+      "uses": [
+        "accessories.pir-100-btm"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-powercab.png",
+      "file": "src/assets/media/pricelist/acc-powercab.png",
+      "uses": [
+        "accessories.powercab"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-ps-330.png",
+      "file": "src/assets/media/pricelist/acc-ps-330.png",
+      "uses": [
+        "accessories.ps-330"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-ps-331-bt.png",
+      "file": "src/assets/media/pricelist/acc-ps-331-bt.png",
+      "uses": [
+        "accessories.ps-331-bt"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-ps-332-bt.png",
+      "file": "src/assets/media/pricelist/acc-ps-332-bt.png",
+      "uses": [
+        "accessories.ps-332-bt"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-ps-333.png",
+      "file": "src/assets/media/pricelist/acc-ps-333.png",
+      "uses": [
+        "accessories.ps-333"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-r-387-r-389.png",
+      "file": "src/assets/media/pricelist/acc-r-387-r-389.png",
+      "uses": [
+        "accessories.r-387-r-389"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-r-500-bt.png",
+      "file": "src/assets/media/pricelist/acc-r-500-bt.png",
+      "uses": [
+        "accessories.r-500-bt"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-rmd-5m.png",
+      "file": "src/assets/media/pricelist/acc-rmd-5m.png",
+      "uses": [
+        "accessories.rmd-5m"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-rmd-bmw-v2.png",
+      "file": "src/assets/media/pricelist/acc-rmd-bmw-v2.png",
+      "uses": [
+        "accessories.rmd-bmw-v2"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-vs-22d.png",
+      "file": "src/assets/media/pricelist/acc-vs-22d.png",
+      "uses": [
+        "accessories.vs-22d"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/acc-zdr-gm-50.png",
+      "file": "src/assets/media/pricelist/acc-zdr-gm-50.png",
+      "uses": [
+        "accessories.zdr-gm-50"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/tracer.png",
+      "file": "src/assets/media/pricelist/tracer.png",
+      "uses": [
+        "productImg.tracer"
+      ]
+    },
+    {
+      "designFile": "img/pricelist/truck.png",
+      "file": "src/assets/media/pricelist/truck.png",
+      "uses": [
+        "productImg.truck"
+      ]
+    }
+  ]
+}

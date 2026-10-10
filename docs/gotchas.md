@@ -95,30 +95,96 @@ are about to touch. When you hit a new one, add it here in the same shape.
 - **unicorn 77 boolean names cover functions too.** `unicorn/consistent-boolean-name` checks
   boolean variables and parameters, and also functions and callback parameters that return a
   boolean.
-  - Symptom: lint errors on names such as `fresh`, `retryable`, `wantBody` or `sameHosts()`.
+  - Symptom: lint errors on names such as `fresh`, `retryable`, `wantBody` or `sameHosts()`, on
+    a spec name such as `pageExists`, and on Astro's `export const prerender = true`.
   - Fix: start them with `is`, `are`, `has`, `have`, `can`, `should`, `was`, `were`, `did`,
-    `will` or `requires` (`shouldReset`, `shouldRetry`, `shouldReadBody`, `hasSameHosts()`).
-- **More unicorn 77 and sonarjs rules that bite in `scripts/`.**
+    `will` or `requires` (`shouldReset`, `shouldRetry`, `shouldReadBody`, `hasSameHosts()`;
+    `hasPage` for spec §4's `pageExists`). Leave `prerender` out: the static output prerenders
+    every route.
+- **More unicorn 77 and sonarjs rules that bite in `scripts/` and `src/`.**
   - Symptom: `unicorn/prefer-https` and `sonarjs/no-clear-text-protocols` reject `http://` (and
-    `ftp://`) literals, `prefer-https` even in comments; `unicorn/consistent-class-member-order`
-    wants private methods before public ones; `unicorn/no-top-level-assignment-in-function`
-    rejects `beforeAll(async () => { value = ... })` on a module-level `let`;
+    `ftp://`) literals, `prefer-https` even in comments, and so a name that must stay `http://`
+    (the sitemap namespace, `'http://www.sitemaps.org/schemas/sitemap/0.9'`);
+    `unicorn/consistent-class-member-order` wants private methods before public ones;
+    `unicorn/no-top-level-assignment-in-function` rejects
+    `beforeAll(async () => { value = ... })` on a module-level `let`;
     `unicorn/require-array-sort-compare` and `sonarjs/no-alphabetical-sort` reject a bare
     `toSorted()`.
-  - Fix: build a plain-HTTP test URL with `url.protocol = 'http:'`; order class members as
-    fields, constructor, private methods, public methods; in a test, top-level `await` a setup
-    function that returns everything (see `scripts/crawl/__tests__/dry-run.test.ts`); sort
-    strings with `byCodeUnit` from `scripts/crawl/output.ts` (code-unit order, the same on every
-    machine, unlike `localeCompare`).
+  - Fix: build a plain-HTTP test URL with `url.protocol = 'http:'`, and a namespace name through
+    `URL` (`namespaceName` in `src/content/seo.ts`); order class members as fields, constructor,
+    private methods, public methods; in a test, top-level `await` a setup function that returns
+    everything (see `scripts/crawl/__tests__/dry-run.test.ts`); sort strings with `byCodeUnit`
+    from `scripts/crawl/output.ts` (code-unit order, the same on every machine, unlike
+    `localeCompare`).
+- **`eslint --fix` rewrites `http://` inside strings.** `unicorn/prefer-https` has an autofix,
+  and lint-staged runs `eslint --fix` on every commit.
+  - Symptom: a test's expected text such as `origin http://invetec.eu is not allowed` silently
+    becomes `https://...`, so the test asserts something else (and can still pass).
+  - Fix: build a plain-HTTP URL with `url.protocol = 'http:'` and derive the expected text from
+    that object (`${url.origin}`), as `scripts/assets/__tests__/sources.test.ts` does; read the
+    diff of every `--fix` run that touches a test.
+- **unicorn 77 call nesting and scoping.**
+  - Symptom: `unicorn/max-nested-calls` rejects more than 3 nested calls, such as
+    `expect(sha256(await readFile(path.join(...))))` or
+    `z.union([z.strictObject({ url: z.string().min(1) })])`;
+    `unicorn/consistent-function-scoping` rejects a helper defined inside `describe` or a function
+    that captures nothing from it; `unicorn/prefer-await` rejects `.then()` and `.catch()` chains;
+    `unicorn/prefer-iterator-to-array` rejects `[...iterator].map(...)`.
+  - Fix: name the intermediate value (a schema constant, a test helper such as `fileSha()`), move
+    capture-free helpers to module scope, use `try`/`await`, and write
+    `iterator.map(...).toArray()`.
+- **More unicorn 77 rules met in `src/content/`.**
+  - Symptom: `unicorn/no-unsafe-string-replacement` rejects `path.replace('{L}', locale)` (a `$&`
+    or `$1` in the value would be expanded); `unicorn/no-useless-recursion` rejects a function
+    that calls itself once to rewrite its own arguments.
+  - Fix: pass a replacer function (`.replace('{L}', () => locale)`); rewrite the arguments before
+    the work instead of recursing.
 - **`../` and `./` imports form one import-x group.**
   - Symptom: `There should be no empty line within import group` when a blank line separates
     `from '../x'` and `from './y'`.
-  - Fix: no blank line between parent and sibling imports.
+  - Fix: no blank line between parent and sibling imports. Their order inside the group is not
+    always `../` first: in `BaseLayout.astro` and next to `../../../astro.config.mjs` the rule
+    wants `./` first. Let `eslint --fix` order them.
+- **`eslint --fix` in an `is:inline` script.** `unicorn/prefer-block-statement-over-iife` and
+  `unicorn/prefer-continue` fix the code but not its indentation.
+  - Symptom: after the hook's `eslint --fix`, a `<script is:inline>` body sits at column 0.
+  - Fix: write the script as a plain block (`{ const root = ...; }`) with early `continue`s, and
+    let Prettier indent it.
+- **`all: unset` clears the scroll margin too.** The design resets its buttons (`.fx`,
+  `.chipfx`, `.theme-btn`) with `all: unset`, and a component's scoped rule outranks base.css's
+  `main *`.
+  - Symptom: every explainer button computes `scroll-margin-top: 0`; reached by Shift+Tab, a
+    button stays partly or wholly under the fixed header (WCAG 2.2 SC 2.4.11), while links around
+    it are clear.
+  - Fix: reset the browser's button styles one by one (`appearance`, `margin`, `padding`,
+    `border`, `background`, `color`, `font`, ...), never with `all`. `all: unset` also resets
+    `box-sizing` to `content-box`, so a design size that counts on it (the theme button's 36px
+    plus its border, drawn 38px) needs `box-sizing: content-box` written out. `base.test.ts`
+    fails on an `all` declaration in a stylesheet or `.astro` file under `src/` (an inline
+    `style="all: unset"` included) and in the `style` attributes of a `.tsx` island (it reads only
+    those, so an ordinary object with an `all` key passes); `e2e/header.spec.ts` checks the scroll
+    margin of every focus target below the header and a Shift+Tab onto a button under it.
+- **Lint rules met by the shell and its tests.**
+  - Symptom: `sonarjs/super-linear-regex` rejects HTML-matching regexes such as
+    `/<nav[^>]*>([\s\S]*?)<\/nav>/u` and `/<[^>]+>/gu` in tests; `unicorn/prefer-scoped-selector`
+    rejects a descendant selector in `querySelector` (`'main h2'`, `'header *'`);
+    `unicorn/prefer-observer-apis` rejects a scroll listener that reads layout (`scrollY`,
+    `innerHeight`), in an inline script too.
+  - Fix: cut HTML with `indexOf` (`between()` and `textOf()` in
+    `src/components/__tests__/shell-fixtures.ts`); start such selectors with `:scope`
+    (`':scope > main *'`); watch the element with an IntersectionObserver (the overlay header).
+- **Lint rules met by the build integration and the endpoints.**
+  - Symptom: `@typescript-eslint/naming-convention` rejects an integration's hook names
+    (`'astro:build:done'`); `unicorn/filename-case` rejects an endpoint with a parameter in its
+    name (`sitemap-[locale].xml.ts`).
+  - Fix: none needed in code: `eslint.config.js` lets quoted method names and `[param]` route
+    files keep their own spelling.
 - **Byte-exact fixtures.** Prettier formats `.html` files.
   - Symptom: `prettier --write .` would reformat `scripts/crawl/__fixtures__/*.html` and break
     the tests that compare bytes.
-  - Fix: `.prettierignore` lists `scripts/crawl/__fixtures__/`, and `redirects/crawl.json`
-    (generated).
+  - Fix: `.prettierignore` lists `scripts/crawl/__fixtures__/`, and the generated
+    `redirects/crawl.json`, `scripts/assets/media-sources.json` (checked byte for byte by
+    `npm run media:sources -- --check`) and `src/assets/media/manifest.json`.
 
 ## Redirect crawler
 
@@ -127,7 +193,8 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: an invisible byte-order mark (or other raw character) inside a regex or string.
   - Fix: write code points as `String.fromCodePoint(0xfe_ff)` and classes as `\p{ASCII}` or
     `\p{Script=Greek}`; keep Greek in fixtures as real UTF-8 and check them with a byte dump
-    (lead bytes `ce`/`cf`).
+    (lead bytes `ce`/`cf`). A JSON escape meant as text (a backslash, `u003c`) is written with
+    `String.fromCodePoint(0x5c)` too (`ESCAPED_LESS_THAN` in `src/content/seo.ts`).
 - **A test that forgets to inject `fetch` would crawl the live sites.** `runCli` defaults to the
   real hosts, the global `fetch` and the repo's `redirects/` folder (`runCrawl` has no defaults;
   its caller passes everything).
@@ -149,7 +216,7 @@ are about to touch. When you hit a new one, add it here in the same shape.
 - **A run exits 3 without `crawl.json`.**
   - Symptom: the run ends with exit code 3 and one of `STOPPED (max-minutes)`,
     `STOPPED (max-requests)`, `STOPPED (failures)`, `STOPPED (retry): N URLs to retry` or
-    `STOPPED (seed-incomplete)`; wrappers such as `gates.sh run crawl` report a failure.
+    `STOPPED (seed-incomplete)`; a wrapper script that runs `npm run crawl` reports a failure.
   - Fix: expected. Run the same command again until it prints `COMPLETE` and exits 0; only that
     run writes `redirects/crawl.json`. `retry` means every URL was tried but some failed
     (network error, timeout, 403, 429, 5xx) and still have runs left; `seed-incomplete` means a
@@ -221,11 +288,38 @@ are about to touch. When you hit a new one, add it here in the same shape.
     Prettier's API (`formatSummary`), checked to be stable on a second pass, so `format:check`
     and `--check` agree.
 
+## Media fetch
+
+- **`npm run media:fetch` replaces changed images.** It ran once, and every image it wrote is
+  committed: 57 downloaded from invetec.eu (54 media, the 2 logos, the favicon) and the 38
+  `src/assets/media/pricelist/` PNGs copied from the design prototype (`designFile` sources).
+  - Symptom: a run redoes every listed file whose bytes no longer match its manifest record (the
+    tests already fail on that file's size and SHA-256). An edited live image is downloaded again
+    (after a fresh robots.txt read), and an edited pricelist PNG is copied again from the
+    prototype with `--design-dir`; without it, the run stops before any request ("prototype images
+    are missing or changed ... Nothing was requested", exit 2). Either way the edit is replaced.
+  - Fix: never run it unless the site owner asks; leave the committed images as they were written.
+    A run with every file current sends no request at all, robots.txt included.
+- **The crawler's `createHttp` reads every response body as text.**
+  - Symptom: an image fetched through it comes back as a decoded string, its bytes corrupted.
+  - Fix: `scripts/assets/download.ts` gives createHttp a fetch that reads a `200 image/*` body
+    itself, as bytes with the 15 MB cap, and passes on an empty response; the limiter, retries,
+    robots check, request log and hand-followed redirects stay the crawler's. Reuse that, not
+    `response.text()`, for any binary download.
+- **An empty query string is invisible to `URL.search`.**
+  - Symptom: `new URL('https://invetec.eu/a.webp?').search` is `''`, so a `search !== ''` check
+    lets `a.webp?` through and the request goes out with the `?` (the crawler's
+    `assertRequestable` checks `search` only).
+  - Fix: `urlProblem()` in `scripts/assets/sources.ts` refuses any URL whose text contains `?`;
+    use it for media URLs and their redirect targets.
+
 ## Astro and content
 
 - **`satisfies GetStaticPaths` widens params to `string`.**
   - Symptom: `Astro.params.locale` typed as `string` fails `Locale`-typed props in `astro check`.
-  - Fix: return `'en' as const` from `getStaticPaths`, as `src/pages/[locale]/index.astro` does.
+  - Fix: return typed paths: the query module's `staticPaths()` declares `locale: Locale` (a
+    hand-written literal needs `'en' as const`), and the page reads them through
+    `InferGetStaticPropsType`, as `src/pages/[locale]/index.astro` does.
 - **A custom loader bypasses the collection `schema`.** Astro applies a collection's `schema`
   only inside `context.parseData`.
   - Symptom: items written with `store.set()` are never checked against `schema`.
@@ -238,9 +332,75 @@ are about to touch. When you hit a new one, add it here in the same shape.
     `.astro/` does not reset the build's store.
   - Fix: the loader calls `store.clear()` and re-sets every entry on each load. To reset by hand,
     delete `node_modules/.astro/` (builds) or `.astro/` (dev).
-- **`astro dev` does not watch the snapshot.** The loader has no `context.watcher`.
-  - Symptom: after editing `content-snapshot/`, the dev server keeps showing the old content.
+- **`astro dev` does not watch the snapshot.** The loader has no `context.watcher`, and the
+  query adapter (`siteQuery()`) keeps the content it loaded first, a failed readiness check
+  included.
+  - Symptom: after editing `content-snapshot/`, the dev server keeps showing the old content (or
+    the old readiness error).
   - Fix: restart `npm run dev`. Builds always read the current snapshot.
+- **`astro:content` in Vitest serves no entries.** The virtual module resolves through Astro's
+  Vite config, but the tests never run the loaders.
+  - Symptom: `getCollection('products')` returns `[]` in a unit test, so a test through the
+    adapter would pass on empty content.
+  - Fix: tests call `createQuery()` on fixtures or on `readSnapshot()`; `siteQuery()` imports
+    `astro:content` dynamically, so no test that imports `query.ts` loads it. The build and the
+    e2e cover the adapter.
+- **An empty collection warns on every build.** `installers` is empty until Phase 3 (P1-12).
+  - Symptom: `[WARN] [content] The collection "installers" does not exist or is empty` while
+    the build generates its routes (the query adapter loads every collection).
+  - Fix: expected; it goes away when the snapshot has an installer.
+- **Astro drops a line break between an expression and an element.**
+  - Symptom: `{heading.lead}` on one line and `<span class="b">` on the next render as
+    `anywhere<span class="b">without you.</span>`: the accessible name loses its space
+    ("anywherewithout you.").
+  - Fix: write the space explicitly, `{' '}` (inside a fragment it survives Prettier), or keep the
+    expression and the element on one line with a space (Prettier itself joins them so in
+    `LanguageSwitcher.astro`). Check the built HTML.
+- **Every media file lands in `dist/_astro/`.** `MEDIA_FILES` (`src/content/media.ts`) imports
+  every image under `src/assets/media/` eagerly, and Astro emits each imported image as a file;
+  it deletes an original only after `<Image>` optimized it and nothing used its raw `src`. A lazy
+  glob would not help: its dynamic imports still load, and so emit, every image.
+  - Symptom: without the build integration, `dist/_astro/` holds the media originals no page
+    shows (70 files, 3.22 MB, with the interim index showing 16 package shots).
+  - Fix: `src/integrations/build-files.ts` deletes, after the build, every image directly in
+    `dist/_astro/` whose file name no other built file holds (`dist/_astro` 4.31 MB -> 1.08 MB).
+    A page that shows an image goes through `<Image>` (A19), so its original is replaced by the
+    optimized output; `e2e/seo.spec.ts` requests every `/_astro/` file the pages and their CSS
+    name.
+- **Reading a property of an imported image keeps its original in `dist/`.** An image import is a
+  proxy: any property read in the page (`src.width`, `src.src`) marks the original as used, and
+  the build then ships it beside the `<Image>` output.
+  - Symptom: after `width={Math.min(640, image.src.width)}`, the 16 originals of the index's
+    package shots (1.6 MB, a 2700 px PNG among them) are back in `dist/_astro/`.
+  - Fix: pass the `ImageMetadata` to `<Image>` untouched; size it with props that need no read
+    (`widths`, `sizes`). `head.ts` reads the logo's `src` on purpose: the Organization JSON-LD
+    names the original file (9 KB).
+- **`<Image widths>` without `width` writes the full-size image as `src`.** Astro keeps the
+  original dimensions for `src` (converted to WebP) and caps `widths` at the original width.
+  - Symptom: a 2700 px package shot ships a 2700 px `src` (149 KB) beside its 320w and 640w files,
+    and `width="2700"`.
+  - Fix: harmless (browsers that read `srcset` never fetch `src`; the attributes keep the aspect
+    ratio). A fixed `width` larger than a small original adds yet another file, so the index
+    passes `widths` only.
+- **The Content Layer returns a collection sorted by id.** Astro's data store
+  (`astro/dist/content/data-store-writer.js`) writes entries in id order, whatever order the
+  loader set them in.
+  - Symptom: without a sort, the build lists products elite, immo, light, lightpro, ..., while
+    `readSnapshot()` (the unit tests) keeps the file's order, so no unit test over the snapshot
+    sees the difference.
+  - Fix: any list whose order matters needs an `order` field or an explicit sort in the query.
+    Three readers sort today: `products(L)` (products have `order`, the prototype's, flagship
+    first), `categories(L)` and `navSections(L)`. Not yet: FAQ, spec rows and accessory groups
+    have `order` but no reader sorts them; posts need a date sort, accessories an order and
+    accessory cards a fixed order. Add each sort with the page that first shows the list
+    (Phases 2-3).
+    A test that matters for order feeds the query the items reversed or sorted by id, and the e2e
+    checks the built page.
+- **Image imports in Vitest are `ImageMetadata`.** Vitest runs through Astro's Vite config.
+  - Symptom: `src` is a dev-server URL (`/@fs/.../x.webp?origWidth=...`), not the build's
+    `/_astro/x.<hash>.webp`.
+  - Fix: assert `width`, `height` and `format`, and that `src` names the file; never the exact
+    `src`.
 - **`CONTENT_SOURCE` from `.env` is ignored.** Astro loads `.env` after the content sync.
   - Symptom: `CONTENT_SOURCE=payload` in `.env` has no effect.
   - Fix: only the process environment (shell or CI) selects the source.
@@ -260,28 +420,375 @@ are about to touch. When you hit a new one, add it here in the same shape.
     `Assertion failed: !(handle->flags & UV_HANDLE_CLOSING), file src\win\async.c, line 76` and
     exit code 127 instead of 1. The build fails either way; on Linux it exits 1.
   - Fix: read the error printed above the assertion; the assertion itself is noise.
-- **The contract is lenient in a few places.**
-  - Symptom: unknown top-level keys in a snapshot item are silently stripped (plain `z.object`);
-    `showIn` accepts duplicates; a whitespace-only string passes `min(1)`; an unknown language
-    key in a language map is reported at the field (`name`), not at the key (`name.fr`).
-  - Fix: review snapshot edits by eye; tighten the contract when the CMS source arrives.
-- **`/en/` renders every product.** The per-locale item rule is not applied yet.
-  - Symptom: an item with no English text renders an empty `<article>`.
-  - Fix: until the rule exists, give every snapshot item an English `name`, `tag` and `blurb`.
+- **A second build on Windows can fail with EPERM on `dist/_astro`.** Astro empties `dist/`
+  with Node's `fs.rmSync`, which a just-written `dist/_astro` folder sometimes refuses.
+  - Symptom: `EPERM, Permission denied: \\?\...\dist\_astro` right after
+    `Collecting build info...`, often on every second build in a row, sometimes followed by the
+    libuv assertion above.
+  - Fix: delete `dist/` from the shell (`rm -rf dist`) and build again; it is not a code
+    problem.
+- **An unknown language key is reported at the field.** Every contract object is strict (an
+  unknown key is an error), `showIn` refuses a repeated language and text refuses empty,
+  whitespace-only or untrimmed values, but a language map's unknown key is zod's
+  `unrecognized_keys` issue on the map itself.
+  - Symptom: `{ "name": { "fr": "..." } }` fails as `field name: Unrecognized key: "fr"`, not
+    `name.fr`.
+  - Fix: read the key named in the message.
+- **zod 4 runs an object's refinement after issues that do not abort.** A failed `regex` or
+  `refine` on a property does not stop the object's own `superRefine` (a wrong type does).
+  - Symptom: a refinement that re-parses the object (the item schemas' source-language check)
+    reports the same property issue twice.
+  - Fix: pass `{ when: (payload) => payload.issues.length === 0 }` as the refinement's second
+    argument, as `itemSchema` in `src/content/contract/item.ts` does.
+- **A template's placeholders live on the template schema only.** `template()` records its
+  declared names with zod's `.meta()`, which registers that one schema instance; a wrapper made
+  afterwards (`.optional()`, a plural's `few`) is another instance without them.
+  - Symptom: `declaredPlaceholders(schema)` returns `undefined` for an optional template, so a
+    walk over a schema skips it.
+  - Fix: unwrap `ZodOptional` before reading, as the walker in
+    `src/content/__tests__/site-copy.test.ts` does.
+- **A link target that fails inside the matching union option is reported at that option's
+  field.** The footer's link target is a union of a route target and an `{ href }` target.
+  - Symptom: `{ href: 'http://...' }` fails at `target.href`, while `{ route: 'shop' }`, a
+    vehicle outside the enum or both `route` and `href` fail at `target`.
+  - Fix: expected. zod 4 passes on the issues of an option that failed only a check (a
+    `refine`, a `regex`); a wrong type, enum value or key in every option becomes one
+    `invalid_union` issue at the union. Read the message for the reason.
+- **A parameter a route does not expect is reported at `params.<name>`.** The Site copy
+  `routeTarget` checks its parameters against `ROUTE_PARAMS` (`contract/keys.ts`) in a
+  refinement.
+  - Symptom: `{ route: 'category' }` fails at `target.params.vehicle` ("needs a vehicle"), and
+    `{ route: 'contact', params: { vehicle: 'car' } }` at `target.params.vehicle` ("takes no
+    vehicle"); `routePath` / `targetHref` throw the same messages.
+  - Fix: give the route exactly the parameters its path has (spec §4 table).
+- **A Site copy link to a product, accessory, post or the 404 page fails at `route`.** A link
+  target would carry one slug or id for every language, and nothing resolves it against the item
+  (a post's slug differs per language, an item can be hidden in a language), so `routeTarget`
+  refuses the item routes; no link leads to the 404 page either. A target's `params` therefore
+  take a `vehicle` only.
+  - Symptom: `{ route: 'post' }` fails at `target.route` ("A Site copy link names a static or
+    category page, not the item route "post""), `{ route: 'notFound' }` likewise ("... not the
+    404 page"); a `slug` or `id` in `params` is an unknown key at `target.params`.
+  - Fix: link to a static or category page; a later phase that needs an item link adds an
+    id-based target resolved through the page rules.
+- **A nav section to a page with parameters fails at `route`.** A nav section has only a route
+  key, so it can lead only to a page whose path takes no parameter (`NAV_ROUTE_KEYS`,
+  `contract/nav-sections.ts`, derived from `ROUTE_PARAMS`), never the 404 page.
+  - Symptom: `content-snapshot/nav-sections.json` with `"route": "category"` fails to load at
+    `route` ("A nav section leads to a page whose path takes no parameter (home, systems, ...),
+    not "category"").
+  - Fix: use `systems` for the car category, or a parameter-free page.
+- **An id that is fine for the contract but not for a URL.** Ids follow `idSchema` (a-z, 0-9 and
+  `-`), which accepts `a--b`, `-x` and `x-`; a value that fills a path follows the stricter
+  `URL_SEGMENT` (`contract/primitives.ts`): lowercase words of a-z and 0-9 joined by single
+  hyphens.
+  - Symptom: for the id `a--b`, `routePath` throws "The route "accessory" needs an id: …", with
+    the rule and the value.
+  - Fix: every value that becomes a path segment uses the segment rule in the contract (slugs,
+    an accessory's `id` through `segmentIdSchema`), so the snapshot fails to load before the
+    build gets there. Use it for any new id that appears in a URL.
+- **Optional zod fields are `T | undefined` under `exactOptionalPropertyTypes`.** The contract's
+  inferred types keep `undefined` in every optional field.
+  - Symptom: `astro check` reports ts2379 when a parsed value (a link target's `params`) goes
+    where `Partial<Record<K, string>>` is expected.
+  - Fix: accept `string | undefined` values (`RawParams` in `src/content/routes.ts`).
+- **The item rule finds localized text and media by shape.** `gapsIn`
+  (`src/content/completeness.ts`) walks any value: an object keyed only by languages is a
+  language map, and the fields `image`, `installImage`, `photo`, `gallery` and a rich-text image
+  block's `media` hold media ids.
+  - Symptom: a media field under another name (`poster`, `thumbnail`) is never checked for alt
+    text in the page's language, so an item shows with an image that has no alt there; an object
+    keyed by languages that is not text (per-language settings) is checked as if it were.
+  - Fix: name a media field like the existing ones or add it to `MEDIA_FIELDS`, and list it in
+    `mediaReferences` (`src/content/__tests__/integrity-checks.ts`): `rules-items.test.ts`
+    compares the two on the snapshot.
+- **A generic helper around `defineCollection` erases the entry type.**
+  - Symptom: when a generic `collection(name)` wraps `defineCollection` with the schema
+    `COLLECTIONS[name]`, `getCollection()` returns `data: unknown` and `astro check` fails where
+    a page uses the data.
+  - Fix: write one `defineCollection` per name in `src/content.config.ts`; its
+    `satisfies Record<ContentName, unknown>` fails the typecheck when a registered name is
+    missing.
 - **Astro's own `redirects` config.**
   - Symptom: it emits meta-refresh HTML pages, not HTTP redirects.
-  - Fix: the root redirect lives in `public/_redirects` (`/  /en/  302`).
-- **`_redirects` is not served by `astro preview`.**
+  - Fix: the build integration (`src/integrations/build-files.ts`) writes the root redirect into
+    `dist/_redirects` (`/  /en/  302`) for the static host.
+- **A `public/_redirects` fails the build.** Astro copies `public/` into `dist/` before the
+  integration runs, and the integration writes `dist/_redirects` itself.
+  - Symptom: the build stops after the pages are written, with
+    `dist/ already has a different _redirects (from a public/_redirects?)` in its message.
+  - Fix: remove `public/_redirects` and generate its rules with the root line (`redirectsFile` in
+    `src/content/seo.ts`). The same text already in `dist/` (the hook run again over a finished
+    build) passes.
+- **`_redirects` is not applied by `astro preview`.**
   - Symptom: locally `/` returns 404 and `/_redirects` is served as a plain file.
-  - Fix: expected. The root redirect is covered by `src/test/redirects.test.ts`, and the e2e
-    server waits on `/en/`, not `/`.
-- **`dist/_astro` contains Preact runtime chunks.**
-  - Symptom: JS files in `dist/_astro` although no page has a `<script>`.
-  - Fix: expected from the Preact integration; nothing reaches the browser. Recheck once real
-    islands exist.
+  - Fix: expected. `seo.test.ts` checks the generator, `e2e/seo.spec.ts` the built line, and the
+    e2e server waits on `/en/`, not `/`.
+- **Astro writes only the root `/404` route as `404.html`.** In the directory build format every
+  other page becomes `<path>/index.html` (`astro/dist/core/build/common.js`).
+  - Symptom: `src/pages/[locale]/404.astro` builds `dist/en/404/index.html`, not the
+    `dist/en/404.html` its URL (routes.ts) and the static host expect.
+  - Fix: the build integration moves each `{L}/404/index.html` to `{L}/404.html` and removes the
+    folder; the build fails when a live language has no 404 page. `astro preview` serves
+    `/en/404/` from `en/404.html` too (it maps `/x/` to `x.html`), so a check that the folder is
+    gone reads `dist/` or requests `/en/404/index.html` (`e2e/seo.spec.ts`).
+- **The query module cannot run in an integration hook.** `query.ts` needs Vite
+  (`import.meta.glob`) and astro:content, which `astro:build:done` does not have.
+  - Symptom: importing `query.ts` from `src/integrations/` fails while astro.config.mjs loads.
+  - Fix: the hook uses the pure modules (`rules.ts`, `seo.ts`) over the snapshot read with
+    `readSnapshot()`. Phase 5 (`CONTENT_SOURCE=payload`) must give the hook the CMS's
+    `languages` instead.
+- **The root redirect follows the live languages, not the built ones.** A preview build renders
+  every language.
+  - Symptom: from the build's language list, a preview build would send `/` to `/el/` with a 301
+    while Greek is not live, and browsers keep a 301.
+  - Fix: `rootLanguage` and `rootRedirect` take the `languages` global and read `live`
+    (`rules.ts`); a 301 only once Greek is live.
+- **`dist/_astro` holds more Preact chunks than a page loads.**
+  - Symptom: `signals.module.*.js` (and the other Preact chunks) in `dist/_astro`.
+  - Fix: expected. A page loads an island's chunk only where its directive asks: the mobile menu's
+    below 1120px (`client:media`), the explainer's on every page once the browser is idle
+    (`client:idle`), with the renderer (`client.*.js`), Preact, its hooks and the chunk the two
+    islands share (about 9 KB gzip in all); the renderer imports `signals` only for an island
+    given a signal prop.
 - **`@types/node` is global** (no `types` list in `tsconfig.json`).
   - Symptom: Node globals type-check inside browser code too.
   - Fix: scope the types when islands grow.
+
+## Snapshot converter and checks
+
+- **Running `npm run snapshot:convert` again overwrites the snapshot.** It ran once (P1-10);
+  `content-snapshot/` is the source of truth since.
+  - Symptom: every hand edit of a converted file (and `src/content/hues.ts`) since the conversion
+    is gone; `git diff` shows them reverted to the prototype's data.
+  - Fix: do not run it on the real files. To exercise it, run its tests (they use a fixture in
+    a scratch folder) or pass a scratch copy of the repository as the root from code.
+- **zod output follows the schema, not the input.** A `z.strictObject` returns its keys in
+  shape order, and a `z.record` over an enum (the matrix) in the enum's order.
+  - Symptom: a check on parsed data cannot see how a file orders its keys (a matrix out of row
+    order still parses), and a test that compares key order against the file fails.
+  - Fix: read the raw JSON for order checks, as the integrity test does for the matrix.
+- **zod keeps a key whose value is `undefined`.** An optional field written as
+  `{ image: undefined }` parses, and the output still has the key.
+  - Symptom: the converted items compare unequal to the written file in tests
+    (`not.toHaveProperty('image')` fails), although `JSON.stringify` drops the key.
+  - Fix: build items without those keys (`withoutUndefined` in `scripts/snapshot/convert-text.ts`).
+- **Prettier's config is found from the path you pass.** `resolveConfig()` searches upward from
+  the file path; for a file outside the repository it finds no `.prettierrc.json`.
+  - Symptom: output written to a scratch folder (the converter's tests) comes out in Prettier's
+    defaults (double quotes, 80 columns), so it differs from what `format:check` expects.
+  - Fix: resolve the config from the file's repository path, whatever folder the text goes to
+    (`formatForRepo` in `scripts/snapshot/render.ts`).
+- **A white-on-transparent image.** `antijammer-primo.webp` (Primo's gallery) is a white line
+  icon on a transparent background.
+  - Symptom: on a white plate the image looks empty, in the browser and in an image viewer.
+  - Fix: show it on a dark surface, or view it composited on a dark background to check it.
+
+## Styles and fonts
+
+- **The Fonts API's `npm` provider downloads the font files.** It reads the package's CSS from
+  `node_modules`, but rewrites every `url(./files/...)` to
+  `https://cdn.jsdelivr.net/npm/<package>@<version>/files/...` and fetches it (cached in
+  `node_modules/.astro/fonts/` afterwards, so only a clean build shows it). It also ignores the
+  family's `subsets`.
+  - Symptom: an offline build fails with `CannotFetchFontFile` naming a jsDelivr URL; online, a
+    fresh clone or CI downloads fonts at build time.
+  - Fix: use the repo's provider, `fontsourceVariable(pkg)` (`src/fonts/fontsource-variable.ts`),
+    which gives Astro the package's own files as absolute paths. The built-in `local` provider
+    reads files too, but its faces carry no subset, so `<Font preload>` cannot pick the latin one.
+- **The Fonts API swallows a provider's error.** Astro runs providers through unifont with
+  `throwOnError: false`.
+  - Symptom: a subset, style or file the package lacks is logged ("Could not resolve font face
+    ... No data found for font family"), and `astro build` exits 0 with no faces for that family:
+    the site falls back to system fonts.
+  - Fix: declare every family through `fontsourceFamily()` in `astro.config.mjs`; it runs the
+    provider's check while the config loads, so a missing subset, style or file stops the build
+    with "Unable to load your Astro config" and the reason. A unit test requires every
+    `config.fonts` entry to be in `CHECKED_FAMILIES` (what `fontsourceFamily()` returned), so a
+    family declared with a bare `provider: fontsourceVariable(pkg)` fails the tests.
+- **A custom font provider is one instance per name and config.** The Fonts API keys providers by
+  a hash of `name` and `config`.
+  - Symptom: two families with `fontsourceVariable()` and no distinct `config` both resolve from
+    the first package.
+  - Fix: keep `config: { package: pkg }` in the provider.
+- **Font faces are named `<family>-<hash>`.** The Fonts API never declares the plain family name.
+  - Symptom: `font-family: 'Sofia Sans Extra Condensed'` falls back to a system font, and
+    `document.fonts.check('800 40px "Sofia Sans Extra Condensed"')` is true without any font
+    loaded (no face matches the name, so nothing is left to load).
+  - Fix: use `var(--display)` and `var(--body)` (the Fonts API's variables); in a test, read the
+    first family of `--display` and check that face.
+- **The built CSS is not the source CSS.** Astro minifies with Lightning CSS.
+  - Symptom: `rgba(14, 26, 36, 0.74)` ships as `#0e1a24bd`, `#ffffff` as `#fff`,
+    `translate3d(0, 60px, 0)` as `translateY(60px)`; a test that searches the built page for a
+    source value fails.
+  - Fix: check values in `src/styles/` (`tokens.test.ts`, `base.test.ts`), and in the browser
+    through computed styles.
+- **A reveal element at the end of a page.** The design's reveal script observes with
+  `rootMargin: '0px 0px -10% 0px'`.
+  - Symptom: a small `.rv` element in the bottom tenth of a page that cannot scroll further never
+    gets `.in` and stays invisible.
+  - Fix: BaseLayout observes with thresholds `0` and `0.1` and no negative margin; keep it so.
+- **A reveal element taller than ten viewports.** Its in-view share never reaches a tenth.
+  - Symptom: with a `0.1` threshold alone, a very tall `.rv` element stays invisible while it
+    covers the screen.
+  - Fix: BaseLayout's reveal script gives `.in` at once to an element taller than nine
+    viewports; without IntersectionObserver it gives `.in` to every reveal element.
+- **`aspect-ratio` on a flex item yields to its content.** A flex item's automatic minimum height
+  is its content's, and `aspect-ratio` only sets a preferred size.
+  - Symptom: the index card's square plate (`aspect-ratio: 1`, an item of the card's flex column)
+    grows about 20px taller than wide around the portrait truck shot; `min-height: 0` on the image (the grid
+    item inside) does not help.
+  - Fix: `min-height: 0` on the plate itself (`index.astro`); `e2e/index-cards.spec.ts` checks
+    every plate is square at 1280 and 390px.
+- **A touch target grown with padding moves what is drawn.** The design gives its feature buttons
+  10px more padding above and below on small screens, taken back by negative margins.
+  - Symptom: the button's dotted underline (its bottom border) drops 10px below the label, and
+    Playwright's `boundingBox()` reports 44px though only the padding grew.
+  - Fix: an invisible, absolutely positioned `::before` reaching 10px beyond the drawn button
+    above and below takes the taps and nothing drawn moves (FeatureButton.astro; its offsets count
+    from the padding box, which ends above the underline, so it is `inset: -10px 0 -11px`). `boundingBox()` cannot see it:
+    `e2e/index-cards.spec.ts` reads the `::before` box from computed styles and checks with
+    `elementFromPoint` that points 9px above and below the label hit the button, and taps there.
+- **Astro inlines a page's CSS only under 4 KB.** With `build.inlineStylesheets` on `auto`, each
+  CSS chunk under 4 KB goes into a `<style>`, a larger one into a `<link rel="stylesheet">`.
+  - Symptom: the number of stylesheet links changes when a page's own styles cross 4 KB (the
+    index page's did, giving `/en/` a second one).
+  - Fix: expected; tests check that the theme script comes before every stylesheet, not how many
+    there are (`e2e/shell.spec.ts`).
+
+## Islands (Preact)
+
+- **An island's markup has no Astro scope.** A scoped `<style>` in the `.astro` parent never
+  reaches the elements an island renders (Astro hands the island its scope id only as a
+  `data-astro-cid-*` prop, which the island ignores).
+  - Symptom: the burger and the menu are unstyled although SiteHeader's `<style>` names them.
+  - Fix: a global stylesheet imported by the island (`MobileMenu.css`; Astro bundles it into the
+    page's CSS, so it applies before hydration) with class names only the island uses. A parent
+    rule that must not reach into the island uses a child combinator: `.hdr-right >
+:global(.lang)` hides the header's switcher, not the menu's.
+- **A `display` on a dialog's class shows it while closed.** The browser hides a closed dialog
+  with `dialog:not([open]) { display: none }`, and any author `display` beats it.
+  - Symptom: the menu sits open on the page, but `showModal()` was never called (nothing is
+    inert, Escape does nothing).
+  - Fix: set `display` on `.m-nav[open]` only.
+- **The header's breakpoint is written six times.** `client:media` cannot read CSS, so
+  SiteHeader's media queries, ThemeToggle's, MobileMenu.css, the island's
+  `client:media="(max-width: 1119px)"`, and the feature buttons' touch targets (FeatureButton.astro
+  and the row spacing in `index.astro`) must agree.
+  - Symptom: a burger that shows but was never hydrated (a dead button), or the island's script
+    loaded where the burger is hidden.
+  - Fix: change them together; `header-menu.test.ts` fails when one differs, and
+    `e2e/menu.spec.ts` checks 1119px (script requested, burger shown) against 1120px (neither).
+    The complement is `@media not all and (max-width: 1119px)` (the overlay's transparent look),
+    never `min-width: 1120px`, which would leave fractional widths such as 1119.5px in neither.
+- **The one-row header and text spacing.** Under WCAG 1.4.12 text spacing the fixed header row
+  needs 957px in English, 997px with two language codes and 1076px with all four.
+  - Symptom: below that the switcher slides past the edge of the screen, and a fixed row cannot
+    scroll to it.
+  - Fix: the breakpoint (1120px) sits above it, with room for a classic scrollbar (up to 17px).
+    Longer nav labels change the numbers: re-measure with `e2e/header-spacing.spec.ts` when a
+    language goes live.
+- **A native modal dialog lets Tab leave the page.** After a modal dialog's last control,
+  Chromium moves focus to the browser's own UI (`document.activeElement` is `<body>`,
+  `document.hasFocus()` is false), then back to the first control; Shift+Tab from the first
+  control does the same.
+  - Symptom: "Tab stays inside" fails on the press after the last control.
+  - Fix: both islands wrap Tab and Shift+Tab at the ends themselves (`wrapFocus` in
+    `dialog-focus.ts`); `e2e/menu.spec.ts` checks `hasFocus()` after each press.
+- **A click on a modal dialog's content focuses the dialog.** Chromium gives a modal dialog focus
+  when a click lands on anything inside it that cannot take focus itself (its padding, text,
+  headings, an empty area), whatever its overflow.
+  - Symptom: the next Shift+Tab (or Tab) is not at a control, so a wrap that only looks at the
+    first and last controls lets focus leave the page. And when the dialog is not the element that
+    scrolls, PageDown, the arrow keys and Space then scroll nothing.
+  - Fix: `wrapFocus` treats focus on anything that is not one of the controls as an end: Shift+Tab
+    goes to the last control, Tab to the first (`e2e/menu-resize.spec.ts` clicks the background).
+    The explainer's scrolling panel has `tabindex="-1"`, so a click on its text focuses the panel
+    (no ring on a mouse focus) and the keyboard scrolls it (`e2e/explainer-layout.spec.ts`).
+- **A top-layer dialog does not follow a resize.** Whatever was measured when the dialog opened
+  (the close button's place over the burger) goes stale when the phone turns or the page zooms,
+  and the browser does nothing about it.
+  - Symptom: after a rotation the close button sits outside the screen (left 766px at 390px wide)
+    and the menu scrolls sideways (WCAG 1.4.10); after widening past the breakpoint the menu
+    stays open over the desktop header with the page still locked, and closing it focuses the
+    hidden burger, so focus falls to `<body>`.
+  - Fix: while the dialog is open, a `resize` listener (added on opening, removed in the `close`
+    event, which every way out ends in) measures again, or closes the menu once the burger is
+    hidden and puts focus on the header's own link. Measure after `showModal()`, not before: the
+    scroll lock takes the page's 10px scrollbar away and moves the burger
+    (`e2e/menu-scrollbar.spec.ts` shows the scrollbar; see "Headless Chromium hides scrollbars").
+    The `close` event comes a task after `close()`: when the menu was opened again in between, the
+    handler returns at once (`menu.open`), or it would end the new session's resize watch.
+- **An absolutely positioned control scrolls with its dialog.** Inside a scrolling modal dialog, a
+  `position: absolute` close button leaves the screen as soon as the menu scrolls (a phone held
+  sideways).
+  - Fix: `position: fixed` (in the top layer it is fixed to the screen, and it adds nothing to the
+    dialog's scroll area), an opaque background over the links passing under it, and a
+    `scroll-margin-top` on the links so a focused one stops below it.
+- **Focus after a dialog opened from code.** On close the browser returns focus to the element
+  focused before `showModal()`, which is `<body>` when the opener never took focus (a tap on
+  iOS, a click in some browsers).
+  - Fix: the dialog's `close` event gives focus back to the burger (the menu) or to the button
+    that opened it (the explainer, else `<main>` when that button is gone or hidden), so every way
+    out (Escape, the close button, the backdrop, a link) restores it.
+- **`useEffect` runs after Astro has marked the island hydrated.** Astro removes the island's
+  `ssr` attribute as soon as Preact's `hydrate()` returns; Preact runs `useEffect` callbacks a
+  frame later, `useLayoutEffect` callbacks inside `hydrate()`.
+  - Symptom: listeners wired in `useEffect` miss clicks for about 11-41 ms after `ssr` is gone, so
+    a test that waits for `ssr` to go (the readiness rule in the e2e section) still clicks a dead
+    burger now and then.
+  - Fix: wire native listeners in `useLayoutEffect` (both islands); `e2e/menu.spec.ts` clicks
+    the burger, and `e2e/explainer.spec.ts` an explainer button, in the microtask after `ssr` is
+    removed.
+- **A mark drawn as a background disappears in forced colors.** In forced-colors mode (Windows
+  High Contrast) the browser paints backgrounds with the Canvas colour.
+  - Symptom: the burger's bars and the close button's X (span backgrounds) vanish, leaving two
+    empty 44px boxes.
+  - Fix: draw marks in the text colour, which forced colors keep visible: the bars are 2px
+    `currentColor` top borders; an icon is an inline SVG with `stroke="currentColor"`.
+    `e2e/forced-colors.spec.ts` checks the pixels inside each control with
+    `page.emulateMedia({ forcedColors: 'active' })`.
+- **A click's target does not tell a backdrop click.** The browser gives a click on a modal
+  dialog's `::backdrop` the dialog itself as its target, and a click on the dialog's own padding
+  or border too. A press and a release on two elements send the click to their nearest common
+  ancestor, which is the dialog for a drag between the panel and the backdrop. A double-click's
+  second click on an explainer button lands on the backdrop of the dialog the first one opened.
+  - Symptom: a backdrop check on `event.target === dialog` closes the explainer when its panel's
+    padding is clicked, when a text selection is dragged from the panel onto the backdrop (the
+    selection is lost), when a press on the backdrop is released over the panel, and on a
+    double-click on the button that opens it.
+  - Fix: the dialog has no padding or border (its panel, `.fx-body`, fills the dialog's box and
+    carries them), and a click closes it only when the latest `pointerdown` and `pointerup` both
+    had the dialog itself as their target and `event.detail` is at most 1
+    (`explainer-dialog.ts`). `e2e/explainer.spec.ts` clicks the panel's padding and border, drags
+    both ways across the panel's edge and double-clicks the button (stays open), and clicks the
+    backdrop (closes).
+- **Sticky offsets inside a scroll container count its padding.** Chromium constrains a sticky
+  element to the scroll container's padding box minus its padding.
+  - Symptom: the explainer's sticky close button, `top: 14px` in a panel with 56px of top padding,
+    sits at 70px, not 14px.
+  - Fix: subtract the padding (`top: calc(14px - var(--pad-top))`, Explainer.css);
+    `e2e/explainer-layout.spec.ts` checks the button 14px from the panel's corner.
+- **Astro's serialized props are about twice their JSON.** Every prop value is wrapped
+  (`[0,"text"]`, `[1,[...]]` for an array) and the attribute escapes each quote as `&quot;`.
+  - Symptom: the query's `explainer('en')`, 35 KB as JSON, makes a 65 KB `props` attribute.
+  - Fix: pass a trimmed shape with few values (`layouts/explainer-content.ts`: the texts the
+    dialog shows, systems as one table referred to by index, absent keys instead of `undefined`),
+    and check the built attribute (`e2e/explainer.spec.ts`, under 40 KB; 17.5 KB on `/en/`).
+- **Props are plain objects.** An island's revived props inherit `Object.prototype`.
+  - Symptom: `features[button.dataset.fx]` for `data-fx="constructor"` is a function, not
+    `undefined`, and the view crashes.
+  - Fix: look up keys that come from the page with `Object.hasOwn` (`viewFor` in Explainer.tsx).
+- **`client:idle` loses a click before hydration.** The explainer's buttons are on the page from
+  the first paint; its script runs once the browser is idle after load.
+  - Symptom: a click in that window opens nothing. From the local preview on `/en/`: none on a
+    desktop, about 65-100 ms and up to 200 ms at 4x CPU throttling. Over a network the scripts
+    come in two round trips after the idle callback (the component and the renderer, then the
+    Preact, hooks and shared chunks they import; Astro writes no modulepreload): about 0.9 s after
+    first paint at a 300 ms round trip.
+  - Fix: none in Phase 1 (a queue would need an inline script with its own CSP hash, or
+    `client:load`); the next click works. Later options: modulepreload links for the island's
+    chunks, or hydrating on the first interaction.
 
 ## Unit tests (Vitest)
 
@@ -302,9 +809,23 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: `props` is `Record<string, unknown>`, so wrong props in a test are not type errors;
     the rendered output has no doctype.
   - Fix: assert on the rendered output, and leave the doctype to the build and e2e.
+- **A component that calls `siteQuery()` renders nothing useful in Vitest.** `astro:content`
+  serves no entries there, so the adapter fails (`The global ... has no "global" entry`).
+  - Symptom: a Container test of `BaseLayout` throws before rendering.
+  - Fix: replace the adapter with a query over fixtures:
+    `vi.mock(import('../../content/query'), async (importOriginal) => ({ ...(await importOriginal()), siteQuery: ... }))`,
+    as `src/layouts/__tests__/BaseLayout.test.ts` does. Pass the site to the container
+    (`AstroContainer.create({ astroConfig: { site } })`) for `Astro.site`.
 - **Two copies of `@testing-library/dom`** (jest-dom's and Preact Testing Library's).
   - Symptom: `configure()` from Preact Testing Library does not reach jest-dom's copy.
   - Fix: harmless today; configure each copy where it is used if that ever matters.
+- **`withLanguage()` also copies `languages`.** The `languages` global is keyed by language, so
+  the fixture helper (`src/content/__tests__/rules-fixtures.ts`) takes it for text and copies
+  English's `{ live: true }` to the other language.
+  - Symptom: a query over `withLanguage(fixtureContent(['en']), 'el')` builds Greek too (the
+    switcher shows a Greek link).
+  - Fix: put the fixture's own `languages` back after `withLanguage`, as `shellQuery()` in
+    `src/components/__tests__/shell-fixtures.ts` does.
 - **Testing an unset environment variable.**
   - Symptom: setting it to `''` is not the same as unset.
   - Fix: `vi.stubEnv('CONTENT_SOURCE', undefined)` deletes the variable; restore with
@@ -313,6 +834,27 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: run through a symlink or Windows junction, Vitest can fail to resolve its `/@fs/`
     setup-file path.
   - Fix: run it from the repository's real path.
+- **jsdom has no `showModal()` or `close()`.** jsdom 30.1.2 implements `<dialog>` and its
+  `open` attribute only.
+  - Symptom: `dialog.showModal is not a function` in an island test.
+  - Fix: `src/test/setup.ts` adds a stand-in where jsdom lacks them: `showModal()` sets `open`
+    and makes Escape (a keydown anywhere in the document) fire a cancelable `cancel`, then
+    `close()`; `close()` clears `open` and fires `close` a task later, as browsers do, so a
+    test waits (`waitFor`) for what the `close` event does. Nothing else a browser does (the
+    inert page, focus on opening, the top layer): `e2e/menu.spec.ts` covers that.
+- **A component that holds an island fails in a bare Container.**
+  - Symptom: `NoMatchingRenderer: Unable to render MobileMenu` from the SiteHeader or BaseLayout
+    tests.
+  - Fix: create the container with `createContainer()` (`src/test/container.ts`, the Preact
+    renderer through `loadRenderers` from `astro:container`). The island renders as
+    `<astro-island ... client="media" opts="...">` around its server markup.
+- **A jsdom test file cannot read the snapshot.** Under `@vitest-environment jsdom`, the URL that
+  `scripts/snapshot/paths.ts` builds for `REPO_ROOT` from `import.meta.url` is not a `file:` URL,
+  so `read-snapshot.ts` (and `rules-fixtures.ts`) fails while it loads.
+  - Symptom: `TypeError: The URL must be of scheme file` at `paths.ts` before any test runs.
+  - Fix: keep the fixture tests in the node environment and put what needs the DOM in a file of
+    its own that imports no snapshot reader (`seo-xml.test.ts` parses the sitemaps with
+    `DOMParser`; `seo.test.ts` runs the fixtures).
 - **jsdom workers under load.**
   - Symptom: jsdom test workers time out on a machine busy with other test runs.
   - Fix: `npm run test -- --maxWorkers=1`.
@@ -340,6 +882,22 @@ are about to touch. When you hit a new one, add it here in the same shape.
 - **The html reporter's default.**
   - Symptom: on a failure it serves the report and the run never exits.
   - Fix: keep `open: 'never'` in `playwright.config.ts`.
+- **A default value in a test's fixture argument.** Playwright reads the fixture names from the
+  function's source.
+  - Symptom: `async ({ page, baseURL = '' })` fails the whole run with
+    `Test has unknown parameter "baseURL = ''"` (and `unicorn/prefer-default-parameters` asks for
+    that default when the body writes `baseURL ?? ''`).
+  - Fix: take fixtures without defaults; for the preview's origin use `new URL(page.url()).origin`
+    after `goto`.
+- **`page.evaluate` callbacks and `unicorn/isolated-functions`.** The rule treats them as isolated
+  and the e2e files have Node globals only.
+  - Symptom: `Variable document not defined in scope of isolated function`.
+  - Fix: evaluate on a locator and reach the page through the element:
+    `page.locator('html').evaluate((html) => html.ownerDocument.fonts.ready)`.
+- **Without JavaScript, `locator.evaluate` still works.** `test.use({ javaScriptEnabled: false })`
+  turns off the page's scripts, not Playwright's.
+  - Symptom: none; it is how `e2e/shell.spec.ts` inserts reveal probes into a no-JS page.
+  - Fix: use it to probe styles; never to stand in for a page script.
 - **The skip link needs `tabindex="-1"` on `<main>`.**
   - Symptom: without it, Chromium does not move focus to `main` after the skip link, and the
     skip-link test fails.
@@ -349,18 +907,63 @@ are about to touch. When you hit a new one, add it here in the same shape.
     passes for "Camper V3"); `page.goto()` returns the last response of a redirect chain.
   - Fix: pass `exact: true`, and assert `response.request().redirectedFrom()` is null when the
     status matters.
+- **An island is dead until it hydrates.** `client:media` and `client:idle` load the island's
+  script after the page; `page.goto` can return before it ran.
+  - Symptom: a click on the burger or an explainer button does nothing, now and then.
+  - Fix: wait until the island's `astro-island` has lost its `ssr` attribute (Astro removes it
+    once hydrated) before using it, as `menuPage()` and `explainerPage()` do. This holds because
+    the islands wire their listeners in `useLayoutEffect` (see the Islands section).
+- **Two islands on a page.** `/en/` has the mobile menu's island (in the header) and the
+  explainer's (after the footer).
+  - Symptom: `page.locator('astro-island')` or `page.locator('dialog')` in an assertion fails
+    with a strict mode violation (two elements).
+  - Fix: name the island or the dialog: `menuIsland(page)` (the island holding `.menu-open`),
+    `explainerIsland(page)` (`client="idle"`), `dialog.m-nav`, or the dialog by its role and name.
+- **Headless Chromium hides scrollbars.** Playwright launches it with `--hide-scrollbars`, so the
+  page's classic scrollbar (10px, base.css) takes no room.
+  - Symptom: no e2e sees layout that a scrollbar changes, such as the scroll lock taking the
+    scrollbar away and moving the burger.
+  - Fix: `test.use({ launchOptions: { ignoreDefaultArgs: ['--hide-scrollbars'] } })` at the top
+    of a spec file (a worker option: not inside a describe), as `e2e/menu-scrollbar.spec.ts` does.
 - **What axe checks.** The tag set is WCAG 2.0-2.2 A/AA (`wcag2a`, `wcag2aa`, `wcag21a`,
   `wcag21aa`, `wcag22aa`; axe-core 4.13 has no `wcag22a` tag).
   - Symptom: best-practice rules (`region`, `landmark-one-main`, `heading-order`,
     `page-has-heading-one`, `skip-link`) never run, so page structure is not checked by axe.
   - Fix: review structure in code review, or add those rules deliberately.
+- **axe right after a theme toggle press.** The page's colours transition when the theme
+  changes.
+  - Symptom: an axe run straight after clicking the toggle reports color-contrast violations
+    with colours of neither theme (`#f2f6f8` on `#a1a6aa`, a 2.25 ratio).
+  - Fix: save the theme before the page loads (`page.addInitScript` setting
+    `localStorage.theme`), so the head script applies it before first paint, as
+    `e2e/shell.spec.ts` and `e2e/seo.spec.ts` do.
 - **Browsers live outside the repo.** `npm ci` does not install them; on Windows they go to
   `%LOCALAPPDATA%\ms-playwright`.
   - Symptom: on a new machine, or after a `@playwright/test` bump, e2e fails because the matching
     Chromium build is missing.
   - Fix: `npx playwright install chromium`. CI adds `--with-deps`, which also installs the Linux
     system libraries through the package manager; a workstation does not need it.
-- **The spec names the snapshot product.**
-  - Symptom: `e2e/home.spec.ts` expects the heading "Camper V3", so changing the snapshot breaks
-    it.
-  - Fix: update the spec together with `content-snapshot/products.json`.
+- **The e2e specs count the snapshot.** `e2e/home.spec.ts` reads the products and categories
+  from `content-snapshot/` and pins the h1 and 16 systems; `e2e/header.spec.ts` reads the nav
+  sections.
+  - Symptom: adding, hiding or removing a system fails the count; editing the hero heading fails
+    the h1; a nav section's route outside the spec's table fails the nav check.
+  - Fix: update the specs together with the snapshot.
+- **No page uses the overlay header yet.** `/en/` has the solid header; the overlay waits for
+  Phase 2's hero.
+  - Symptom: an e2e of the overlay needs a page that the build does not make, and a test-only
+    route would ship in `dist/` (and fail the `BUILT_PAGE_TYPES` test).
+  - Fix: `e2e/overlay.spec.ts` makes a fixture page in the test: `page.route` rewrites the built
+    `/en/` into the overlay variant (class, no spacer, the overlay script cut from
+    `SiteHeader.astro`'s source). When Phase 2 builds the hero page, test the overlay there and
+    drop the fixture.
+- **The no-JS scan sees scripts and hidden-on-purpose elements.** The A11 check in
+  `e2e/shell.spec.ts` lists every element of the header, `<main>` and the footer that is not
+  shown.
+  - Symptom: it reports `script#` (the toggle's inline script), the compare count (`hidden`
+    until Phase 2), the logo for the other theme, the theme toggle (hidden without JavaScript),
+    or the mobile menu: its burger (hidden without JavaScript), its closed dialog, the
+    `astro-island` wrapper (`display: contents`, no box) and the runtime `style` and `script`
+    Astro writes beside it; or the explainer buttons (`[data-fx]`, `[data-lvl]`, hidden without
+    JavaScript, their labels shown as text beside them).
+  - Fix: those are skipped by name in the test; a new element hidden on purpose needs the same.

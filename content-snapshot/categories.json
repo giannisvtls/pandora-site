@@ -1,0 +1,73 @@
+[
+  {
+    "id": "car",
+    "order": 1,
+    "label": {
+      "en": "For the car"
+    },
+    "title": {
+      "en": "Car protection"
+    },
+    "desc": {
+      "en": "Alarm systems, telemetry, remote start and accessories for every car, installed and configured by certified partners."
+    },
+    "image": "car"
+  },
+  {
+    "id": "moto",
+    "order": 2,
+    "label": {
+      "en": "For the motorcycle"
+    },
+    "title": {
+      "en": "Motorcycle protection"
+    },
+    "desc": {
+      "en": "Compact security systems built for two wheels — weatherproof, energy-efficient, controlled from your phone."
+    },
+    "image": "motori"
+  },
+  {
+    "id": "camper",
+    "order": 3,
+    "label": {
+      "en": "For the camper"
+    },
+    "title": {
+      "en": "Camper protection"
+    },
+    "desc": {
+      "en": "Made for campers, not for cars: Pandora systems built around the needs of motorhomes and caravans, with wireless sensors, tracking and comfort features.",
+      "el": "Τα συστήματα ασφαλείας Pandora Made for Camper, not for cars είναι ειδικά κατασκευασμένα για να καλύπτουν τις μοναδικές ανάγκες των αυτοκινούμενων και των τροχόσπιτων."
+    },
+    "image": "camper"
+  },
+  {
+    "id": "marine",
+    "order": 4,
+    "label": {
+      "en": "For boats"
+    },
+    "title": {
+      "en": "Marine protection"
+    },
+    "desc": {
+      "en": "Security and tracking for boats and speedboats, built for the marine environment."
+    },
+    "image": "yaucht"
+  },
+  {
+    "id": "fleet",
+    "order": 5,
+    "label": {
+      "en": "For trucks & trackers"
+    },
+    "title": {
+      "en": "Truck protection & GPS trackers"
+    },
+    "desc": {
+      "en": "Pandora Truck for commercial vehicles and machinery, plus the Finder and Tracer GPS trackers."
+    },
+    "image": "fleet-final"
+  }
+]

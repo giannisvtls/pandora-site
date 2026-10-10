@@ -1,20 +1,48 @@
-// Content Layer loader: one loader per collection, whatever the source (roadmap §3). Pages read
-// the result through getCollection() and never see a source's own shapes.
+// Content Layer loader: one loader per collection or global, whatever the source (roadmap §3).
+// Pages read the result through getCollection() / getEntry() and never see a source's own shapes.
 import { readFile } from 'node:fs/promises';
 
 import type { Loader, LoaderContext } from 'astro/loaders';
 import type { z } from 'zod';
 
-import { productSchema } from './contract';
+import {
+  COLLECTIONS,
+  GLOBAL_ENTRY_ID,
+  GLOBALS,
+  snapshotFileName,
+  type ContentName,
+  type GlobalName,
+} from './contract';
 
-// The contract schema each collection's items are validated against.
-const CONTRACTS = { products: productSchema } satisfies Record<string, z.ZodType<{ id: string }>>;
-export type CollectionName = keyof typeof CONTRACTS;
+// What the loader validates a snapshot file against: a collection is a JSON array of items,
+// each stored under its `id`; a global is one JSON object, stored as the entry `global`.
+export type ContentDefinition =
+  | { readonly kind: 'collection'; readonly schema: z.ZodType<{ readonly id: string }> }
+  | { readonly kind: 'global'; readonly schema: z.ZodType<Record<string, unknown>> };
+
+interface Entry {
+  readonly id: string;
+  readonly data: Record<string, unknown>;
+}
 
 export const CONTENT_SOURCES = ['snapshot', 'payload'] as const;
 const DEFAULT_SOURCE = 'snapshot';
 
-export function contentLoader(collection: CollectionName): Loader {
+const isGlobalName = (name: ContentName): name is GlobalName => Object.hasOwn(GLOBALS, name);
+
+export function definitionOf(name: ContentName): ContentDefinition {
+  return isGlobalName(name)
+    ? { kind: 'global', schema: GLOBALS[name] }
+    : { kind: 'collection', schema: COLLECTIONS[name] };
+}
+
+// The loader of a registered collection or global.
+export function contentLoader(name: ContentName): Loader {
+  return createContentLoader(name, definitionOf(name));
+}
+
+// The loader of any name and definition; contentLoader() is this with the registry's entry.
+export function createContentLoader(name: string, definition: ContentDefinition): Loader {
   return {
     name: 'content-loader',
     load: async (context) => {
@@ -22,7 +50,7 @@ export function contentLoader(collection: CollectionName): Loader {
       const source = process.env.CONTENT_SOURCE ?? DEFAULT_SOURCE;
       switch (source) {
         case 'snapshot': {
-          await loadSnapshot(collection, context);
+          await loadSnapshot(name, definition, context);
           return;
         }
         case 'payload': {
@@ -39,41 +67,63 @@ export function contentLoader(collection: CollectionName): Loader {
 }
 
 async function loadSnapshot(
-  collection: CollectionName,
+  name: string,
+  definition: ContentDefinition,
   { config, store, logger }: LoaderContext,
 ): Promise<void> {
-  const relativePath = `content-snapshot/${collection}.json`;
+  const relativePath = `content-snapshot/${snapshotFileName(name)}`;
   // config.root, not process.cwd(): the build can be started from another directory.
   const raw = parseJson(await readFile(new URL(relativePath, config.root), 'utf8'), relativePath);
-  const items = validateItems(collection, raw, relativePath);
+  const entries =
+    definition.kind === 'global'
+      ? [validateGlobal(name, definition.schema, raw, relativePath)]
+      : validateItems(name, definition.schema, raw, relativePath);
 
-  // The data store persists between builds: clear it so a removed or changed item is never
-  // served stale. Every item was validated above, so a bad snapshot leaves the store untouched.
+  // The data store persists between builds: clear it so a removed or changed entry is never
+  // served stale. Everything was validated above, so a bad snapshot leaves the store untouched.
   // The collection schema is this same contract, so context.parseData would only re-run it.
   store.clear();
-  for (const item of items) {
-    store.set({ id: item.id, data: item });
+  for (const entry of entries) {
+    store.set({ id: entry.id, data: entry.data });
   }
-  logger.info(`Loaded ${String(items.length)} ${collection} from ${relativePath}`);
+  logger.info(
+    definition.kind === 'global'
+      ? `Loaded the ${name} global from ${relativePath}`
+      : `Loaded ${String(entries.length)} ${name} from ${relativePath}`,
+  );
 }
 
-function validateItems(collection: CollectionName, raw: unknown, relativePath: string) {
+// One problem line per issue: where it is, which field, what is wrong.
+function issueLines(label: string, issues: readonly z.core.$ZodIssue[]): string[] {
+  return issues.map((issue) => {
+    const field = issue.path.length > 0 ? issue.path.map(String).join('.') : '(item)';
+    return `${label}, field ${field}: ${issue.message}`;
+  });
+}
+
+function contractError(relativePath: string, name: string, problems: readonly string[]): Error {
+  return new Error(
+    `${relativePath} does not match the ${name} contract:\n- ${problems.join('\n- ')}`,
+  );
+}
+
+function validateItems(
+  name: string,
+  schema: z.ZodType<{ readonly id: string }>,
+  raw: unknown,
+  relativePath: string,
+): Entry[] {
   if (!Array.isArray(raw)) {
-    throw new TypeError(`${relativePath}: expected a JSON array of ${collection} items`);
+    throw new TypeError(`${relativePath}: expected a JSON array of ${name} items`);
   }
-  const schema = CONTRACTS[collection];
-  const items: z.infer<typeof schema>[] = [];
+  const entries: Entry[] = [];
   const problems: string[] = [];
   const seen = new Set<string>();
 
   for (const [index, candidate] of raw.entries()) {
     const result = schema.safeParse(candidate);
     if (!result.success) {
-      const label = itemLabel(candidate, index);
-      for (const issue of result.error.issues) {
-        const field = issue.path.length > 0 ? issue.path.map(String).join('.') : '(item)';
-        problems.push(`${label}, field ${field}: ${issue.message}`);
-      }
+      problems.push(...issueLines(itemLabel(candidate, index), result.error.issues));
       continue;
     }
     if (seen.has(result.data.id)) {
@@ -81,15 +131,29 @@ function validateItems(collection: CollectionName, raw: unknown, relativePath: s
       continue;
     }
     seen.add(result.data.id);
-    items.push(result.data);
+    entries.push({ id: result.data.id, data: result.data });
   }
 
   if (problems.length > 0) {
-    throw new Error(
-      `${relativePath} does not match the ${collection} contract:\n- ${problems.join('\n- ')}`,
-    );
+    throw contractError(relativePath, name, problems);
   }
-  return items;
+  return entries;
+}
+
+function validateGlobal(
+  name: string,
+  schema: z.ZodType<Record<string, unknown>>,
+  raw: unknown,
+  relativePath: string,
+): Entry {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    throw new TypeError(`${relativePath}: expected one JSON object (the ${name} global)`);
+  }
+  const result = schema.safeParse(raw);
+  if (!result.success) {
+    throw contractError(relativePath, name, issueLines('global', result.error.issues));
+  }
+  return { id: GLOBAL_ENTRY_ID, data: result.data };
 }
 
 // JSON.parse's own message does not say which file is broken.

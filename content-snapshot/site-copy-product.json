@@ -1,0 +1,83 @@
+{
+  "viewLabel": {
+    "en": "{name} — view {index} of {total}"
+  },
+  "priceNote": {
+    "en": "Indicative retail price, pricelist 5/2026. Your installer confirms the final quote."
+  },
+  "availability": {
+    "en": "Available through certified partners"
+  },
+  "compareAdd": {
+    "en": "Compare +"
+  },
+  "compareIn": {
+    "en": "In compare"
+  },
+  "trust": {
+    "installation": {
+      "en": "Certified installation"
+    },
+    "warrantyQuestion": {
+      "en": "Already installed?"
+    },
+    "warrantyLink": {
+      "en": "Activate the warranty"
+    },
+    "compatibility": {
+      "en": "Vehicle compatibility check"
+    },
+    "support": {
+      "en": "Support {hours}"
+    }
+  },
+  "keySpecs": {
+    "en": "Key specifications"
+  },
+  "fullSpec": {
+    "summary": {
+      "en": "Full specification"
+    },
+    "items": {
+      "one": {
+        "en": "{count} item"
+      },
+      "other": {
+        "en": "{count} items"
+      }
+    },
+    "inTheBoxNote": {
+      "en": "in the box"
+    },
+    "inTheBox": {
+      "en": "In the box"
+    },
+    "warranty": {
+      "en": "Warranty"
+    },
+    "source": {
+      "pricelist": {
+        "en": "Specification as published in the Pandora pricelist 2026."
+      },
+      "invetec": {
+        "en": "Specification as published on invetec.eu, checked against the Pandora pricelist 2026."
+      }
+    },
+    "compatibilityNote": {
+      "en": "Confirm vehicle compatibility with your installer."
+    }
+  },
+  "fitsHeading": {
+    "en": "Fits this system"
+  },
+  "related": {
+    "heading": {
+      "lead": {
+        "en": "More for"
+      }
+    },
+    "all": {
+      "en": "All {category}"
+    }
+  }
+}

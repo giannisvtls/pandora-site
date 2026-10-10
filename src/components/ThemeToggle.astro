@@ -1,0 +1,130 @@
+---
+// The theme toggle (spec §7, P1-6): a plain button whose label names what a press does, for the
+// theme in force (Site copy `header.themeToDark` / `themeToLight`). No aria-pressed: an action
+// label with a pressed state contradicts itself, and Site copy holds only the action labels. The
+// script after it sets the label from the theme the head script applied (a saved dark theme is
+// announced right before the first press), then on a press flips `data-theme`, saves the choice,
+// updates the label and dispatches `themechange` (`detail`: the theme). Without JavaScript it is
+// not shown.
+interface Props {
+  toDark: string;
+  toLight: string;
+}
+
+const { toDark, toLight } = Astro.props;
+---
+
+<button
+  class="theme-btn"
+  type="button"
+  aria-label={toDark}
+  data-to-dark={toDark}
+  data-to-light={toLight}
+>
+  <svg
+    class="moon"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+  </svg>
+  <svg
+    class="sun"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="4"></circle>
+    <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+  </svg>
+</button>
+<script is:inline>
+  {
+    const button = document.currentScript?.previousElementSibling;
+    const root = document.documentElement;
+    const labelFor = (theme) => (theme === 'dark' ? button.dataset.toLight : button.dataset.toDark);
+    button.setAttribute('aria-label', labelFor(root.dataset.theme));
+    button.addEventListener('click', () => {
+      const theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = theme;
+      try {
+        localStorage.setItem('theme', theme);
+      } catch {
+        // Storage is blocked: the choice lasts for this page only.
+      }
+      button.setAttribute('aria-label', labelFor(theme));
+      document.dispatchEvent(new CustomEvent('themechange', { detail: theme }));
+    });
+  }
+</script>
+
+<style>
+  /* nightwatch.css `.theme-btn`: the moon in light, the sun in dark. The browser's button styles
+     are reset one by one, never with the design's `all: unset` (base.test.ts refuses it). Here in
+     the header, the only part of `all: unset` that changes the result is the box sizing: it puts
+     the button back to content-box, so the 1px border adds to the 36px (38px drawn, 46px below
+     1120px), as the design draws it. (base.css's scroll margin, which `all` would clear, covers
+     <main> and the footer, not the header.) */
+  .theme-btn {
+    appearance: none;
+    box-sizing: content-box;
+    margin: 0;
+    padding: 0;
+    background: none;
+    font: inherit;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    transition: border-color 0.3s;
+  }
+
+  .theme-btn:hover {
+    border-color: var(--ink);
+  }
+
+  /* The design's ring for these controls: a 3px offset. */
+  .theme-btn:focus-visible {
+    outline: 2px solid var(--armed);
+    outline-offset: 3px;
+  }
+
+  .theme-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .theme-btn .sun,
+  :global(:root[data-theme='dark']) .theme-btn .moon {
+    display: none;
+  }
+
+  :global(:root[data-theme='dark']) .theme-btn .sun {
+    display: block;
+  }
+
+  /* Without JavaScript a press could do nothing. */
+  :global(html:not(.js)) .theme-btn {
+    display: none;
+  }
+
+  /* Touch-sized below 1120px, where the header is the mobile one (the design: 900px). */
+  @media (max-width: 1119px) {
+    .theme-btn {
+      width: 44px;
+      height: 44px;
+    }
+  }
+</style>

@@ -1,0 +1,217 @@
+/* The explainer island (Explainer.tsx, spec §8), from nightwatch.css "feature explainers"
+   (`.fx-back`, `.fx-panel`, `.fx-close`, `.fx-on`): a panel along the right edge, the full height of
+   the screen, over a veiled page. Global rules: the markup of a Preact island carries no Astro
+   scope. Button styles are reset one by one, never with `all` (base.test.ts). */
+
+/* The dialog is only the panel's frame, without padding or border of its own: the panel (.fx-body)
+   fills its box, so a press whose target is the dialog itself is on the backdrop (the browser gives
+   both the dialog as the target). A click's target is not enough: a press in the panel released
+   on the backdrop (a dragged selection) sends the click to the dialog too, so explainer-dialog.ts
+   also checks where the press started. `display` stays the browser's: a closed dialog stays
+   hidden. */
+.fx-panel {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(460px, 100%);
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--field);
+  color: var(--ink);
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+/* The design's `.fx-back`: the page under the panel, veiled and blurred. */
+.fx-panel::backdrop {
+  background: rgba(var(--night-rgb), 0.6);
+  backdrop-filter: blur(4px);
+}
+
+/* The panel: it scrolls, not the page. Its padding is the design's; the close button sits 14px from
+   its top and right edges whatever the padding. */
+.fx-body {
+  --pad-top: 56px;
+  --pad-side: 36px;
+
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--pad-top) var(--pad-side) 40px;
+  border-left: 1px solid var(--rule);
+}
+
+/* The close button: 14px from the panel's top and right edges, as the design's, and kept there while
+   the panel scrolls (sticky in the scrolling panel, whose padding counts for sticky offsets: hence
+   the negative `top`), on the panel's background over the text passing under it. Its negative
+   margins put it in the padding; its bottom margin starts the title 4px below the padding, as the
+   design's. 46px with its border (content-box), as the design's `all: unset` button. */
+.fx-close {
+  appearance: none;
+  position: sticky;
+  top: calc(14px - var(--pad-top));
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  box-sizing: content-box;
+  width: 44px;
+  height: 44px;
+  margin: calc(14px - var(--pad-top)) calc(14px - var(--pad-side)) calc(var(--pad-top) - 56px) auto;
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.fx-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+.fx-close:hover {
+  border-color: var(--ink);
+}
+
+/* The design's ring for the close button: flush with its border and square (base.css's ring has a
+   4px offset and rounded corners). */
+.fx-close:focus-visible {
+  outline-offset: 0;
+  border-radius: 0;
+}
+
+/* The design's 4px above the title is in the close button's bottom margin. The title ends 8px
+   before the close button's column (46px wide, 14px from the panel's edge, so it reaches into the
+   padding), so a long title never runs under it, also while the panel scrolls under the button. */
+.fx-panel h2 {
+  font-size: 44px;
+  margin: 0 calc(14px + 46px + 8px - var(--pad-side)) 18px 0;
+  overflow-wrap: break-word;
+}
+
+/* The design's section heads (its `h4`): h3 here, under the dialog's h2. */
+.fx-panel h3 {
+  font-family: var(--body);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.55;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 26px 0 8px;
+}
+
+.fx-panel p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  margin: 0;
+}
+
+.fx-panel .fx-what {
+  font-size: 18px;
+  color: var(--ink);
+  margin: 0 0 8px;
+}
+
+.fx-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0 0 0 18px;
+  font-size: 16px;
+  color: var(--ink-2);
+}
+
+/* "On these systems" and "Systems that reach this level": a name link, then Included / Optional
+   or the vehicle word. */
+.fx-on {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.fx-on li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule-2);
+  font-size: 15px;
+}
+
+.fx-on a {
+  font-weight: 700;
+  border-bottom: 1px solid var(--rule);
+}
+
+.fx-on a:hover {
+  border-bottom-color: var(--ink);
+}
+
+/* A link that takes focus while the panel scrolls stops below the close button. */
+.fx-panel a {
+  scroll-margin-top: calc(14px + 46px + 8px);
+}
+
+.fx-on .v {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.fx-on .v.yes {
+  color: var(--armed);
+}
+
+.fx-on .v.opt {
+  color: var(--alert);
+}
+
+/* The page under the open explainer does not scroll; the lock follows `open`, so every way out
+   lifts it. */
+html:has(.fx-panel[open]) {
+  overflow: hidden;
+}
+
+/* The design's slide-in and fade, only for visitors who have not asked for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .fx-panel[open] {
+    animation: fx-in 0.45s var(--ease);
+  }
+
+  .fx-panel[open]::backdrop {
+    animation: fx-fade 0.35s;
+  }
+}
+
+@keyframes fx-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fx-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .fx-body {
+    --pad-top: 64px;
+    --pad-side: 22px;
+
+    padding-bottom: 32px;
+  }
+
+  .fx-panel h2 {
+    font-size: 36px;
+  }
+}

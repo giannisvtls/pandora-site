@@ -1,0 +1,32 @@
+{
+  "logoAlt": {
+    "en": "INVETEC"
+  },
+  "homeLinkLabel": {
+    "en": "INVETEC home"
+  },
+  "primaryNavLabel": {
+    "en": "Primary"
+  },
+  "mobileNavLabel": {
+    "en": "Mobile"
+  },
+  "compareLinkLabel": {
+    "en": "Compare list"
+  },
+  "themeToDark": {
+    "en": "Switch to dark mode"
+  },
+  "themeToLight": {
+    "en": "Switch to light mode"
+  },
+  "languageLabel": {
+    "en": "Language"
+  },
+  "openMenu": {
+    "en": "Open menu"
+  },
+  "closeMenu": {
+    "en": "Close menu"
+  }
+}

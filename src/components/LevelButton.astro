@@ -1,0 +1,117 @@
+---
+// A level's explainer button (spec §8): `data-lvl` names the level, and the explainer island
+// (Explainer.tsx, in the layout) opens its dialog from any such button on the page. It shows the
+// level tag, "Level {n} · {title}", with the feature buttons' info mark after it (decorative: the
+// button's name stays the tag) as the cue that it opens an explainer too. Without JavaScript
+// nothing can open it (A11): the button is hidden and the same tag beside it shows as plain text,
+// without the mark.
+import type { LevelId } from '../content/contract';
+
+interface Props {
+  level: LevelId;
+  // "Level 3 · Recovery" in the page's language (Site copy `common.level`).
+  label: string;
+}
+
+const { level, label } = Astro.props;
+---
+
+<button type="button" class="fx chipfx" data-lvl={level} aria-haspopup="dialog">
+  <span class:list={['lvl', { l2: level === '2', l3: level === '3' }]}>
+    {label}
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9"></circle>
+      <path d="M12 11v5M12 8h.01"></path>
+    </svg>
+  </span>
+</button>
+<span class:list={['lvl', 'lvl-text', { l2: level === '2', l3: level === '3' }]}>{label}</span>
+
+<style>
+  /* nightwatch.css: the level tag (`.lvl`, coloured per level) inside a plain explainer button.
+     The browser's button styles are reset one by one, not with the design's `all: unset`, which
+     would also clear base.css's scroll margin (the fixed header would cover the focused button). */
+  .chipfx {
+    appearance: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-align: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+    display: inline-block;
+    max-width: 100%;
+  }
+
+  .chipfx:focus-visible {
+    outline: 2px solid var(--armed);
+    outline-offset: 3px;
+  }
+
+  .lvl {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    border: 1px solid var(--rule);
+    white-space: nowrap;
+    color: var(--ink-2);
+    transition: border-color 0.3s;
+  }
+
+  .lvl.l2 {
+    color: var(--blue-soft);
+    border-color: color-mix(in srgb, var(--blue-soft) 45%, transparent);
+  }
+
+  .lvl.l3 {
+    color: var(--armed);
+    border-color: color-mix(in srgb, var(--armed) 50%, transparent);
+  }
+
+  .chipfx:hover .lvl {
+    border-color: var(--ink);
+  }
+
+  /* The info mark of the feature buttons (FeatureButton.astro): same glyph, size, gap and colour,
+     after the tag's text. */
+  .chipfx .lvl {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .chipfx svg {
+    width: 14px;
+    height: 14px;
+    color: var(--blue-soft);
+    flex: none;
+  }
+
+  /* Without JavaScript (A11): the tag as text, in place of the button that could not open. */
+  .lvl-text {
+    display: none;
+  }
+
+  :global(html:not(.js)) .chipfx {
+    display: none;
+  }
+
+  :global(html:not(.js)) .lvl-text {
+    display: inline-block;
+  }
+</style>

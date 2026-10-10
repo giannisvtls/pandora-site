@@ -1,0 +1,247 @@
+// Contract primitives (spec §2 "Primitives"): languages, language maps, ids, dates and the
+// templated text values Site copy uses. Plain `zod`, never astro:content's re-export.
+//
+// The source language: every language map an item carries must have a value in the item's source
+// language (`showIn[0]` for items, `en` for media, fixed-key sets and globals). Schema builders
+// take that language as `source`; without it they accept any languages, which is how an item is
+// parsed before its `showIn` is known (see `itemSchema` in ./item).
+import { z } from 'zod';
+
+export const LOCALES = ['en', 'el', 'it', 'sq'] as const;
+export const localeSchema = z.enum(LOCALES);
+export type Locale = z.infer<typeof localeSchema>;
+
+// Each language's own name (endonym), shown as is in every language, never translated.
+export const LANGUAGE_NAMES: Readonly<Record<Locale, string>> = {
+  en: 'English',
+  el: 'Ελληνικά',
+  it: 'Italiano',
+  sq: 'Shqip',
+};
+
+// The language of media items, fixed-key sets and globals.
+export const FIXED_SOURCE: Locale = 'en';
+
+// One text in one language: not empty, no leading or trailing whitespace (so a whitespace-only
+// value is rejected). The check never rewrites the value.
+export const textValue = z.string().refine((value) => value !== '' && value.trim() === value, {
+  message: 'Expected text that is not empty and has no leading or trailing whitespace',
+});
+
+// One value per language; a language with no translation has no key (never English filler).
+export const localizedText = z.partialRecord(localeSchema, textValue);
+export type LocalizedText = z.infer<typeof localizedText>;
+
+// The issue a language map without a value in its source language gets; its path ends in the
+// locale, so a loader error reads `name.en`.
+function requireSource(
+  value: Partial<Record<Locale, unknown>>,
+  source: Locale,
+  context: z.RefinementCtx,
+): void {
+  if (value[source] === undefined) {
+    context.addIssue({
+      code: 'custom',
+      path: [source],
+      message: `Required in the source language "${source}"`,
+    });
+  }
+}
+
+// A language map of `value`s, with a value in `source` when one is given.
+export function languageMap<T extends z.ZodType>(value: T, source?: Locale) {
+  const map = z.partialRecord(localeSchema, value);
+  return source === undefined
+    ? map
+    : map.superRefine((languages, context) => {
+        requireSource(languages, source, context);
+      });
+}
+
+// Localized text, with a value in `source` when one is given.
+export function text(source?: Locale) {
+  return languageMap(textValue, source);
+}
+
+// `{name}` placeholders, in order of appearance.
+const PLACEHOLDER = /\{([A-Za-z]\w*)\}/gu;
+
+export function placeholdersOf(value: string): string[] {
+  return value
+    .matchAll(PLACEHOLDER)
+    .map((match) => match[1] ?? '')
+    .toArray();
+}
+
+// A `{` or `}` that is not part of a `{name}` placeholder (`{ count }`, `{{count}}`, a lone
+// brace): nothing would fill it, so it would show as is.
+export function hasStrayBrace(value: string): boolean {
+  return /[{}]/u.test(value.replaceAll(PLACEHOLDER, ''));
+}
+
+// What is wrong with the placeholders of one value, or null.
+function placeholderProblem(declared: ReadonlySet<string>, value: string): string | null {
+  const used = new Set(placeholdersOf(value));
+  const parts = [
+    ...[...declared.difference(used)].map((name) => `missing {${name}}`),
+    ...[...used.difference(declared)].map((name) => `unknown {${name}}`),
+    ...(hasStrayBrace(value) ? ['a { or } outside a {name} placeholder'] : []),
+  ];
+  return parts.length === 0
+    ? null
+    : `Placeholders must be exactly ${describePlaceholders(declared)}: ${parts.join(', ')}`;
+}
+
+// The refinement that checks every language's value against the declared placeholders.
+function placeholderCheck(declared: ReadonlySet<string>) {
+  return (languages: Partial<Record<Locale, string>>, context: z.RefinementCtx): void => {
+    for (const [locale, value] of Object.entries(languages)) {
+      const problem = placeholderProblem(declared, value);
+      if (problem !== null) {
+        context.addIssue({ code: 'custom', path: [locale], message: problem });
+      }
+    }
+  };
+}
+
+// Localized text whose every value uses exactly the declared `{name}` placeholders: none missing,
+// none extra, no other brace (checked per language; one may repeat). The schema carries the
+// declared names as metadata (`declaredPlaceholders`), for tests and for the CMS later.
+export function template(placeholders: readonly string[], source?: Locale) {
+  return text(source)
+    .superRefine(placeholderCheck(new Set(placeholders)))
+    .meta({ placeholders: [...placeholders] });
+}
+
+// Localized text that is not a template: the template check with no declared placeholder, so a
+// value with a `{name}` or any other `{` or `}` fails at its language (nothing would fill it, and
+// it would show as is). It carries no placeholder metadata.
+export function plainText(source?: Locale) {
+  return text(source).superRefine(placeholderCheck(new Set()));
+}
+
+// The placeholders a schema built by `template()` declares; undefined for any other schema.
+export function declaredPlaceholders(schema: z.ZodType): readonly string[] | undefined {
+  const placeholders: unknown = schema.meta()?.placeholders;
+  return Array.isArray(placeholders) ? placeholders.map(String) : undefined;
+}
+
+function describePlaceholders(placeholders: ReadonlySet<string>): string {
+  return placeholders.size === 0
+    ? 'none'
+    : placeholders
+        .values()
+        .map((name) => `{${name}}`)
+        .toArray()
+        .join(' ');
+}
+
+// Count-dependent text, chosen per language with Intl.PluralRules: `one` and `other` always,
+// `few` and `many` for languages that use them. Every variant is a template. Only `one` and
+// `other` need the source language: `few` and `many` exist only in the languages whose plural
+// rules select them (an Italian `many`, say, has no English counterpart).
+export function plural(placeholders: readonly string[], source?: Locale) {
+  const always = template(placeholders, source);
+  const perLanguage = template(placeholders);
+  return z.strictObject({
+    one: always,
+    other: always,
+    few: perLanguage.optional(),
+    many: perLanguage.optional(),
+  });
+}
+
+// The counts `byCount` can spell out.
+export const BY_COUNT_KEYS = ['2', '3', '4'] as const;
+export type ByCountKey = (typeof BY_COUNT_KEYS)[number];
+
+// Explicit variants for a count of 2, 3 or 4 ("Both", "All three", "All four"); every variant
+// is a template. `counts` narrows the variants to the counts a sentence can have ("Two picks",
+// "Three picks": 2 and 3).
+export function byCount<const K extends readonly ByCountKey[] = typeof BY_COUNT_KEYS>(
+  placeholders: readonly string[],
+  source?: Locale,
+  counts?: K,
+) {
+  const variant = template(placeholders, source);
+  const keys: readonly ByCountKey[] = counts ?? BY_COUNT_KEYS;
+  const shape = Object.fromEntries(keys.map((count) => [count, variant]));
+  return z.strictObject(shape as Record<K[number], typeof variant>);
+}
+
+// An h1/h2: `lead <span class="b">payload</span>`; the payload is optional. Both are plain text.
+export function heading(source?: Locale) {
+  return z.strictObject({ lead: plainText(source), payload: plainText(source).optional() });
+}
+
+// `YYYY`, `YYYY-MM` or `YYYY-MM-DD`, as precise as the source knows; a real calendar date.
+const PARTIAL_DATE = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/u;
+
+export function isPartialDate(value: string): boolean {
+  const match = PARTIAL_DATE.exec(value);
+  if (match === null) {
+    return false;
+  }
+  const [, year = '', month, day] = match;
+  const monthNumber = month === undefined ? 1 : Number(month);
+  if (monthNumber < 1 || monthNumber > 12) {
+    return false;
+  }
+  if (day === undefined) {
+    return true;
+  }
+  const date = new Date(0);
+  date.setUTCFullYear(Number(year), monthNumber - 1, Number(day));
+  return date.getUTCMonth() === monthNumber - 1 && date.getUTCDate() === Number(day);
+}
+
+export const partialDate = z.string().refine(isPartialDate, {
+  message: 'Expected YYYY, YYYY-MM or YYYY-MM-DD, a real calendar date',
+});
+
+// Lower-case ASCII letters, digits and hyphens.
+export const idSchema = z.string().regex(/^[a-z\d-]+$/u, 'Expected an id: a-z, 0-9 and -');
+
+// The id of a `media` item (that it exists is the snapshot integrity test's check).
+export const mediaId = idSchema;
+
+// The id of a `products` item (that it exists is the snapshot integrity test's check).
+export const productId = idSchema;
+
+// A URL path segment: the one rule for every value that fills a path (spec §4). Slugs, the ids
+// that appear in a URL (an accessory's) and every route parameter src/content/routes.ts fills
+// follow it, so what the contract accepts the path builders accept too.
+export const URL_SEGMENT = /^[a-z\d]+(?:-[a-z\d]+)*$/u;
+export const URL_SEGMENT_RULE = 'lowercase words of a-z and 0-9 joined by single hyphens';
+
+// An ASCII kebab-case URL segment: `elite-v3`.
+export const slugSchema = z.string().regex(URL_SEGMENT, `Expected a slug: ${URL_SEGMENT_RULE}`);
+
+// An id that becomes a URL segment (an accessory's: `/{L}/accessories/{vehicle}/{id}/`): `d-061`.
+export const segmentIdSchema = z.string().regex(URL_SEGMENT, `Expected an id: ${URL_SEGMENT_RULE}`);
+
+// A position in a list.
+export const orderSchema = z.int().nonnegative();
+
+// A list whose entries are all different; a repeated entry is reported at its index.
+export function uniqueList<T extends z.ZodType<string>>(entry: T, min = 0) {
+  return z
+    .array(entry)
+    .min(min)
+    .superRefine((list, context) => {
+      const seen = new Set<string>();
+      for (const [index, value] of list.entries()) {
+        if (seen.has(value)) {
+          context.addIssue({
+            code: 'custom',
+            path: [index],
+            message: `"${value}" appears more than once`,
+          });
+        }
+        seen.add(value);
+      }
+    });
+}
+
+// The languages an item is shown in, at least one, each once; the first is its source language.
+export const showIn = uniqueList(localeSchema, 1);

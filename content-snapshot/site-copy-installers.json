@@ -1,0 +1,133 @@
+{
+  "heading": {
+    "lead": {
+      "en": "Find a"
+    },
+    "payload": {
+      "en": "certified installer."
+    }
+  },
+  "lead": {
+    "en": "Type your postal code and we show the certified Pandora partners nearest to you. Every system is fitted, configured and registered by a specialist."
+  },
+  "form": {
+    "label": {
+      "en": "Find an installer by postal code"
+    },
+    "postalCode": {
+      "en": "Postal code"
+    },
+    "postalCodePlaceholder": {
+      "en": "e.g. 12461"
+    },
+    "country": {
+      "en": "Country"
+    },
+    "submit": {
+      "en": "Find installers"
+    },
+    "useLocation": {
+      "en": "Use my location"
+    }
+  },
+  "countries": {
+    "GR": {
+      "en": "Greece"
+    },
+    "IT": {
+      "en": "Italy"
+    },
+    "AL": {
+      "en": "Albania"
+    }
+  },
+  "steps": [
+    {
+      "title": {
+        "en": "Enter your postal code"
+      },
+      "text": {
+        "en": "Or use your location. Greece, Italy or Albania."
+      }
+    },
+    {
+      "title": {
+        "en": "We show the nearest certified partners"
+      },
+      "text": {
+        "en": "Sorted by distance, with the hub on the map."
+      }
+    },
+    {
+      "title": {
+        "en": "Request one. INVETEC confirms the workshop"
+      },
+      "text": {
+        "en": "Within working hours. Every system is fitted, configured and registered by a specialist."
+      }
+    }
+  ],
+  "network": [
+    {
+      "value": "100+",
+      "label": {
+        "en": "partners"
+      }
+    },
+    {
+      "value": "5",
+      "label": {
+        "en": "countries"
+      }
+    }
+  ],
+  "mapLabel": {
+    "en": "Installer map"
+  },
+  "mapPopup": {
+    "en": "{country} · certified partners"
+  },
+  "results": {
+    "postalCodeIn": {
+      "en": "{code} · {country}"
+    },
+    "yourLocation": {
+      "en": "Your location"
+    },
+    "intro": {
+      "en": "Partners near you, by hub. Request one and INVETEC confirms the exact workshop within working hours."
+    },
+    "km": {
+      "en": "km"
+    },
+    "headOffice": {
+      "en": "INVETEC HQ"
+    },
+    "area": {
+      "en": "Certified partners in this area · {country}"
+    },
+    "request": {
+      "en": "Request a partner here"
+    }
+  },
+  "errors": {
+    "label": {
+      "en": "Not found"
+    },
+    "shortCode": {
+      "en": "Enter the full postal code for {country}."
+    },
+    "unknownCode": {
+      "en": "We don't recognise {code} in {country}. Check the code, or {link} and we match you by hand."
+    },
+    "contactLink": {
+      "en": "contact INVETEC"
+    },
+    "noGeolocation": {
+      "en": "Location is not available in this browser. Use your postal code instead."
+    },
+    "locationFailed": {
+      "en": "We could not read your location. Use your postal code instead."
+    }
+  }
+}

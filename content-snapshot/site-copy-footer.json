@@ -1,0 +1,203 @@
+{
+  "company": {
+    "name": "INVETEC E.E.",
+    "street": {
+      "en": "Iera Odos 330"
+    },
+    "locality": {
+      "en": "Haidari"
+    },
+    "postalCode": "124 61",
+    "addressLine": {
+      "en": "{street}, {locality} {postalCode}"
+    },
+    "hours": {
+      "en": "Mon–Fri 9:00–17:00"
+    },
+    "phone": "+30 210 581 4441",
+    "email": "info@invetec.eu"
+  },
+  "columns": [
+    {
+      "heading": {
+        "en": "Products"
+      },
+      "links": [
+        {
+          "label": {
+            "en": "Car protection"
+          },
+          "target": {
+            "route": "category",
+            "params": {
+              "vehicle": "car"
+            }
+          }
+        },
+        {
+          "label": {
+            "en": "Motorcycle protection"
+          },
+          "target": {
+            "route": "category",
+            "params": {
+              "vehicle": "moto"
+            }
+          }
+        },
+        {
+          "label": {
+            "en": "Camper protection"
+          },
+          "target": {
+            "route": "category",
+            "params": {
+              "vehicle": "camper"
+            }
+          }
+        },
+        {
+          "label": {
+            "en": "Boat protection"
+          },
+          "target": {
+            "route": "category",
+            "params": {
+              "vehicle": "marine"
+            }
+          }
+        },
+        {
+          "label": {
+            "en": "Trucks & GPS trackers"
+          },
+          "target": {
+            "route": "category",
+            "params": {
+              "vehicle": "fleet"
+            }
+          }
+        },
+        {
+          "label": {
+            "en": "Accessories"
+          },
+          "target": {
+            "route": "accessories"
+          }
+        }
+      ]
+    },
+    {
+      "heading": {
+        "en": "Useful links"
+      },
+      "links": [
+        {
+          "label": {
+            "en": "B2B support"
+          },
+          "target": {
+            "route": "partners"
+          }
+        },
+        {
+          "label": {
+            "en": "Blog"
+          },
+          "target": {
+            "route": "blog"
+          }
+        },
+        {
+          "label": {
+            "en": "Contact"
+          },
+          "target": {
+            "route": "contact"
+          }
+        },
+        {
+          "label": {
+            "en": "FAQ"
+          },
+          "target": {
+            "route": "contact",
+            "hash": "faq"
+          }
+        },
+        {
+          "label": {
+            "en": "About us"
+          },
+          "target": {
+            "route": "contact"
+          }
+        },
+        {
+          "label": {
+            "en": "Warranty activation"
+          },
+          "target": {
+            "route": "warranty"
+          }
+        }
+      ]
+    },
+    {
+      "heading": {
+        "en": "Legal"
+      },
+      "links": [
+        {
+          "label": {
+            "en": "Privacy policy"
+          }
+        },
+        {
+          "label": {
+            "en": "Return policy"
+          }
+        },
+        {
+          "label": {
+            "en": "Certifications"
+          }
+        }
+      ]
+    },
+    {
+      "heading": {
+        "en": "Follow"
+      },
+      "links": [
+        {
+          "label": {
+            "en": "Facebook"
+          }
+        },
+        {
+          "label": {
+            "en": "Instagram"
+          }
+        },
+        {
+          "label": {
+            "en": "YouTube"
+          }
+        },
+        {
+          "label": {
+            "en": "TikTok"
+          }
+        }
+      ]
+    }
+  ],
+  "copyright": {
+    "en": "© {year} {company} All rights reserved."
+  },
+  "tagline": {
+    "en": "Exclusive Pandora distributor for Greece and Italy"
+  }
+}

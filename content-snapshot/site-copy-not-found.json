@@ -1,0 +1,19 @@
+{
+  "name": {
+    "en": "Page not found"
+  },
+  "title": {
+    "lead": {
+      "en": "Page"
+    },
+    "payload": {
+      "en": "not found."
+    }
+  },
+  "text": {
+    "en": "The page you are looking for does not exist or has moved."
+  },
+  "homeLink": {
+    "en": "Go to the home page"
+  }
+}

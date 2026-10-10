@@ -1,0 +1,912 @@
+[
+  {
+    "id": "20260122-invetec-pandora-featured-on-affari-e-finanza-by-la-repubblica",
+    "file": "src/assets/media/20260122-invetec-pandora-featured-on-affari-e-finanza-by-la-repubblica.webp",
+    "alt": {
+      "en": "La Repubblica and its Affari & Finanza page featuring INVETEC and Pandora"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2026/01/20260122-INVETEC-Pandora-featured-on-Affari-e-Finanza-by-La-Repubblica.webp"
+    }
+  },
+  {
+    "id": "20260218-motodays-2026-gr",
+    "file": "src/assets/media/20260218-motodays-2026-gr.webp",
+    "alt": {
+      "en": "MotoDays 2026 poster, Fiera di Roma"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2026/02/20260218-MotoDays-2026_GR.webp"
+    }
+  },
+  {
+    "id": "antijammer-primo",
+    "file": "src/assets/media/antijammer-primo.webp",
+    "alt": {
+      "en": "Anti-jammer: a signal jammer next to a car"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Antijammer-Primo.webp"
+    }
+  },
+  {
+    "id": "camper",
+    "file": "src/assets/media/camper.webp",
+    "decorative": true,
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Camper.webp"
+    }
+  },
+  {
+    "id": "car",
+    "file": "src/assets/media/car.webp",
+    "decorative": true,
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/CAR.webp"
+    }
+  },
+  {
+    "id": "fleet-final",
+    "file": "src/assets/media/fleet-final.webp",
+    "decorative": true,
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/fleet-final.webp"
+    }
+  },
+  {
+    "id": "honda-adv350",
+    "file": "src/assets/media/honda-adv350.webp",
+    "alt": {
+      "en": "Honda ADV350"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/10/Honda-ADV350.webp"
+    }
+  },
+  {
+    "id": "light-pro-v2",
+    "file": "src/assets/media/light-pro-v2.webp",
+    "alt": {
+      "en": "Pandora Light Pro V2 remote control"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Light-Pro-v2.webp"
+    }
+  },
+  {
+    "id": "light-v3-part",
+    "file": "src/assets/media/light-v3-part.webp",
+    "alt": {
+      "en": "Pandora Light V3 central unit"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Light-v3-part.webp"
+    }
+  },
+  {
+    "id": "marine-connect",
+    "file": "src/assets/media/marine-connect.webp",
+    "alt": {
+      "en": "The Pandora Connect app on a phone and the web service on a laptop, tracking a boat"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Marine-Connect.webp"
+    }
+  },
+  {
+    "id": "motori",
+    "file": "src/assets/media/motori.webp",
+    "decorative": true,
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Motori.webp"
+    }
+  },
+  {
+    "id": "pandora-accessories-remote-controllers-pandora-r-468bt-pandora-r-500-bt",
+    "file": "src/assets/media/pandora-accessories-remote-controllers-pandora-r-468bt-pandora-r-500-bt.webp",
+    "alt": {
+      "en": "Pandora remote control"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2024/11/Pandora-Accessories-Remote-controllers-Pandora-R-468BT-Pandora-R-500-BT.webp"
+    }
+  },
+  {
+    "id": "pandora-accessories-sirens-pandora-ps-330-pandora-ps-331-bt-pandora-ps-332-bt",
+    "file": "src/assets/media/pandora-accessories-sirens-pandora-ps-330-pandora-ps-331-bt-pandora-ps-332-bt.webp",
+    "alt": {
+      "en": "Pandora siren"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2024/11/Pandora-Accessories-Sirens-Pandora-PS-330-Pandora-PS-331-BT-Pandora-PS-332-BT.webp"
+    }
+  },
+  {
+    "id": "pandora-camper-2",
+    "file": "src/assets/media/pandora-camper-2.webp",
+    "alt": {
+      "en": "Pandora Camper V3 package"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Camper-2.webp"
+    }
+  },
+  {
+    "id": "pandora-camper-pro-v2-features",
+    "file": "src/assets/media/pandora-camper-pro-v2-features.webp",
+    "alt": {
+      "en": "Two motorhomes, seen from the back and from the front"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/04/Pandora-Camper-Pro-V2-features.webp"
+    }
+  },
+  {
+    "id": "pandora-camper-pro",
+    "file": "src/assets/media/pandora-camper-pro.webp",
+    "alt": {
+      "en": "Pandora Camper Pro V2 package"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Camper-Pro.webp"
+    }
+  },
+  {
+    "id": "pandora-commander-remote-control",
+    "file": "src/assets/media/pandora-commander-remote-control.webp",
+    "alt": {
+      "en": "Pandora Commander remote control"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/03/Pandora-Commander-remote-control.webp"
+    }
+  },
+  {
+    "id": "pandora-d-061-lora-868mhzbluetooth5-gr",
+    "file": "src/assets/media/pandora-d-061-lora-868mhzbluetooth5-gr.webp",
+    "alt": {
+      "en": "Pandora D-061 remote control connecting to a car over Bluetooth 5.0"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/03/Pandora-D-061-LoRa-868MHzBluetooth5_GR.webp"
+    }
+  },
+  {
+    "id": "pandora-dms-100-bt-black",
+    "file": "src/assets/media/pandora-dms-100-bt-black.webp",
+    "alt": {
+      "en": "Pandora DMS-100 BT sensor"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/04/Pandora-DMS-100-BT-black.webp"
+    }
+  },
+  {
+    "id": "pandora-elite-v3-package",
+    "file": "src/assets/media/pandora-elite-v3-package.webp",
+    "alt": {
+      "en": "Pandora Elite V3 package"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/03/Pandora-Elite-V3-package.webp"
+    }
+  },
+  {
+    "id": "pandora-finder-1",
+    "file": "src/assets/media/pandora-finder-1.webp",
+    "alt": {
+      "en": "Pandora Finder package"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Finder-1.webp"
+    }
+  },
+  {
+    "id": "pandora-finder-2",
+    "file": "src/assets/media/pandora-finder-2.webp",
+    "alt": {
+      "en": "Pandora Finder opened, with its AAA batteries"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Finder-2.webp"
+    }
+  },
+  {
+    "id": "pandora-finder-3",
+    "file": "src/assets/media/pandora-finder-3.webp",
+    "alt": {
+      "en": "Pandora Finder tracker"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Finder-3.webp"
+    }
+  },
+  {
+    "id": "pandora-immo",
+    "file": "src/assets/media/pandora-immo.webp",
+    "alt": {
+      "en": "Pandora Immo package"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Immo.webp"
+    }
+  },
+  {
+    "id": "pandora-keycard-context",
+    "file": "src/assets/media/pandora-keycard-context.webp",
+    "alt": {
+      "en": "Pandora KeyCard"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2026/02/Pandora-KeyCard-context-scaled-e1770714262162.webp"
+    }
+  },
+  {
+    "id": "pandora-light-pro-v2",
+    "file": "src/assets/media/pandora-light-pro-v2.webp",
+    "alt": {
+      "en": "Pandora Light Pro V2 package"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Light-Pro-V2.webp"
+    }
+  },
+  {
+    "id": "pandora-light-remote",
+    "file": "src/assets/media/pandora-light-remote.webp",
+    "alt": {
+      "en": "Pandora Light V3 remote control"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Light-remote.webp"
+    }
+  },
+  {
+    "id": "pandora-light-v3",
+    "file": "src/assets/media/pandora-light-v3.webp",
+    "alt": {
+      "en": "Pandora Light V3 package"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Light-V3.webp"
+    }
+  },
+  {
+    "id": "pandora-marine",
+    "file": "src/assets/media/pandora-marine.webp",
+    "alt": {
+      "en": "Pandora Marine package"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Marine.webp"
+    }
+  },
+  {
+    "id": "pandora-moto-eu-v2-package",
+    "file": "src/assets/media/pandora-moto-eu-v2-package.webp",
+    "alt": {
+      "en": "Pandora Moto V2 package"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/10/Pandora-Moto-EU-V2-package.webp"
+    }
+  },
+  {
+    "id": "pandora-moto-evo-v2-package",
+    "file": "src/assets/media/pandora-moto-evo-v2-package.webp",
+    "alt": {
+      "en": "Pandora Moto Evo V2 package"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2026/04/Pandora-Moto-Evo-V2-package.webp"
+    }
+  },
+  {
+    "id": "pandora-nav-035-bt",
+    "file": "src/assets/media/pandora-nav-035-bt.webp",
+    "alt": {
+      "en": "Pandora NAV-035 BT GPS/GLONASS receiver"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2024/10/Pandora-NAV-035-BT.webp"
+    }
+  },
+  {
+    "id": "pandora-primo-bt",
+    "file": "src/assets/media/pandora-primo-bt.webp",
+    "alt": {
+      "en": "Pandora Primo Bluetooth siren"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Primo-BT.webp"
+    }
+  },
+  {
+    "id": "pandora-primo",
+    "file": "src/assets/media/pandora-primo.webp",
+    "alt": {
+      "en": "Pandora Primo package"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pandora-Primo.webp"
+    }
+  },
+  {
+    "id": "pandora-professional-v3-connectivity",
+    "file": "src/assets/media/pandora-professional-v3-connectivity.webp",
+    "alt": {
+      "en": "Pandora Professional V3 connectivity: GSM, GNSS and Bluetooth modules linked to the Pandora Connect app"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/04/Pandora-Professional-V3-connectivity.webp"
+    }
+  },
+  {
+    "id": "pandora-professional-v3-package-commander",
+    "file": "src/assets/media/pandora-professional-v3-package-commander.webp",
+    "alt": {
+      "en": "Pandora Professional V3 package"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/04/Pandora-Professional-V3-package-Commander.webp"
+    }
+  },
+  {
+    "id": "pandora-ps-330",
+    "file": "src/assets/media/pandora-ps-330.webp",
+    "alt": {
+      "en": "Pandora PS-330 siren"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2024/10/Pandora-PS-330.webp"
+    }
+  },
+  {
+    "id": "pandora-smart-pro-v4-package",
+    "file": "src/assets/media/pandora-smart-pro-v4-package.webp",
+    "alt": {
+      "en": "Pandora Smart Pro V4 FD package"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2024/09/Pandora-Smart-Pro-v4-package.webp"
+    }
+  },
+  {
+    "id": "pandora-smart-v4-homepage-frame",
+    "file": "src/assets/media/pandora-smart-v4-homepage-frame.webp",
+    "alt": {
+      "en": "Pandora Smart V4 package and the Pandora Connect app on a phone"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2024/11/Pandora-Smart-V4-homepage-frame-1536x864.webp"
+    }
+  },
+  {
+    "id": "pandora-smart-v4-package-web",
+    "file": "src/assets/media/pandora-smart-v4-package-web.png",
+    "alt": {
+      "en": "Pandora Smart V4 package"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2024/09/Pandora-Smart-v4-package-web.png"
+    }
+  },
+  {
+    "id": "pandora-ultimate-d-060",
+    "file": "src/assets/media/pandora-ultimate-d-060.webp",
+    "alt": {
+      "en": "Pandora remote control with a display"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2026/07/Pandora-Ultimate-D-060.webp"
+    }
+  },
+  {
+    "id": "pricelist-acc-band",
+    "file": "src/assets/media/pricelist/acc-band.png",
+    "alt": {
+      "en": "Pandora Band"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-band.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-bt-01",
+    "file": "src/assets/media/pricelist/acc-bt-01.png",
+    "alt": {
+      "en": "Pandora BT-01"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-bt-01.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-bt-02",
+    "file": "src/assets/media/pricelist/acc-bt-02.png",
+    "alt": {
+      "en": "Pandora BT-02"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-bt-02.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-bt-790",
+    "file": "src/assets/media/pricelist/acc-bt-790.png",
+    "alt": {
+      "en": "Pandora BT-790"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-bt-790.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-btr-101",
+    "file": "src/assets/media/pricelist/acc-btr-101.png",
+    "alt": {
+      "en": "Pandora BTR-101"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-btr-101.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-d-010-cover",
+    "file": "src/assets/media/pricelist/acc-d-010-cover.png",
+    "alt": {
+      "en": "Pandora D-010 Cover"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-d-010-cover.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-d-010",
+    "file": "src/assets/media/pricelist/acc-d-010.png",
+    "alt": {
+      "en": "Pandora D-010"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-d-010.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-d-011",
+    "file": "src/assets/media/pricelist/acc-d-011.png",
+    "alt": {
+      "en": "Pandora D-011"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-d-011.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-d-022-cover",
+    "file": "src/assets/media/pricelist/acc-d-022-cover.png",
+    "alt": {
+      "en": "Pandora D-022 Cover"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-d-022-cover.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-d-022-lora",
+    "file": "src/assets/media/pricelist/acc-d-022-lora.png",
+    "alt": {
+      "en": "Pandora D-022 LoRa"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-d-022-lora.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-d-061-camper",
+    "file": "src/assets/media/pricelist/acc-d-061-camper.png",
+    "alt": {
+      "en": "Pandora D-061 Camper"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-d-061-camper.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-d-061",
+    "file": "src/assets/media/pricelist/acc-d-061.png",
+    "alt": {
+      "en": "Pandora D-061"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-d-061.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-d-062",
+    "file": "src/assets/media/pricelist/acc-d-062.png",
+    "alt": {
+      "en": "Pandora D-062"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-d-062.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-di-02",
+    "file": "src/assets/media/pricelist/acc-di-02.png",
+    "alt": {
+      "en": "Pandora DI-02"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-di-02.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-di-03",
+    "file": "src/assets/media/pricelist/acc-di-03.png",
+    "alt": {
+      "en": "Pandora DI-03"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-di-03.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-di-04",
+    "file": "src/assets/media/pricelist/acc-di-04.png",
+    "alt": {
+      "en": "Pandora DI-04"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-di-04.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-dms-100-bt",
+    "file": "src/assets/media/pricelist/acc-dms-100-bt.png",
+    "alt": {
+      "en": "Pandora DMS-100 BT"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-dms-100-bt.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-dms-101-bt",
+    "file": "src/assets/media/pricelist/acc-dms-101-bt.png",
+    "alt": {
+      "en": "Pandora DMS-101 BT"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-dms-101-bt.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-dms-105-bt",
+    "file": "src/assets/media/pricelist/acc-dms-105-bt.png",
+    "alt": {
+      "en": "Pandora DMS-105 BT"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-dms-105-bt.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-lc-d-010",
+    "file": "src/assets/media/pricelist/acc-lc-d-010.png",
+    "alt": {
+      "en": "Pandora LC D-010"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-lc-d-010.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-led-valet-2",
+    "file": "src/assets/media/pricelist/acc-led-valet-2.png",
+    "alt": {
+      "en": "Pandora LED/Valet 2"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-led-valet-2.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-nav-035-bt",
+    "file": "src/assets/media/pricelist/acc-nav-035-bt.png",
+    "alt": {
+      "en": "Pandora NAV-035 BT"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-nav-035-bt.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-nav-x",
+    "file": "src/assets/media/pricelist/acc-nav-x.png",
+    "alt": {
+      "en": "Pandora NAV-X"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-nav-x.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-pir-100-bt",
+    "file": "src/assets/media/pricelist/acc-pir-100-bt.png",
+    "alt": {
+      "en": "Pandora PIR-100 BT"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-pir-100-bt.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-pir-100-btm",
+    "file": "src/assets/media/pricelist/acc-pir-100-btm.png",
+    "alt": {
+      "en": "Pandora PIR-100 BTM"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-pir-100-btm.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-powercab",
+    "file": "src/assets/media/pricelist/acc-powercab.png",
+    "alt": {
+      "en": "Pandora POWERCAB"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-powercab.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-ps-330",
+    "file": "src/assets/media/pricelist/acc-ps-330.png",
+    "alt": {
+      "en": "Pandora PS-330"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-ps-330.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-ps-331-bt",
+    "file": "src/assets/media/pricelist/acc-ps-331-bt.png",
+    "alt": {
+      "en": "Pandora PS-331 BT"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-ps-331-bt.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-ps-332-bt",
+    "file": "src/assets/media/pricelist/acc-ps-332-bt.png",
+    "alt": {
+      "en": "Pandora PS-332 BT"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-ps-332-bt.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-ps-333",
+    "file": "src/assets/media/pricelist/acc-ps-333.png",
+    "alt": {
+      "en": "Pandora PS-333"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-ps-333.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-r-387-r-389",
+    "file": "src/assets/media/pricelist/acc-r-387-r-389.png",
+    "alt": {
+      "en": "Pandora R-387 / R-389"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-r-387-r-389.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-r-500-bt",
+    "file": "src/assets/media/pricelist/acc-r-500-bt.png",
+    "alt": {
+      "en": "Pandora R-500 BT"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-r-500-bt.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-rmd-5m",
+    "file": "src/assets/media/pricelist/acc-rmd-5m.png",
+    "alt": {
+      "en": "Pandora RMD-5M"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-rmd-5m.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-rmd-bmw-v2",
+    "file": "src/assets/media/pricelist/acc-rmd-bmw-v2.png",
+    "alt": {
+      "en": "Pandora RMD-BMW v2"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-rmd-bmw-v2.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-vs-22d",
+    "file": "src/assets/media/pricelist/acc-vs-22d.png",
+    "alt": {
+      "en": "Pandora VS-22D"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-vs-22d.png"
+    }
+  },
+  {
+    "id": "pricelist-acc-zdr-gm-50",
+    "file": "src/assets/media/pricelist/acc-zdr-gm-50.png",
+    "alt": {
+      "en": "ZDR GM 50 backup battery"
+    },
+    "source": {
+      "designFile": "img/pricelist/acc-zdr-gm-50.png"
+    }
+  },
+  {
+    "id": "pricelist-tracer",
+    "file": "src/assets/media/pricelist/tracer.png",
+    "alt": {
+      "en": "Pandora Tracer package"
+    },
+    "source": {
+      "designFile": "img/pricelist/tracer.png"
+    }
+  },
+  {
+    "id": "pricelist-truck",
+    "file": "src/assets/media/pricelist/truck.png",
+    "alt": {
+      "en": "Pandora Truck package"
+    },
+    "source": {
+      "designFile": "img/pricelist/truck.png"
+    }
+  },
+  {
+    "id": "pro-v2",
+    "file": "src/assets/media/pro-v2.webp",
+    "alt": {
+      "en": "Pandora Light Pro V2 central unit"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Pro-v2.webp"
+    }
+  },
+  {
+    "id": "works-2024-pandora-light-pro-v2-toyota-c-hr",
+    "file": "src/assets/media/works-2024-pandora-light-pro-v2-toyota-c-hr.jpg",
+    "alt": {
+      "en": "Toyota C-HR with Pandora Light Pro V2 installed"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2024-Pandora-Light-Pro-V2-Toyota-C-HR.jpg"
+    }
+  },
+  {
+    "id": "works-2024-pandora-marine-sea-ray-sdx-250",
+    "file": "src/assets/media/works-2024-pandora-marine-sea-ray-sdx-250.jpg",
+    "alt": {
+      "en": "Sea Ray SDX 250 with Pandora Marine installed"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2024-Pandora-Marine-Sea-Ray-SDX-250.jpg"
+    }
+  },
+  {
+    "id": "works-2024-pandora-smart-pro-v4-cupra-formentor-2025-fd-can",
+    "file": "src/assets/media/works-2024-pandora-smart-pro-v4-cupra-formentor-2025-fd-can.jpg",
+    "alt": {
+      "en": "Cupra Formentor FD CAN with Pandora Smart Pro V4 installed"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2024-Pandora-Smart-Pro-V4-Cupra-Formentor-2025-FD-CAN.jpg"
+    }
+  },
+  {
+    "id": "works-2024-pandora-smart-pro-v4-porsche-taycan-turbo",
+    "file": "src/assets/media/works-2024-pandora-smart-pro-v4-porsche-taycan-turbo.jpg",
+    "alt": {
+      "en": "Porsche Taycan Turbo with Pandora Smart Pro V4 installed"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2024-Pandora-Smart-Pro-V4-Porsche-Taycan-Turbo.jpg"
+    }
+  },
+  {
+    "id": "works-2025-pandora-camper-pro-mercedes-hymen",
+    "file": "src/assets/media/works-2025-pandora-camper-pro-mercedes-hymen.jpg",
+    "alt": {
+      "en": "Mercedes motorhome with Pandora Camper Pro V2 installed"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2025-Pandora-Camper-Pro-Mercedes-Hymen.jpg"
+    }
+  },
+  {
+    "id": "works-2025-pandora-elite-v3-audi-rs6",
+    "file": "src/assets/media/works-2025-pandora-elite-v3-audi-rs6.jpg",
+    "alt": {
+      "en": "Audi RS6 with Pandora Elite V3 installed"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2025-Pandora-Elite-V3-Audi-RS6.jpg"
+    }
+  },
+  {
+    "id": "works-2025-pandora-elite-v3-porsche-911-turbo-s",
+    "file": "src/assets/media/works-2025-pandora-elite-v3-porsche-911-turbo-s.jpg",
+    "alt": {
+      "en": "Porsche 911 Turbo S with Pandora Elite V3 installed"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2025-Pandora-Elite-V3-Porsche-911-Turbo-S.jpg"
+    }
+  },
+  {
+    "id": "works-2025-pandora-marine-sea-doo-rxt-xrs",
+    "file": "src/assets/media/works-2025-pandora-marine-sea-doo-rxt-xrs.jpg",
+    "alt": {
+      "en": "Sea-Doo RXT XRS with Pandora Marine installed"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/06/Works-2025-Pandora-Marine-Sea-Doo-RXT-XRS-scaled.jpg"
+    }
+  },
+  {
+    "id": "works-2025-pandora-moto-evo-suzuki-katana",
+    "file": "src/assets/media/works-2025-pandora-moto-evo-suzuki-katana.jpg",
+    "alt": {
+      "en": "Suzuki Katana with Pandora Moto Evo installed"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2025-Pandora-Moto-Evo-Suzuki-Katana.jpg"
+    }
+  },
+  {
+    "id": "works-2025-pandora-professional-v3-land-rover-range-rover-sport-p400e-hse",
+    "file": "src/assets/media/works-2025-pandora-professional-v3-land-rover-range-rover-sport-p400e-hse.jpg",
+    "alt": {
+      "en": "Range Rover Sport P400e HSE with Pandora Professional V3 installed"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2025/05/Works-2025-Pandora-Professional-V3-Land-Rover-Range-Rover-Sport-P400E-HSE.jpg"
+    }
+  },
+  {
+    "id": "works-2026-pandora-elite-v3-ferrari-f355-berlinetta",
+    "file": "src/assets/media/works-2026-pandora-elite-v3-ferrari-f355-berlinetta.jpg",
+    "alt": {
+      "en": "Ferrari F355 Berlinetta with Pandora Elite V3 installed"
+    },
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2026/03/Works-2026-Pandora-Elite-V3-Ferrari-F355-Berlinetta.jpg"
+    }
+  },
+  {
+    "id": "yaucht",
+    "file": "src/assets/media/yaucht.webp",
+    "decorative": true,
+    "source": {
+      "url": "https://invetec.eu/wp-content/uploads/2023/03/Yaucht.webp"
+    }
+  }
+]

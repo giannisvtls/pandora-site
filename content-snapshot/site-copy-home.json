@@ -1,0 +1,194 @@
+{
+  "title": {
+    "en": "INVETEC — Pandora vehicle security"
+  },
+  "metaDescription": {
+    "en": "Exclusive Pandora distributor for Greece and Italy. Alarm systems, immobilizers and GPS tracking for cars, motorcycles, campers, boats and fleets, installed by certified specialists."
+  },
+  "hero": {
+    "label": {
+      "en": "Intro"
+    },
+    "heading": {
+      "lead": {
+        "en": "Your car is not going anywhere"
+      },
+      "payload": {
+        "en": "without you."
+      }
+    },
+    "readout": {
+      "system": "Pandora Elite V3",
+      "status": {
+        "en": "Armed"
+      },
+      "place": {
+        "en": "Haidari"
+      },
+      "demo": {
+        "en": "demo"
+      }
+    },
+    "cta": {
+      "en": "Find my system"
+    }
+  },
+  "log": {
+    "heading": {
+      "lead": {
+        "en": "What happens"
+      },
+      "payload": {
+        "en": "at 02:14."
+      }
+    },
+    "intro": {
+      "en": "Not every system does the same job. Read one night, second by second, and the three levels of protection explain themselves."
+    },
+    "rows": [
+      {
+        "time": "02:14:07",
+        "event": {
+          "en": "SHOCK"
+        },
+        "title": {
+          "en": "Someone touches the car."
+        },
+        "text": {
+          "en": "The 3D sensor reads the impact and the tilt."
+        },
+        "level": "1"
+      },
+      {
+        "time": "02:14:08",
+        "event": {
+          "en": "SIREN"
+        },
+        "title": {
+          "en": "Siren on. Alert on your phone."
+        },
+        "text": {
+          "en": "You know before the neighbours do."
+        },
+        "level": "1"
+      },
+      {
+        "time": "02:14:31",
+        "event": {
+          "en": "IGNITION"
+        },
+        "title": {
+          "en": "They get the door open and try to start it."
+        },
+        "text": {
+          "en": "No Bluetooth tag in range, no card. The digital immobilizer on the CAN-bus holds the engine."
+        },
+        "level": "2"
+      },
+      {
+        "time": "02:16:02",
+        "event": {
+          "en": "TOW"
+        },
+        "title": {
+          "en": "A flatbed backs up."
+        },
+        "text": {
+          "en": "The car moves without the engine. Its position is sent by GPS / GLONASS over LTE, on its own battery."
+        },
+        "level": "3"
+      },
+      {
+        "time": "02:16:40",
+        "event": {
+          "en": "LIVE"
+        },
+        "title": {
+          "en": "You are watching a moving dot in Pandora Connect"
+        },
+        "text": {
+          "en": ", and so is the recovery team you called."
+        },
+        "tag": {
+          "en": "Tracking"
+        }
+      }
+    ]
+  },
+  "picker": {
+    "heading": {
+      "lead": {
+        "en": "Protect my"
+      }
+    },
+    "note": {
+      "en": "Three picks, from the lightest to the complete system. The tag on each card is the level it reaches."
+    }
+  },
+  "proof": {
+    "heading": {
+      "lead": {
+        "en": "Seen on"
+      },
+      "payload": {
+        "en": "the street."
+      }
+    },
+    "shots": [
+      {
+        "car": "Ferrari F355 Berlinetta",
+        "caption": "Elite V3 · 2026",
+        "photo": "works-2026-pandora-elite-v3-ferrari-f355-berlinetta"
+      },
+      {
+        "car": "Porsche 911 Turbo S",
+        "caption": "Elite V3 · 2025",
+        "photo": "works-2025-pandora-elite-v3-porsche-911-turbo-s"
+      },
+      {
+        "car": "Porsche Taycan Turbo",
+        "caption": "Smart Pro V4 · 2024",
+        "photo": "works-2024-pandora-smart-pro-v4-porsche-taycan-turbo"
+      },
+      {
+        "car": "Suzuki Katana",
+        "caption": "Moto Evo · 2025",
+        "photo": "works-2025-pandora-moto-evo-suzuki-katana"
+      },
+      {
+        "car": "Sea-Doo RXT XRS",
+        "caption": "Marine · 2025",
+        "photo": "works-2025-pandora-marine-sea-doo-rxt-xrs"
+      }
+    ]
+  },
+  "band": {
+    "heading": {
+      "lead": {
+        "en": "Installed by"
+      },
+      "payload": {
+        "en": "specialists."
+      }
+    },
+    "headingEnd": {
+      "en": "Never by strangers."
+    },
+    "text": {
+      "en": "Every Pandora system is fitted by a certified installer from a network of 100+ partners across 5 countries, with technical support, training and the compatibility database behind them."
+    },
+    "findInstaller": {
+      "en": "Find an installer"
+    }
+  },
+  "news": {
+    "heading": {
+      "lead": {
+        "en": "Latest"
+      }
+    },
+    "all": {
+      "en": "All news"
+    }
+  }
+}

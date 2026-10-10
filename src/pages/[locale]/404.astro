@@ -1,0 +1,20 @@
+---
+// A language's 404 page (spec §9, P1-11): one per built language. Astro writes it as
+// dist/{L}/404/index.html; the build integration (src/integrations/build-files.ts) moves it to
+// dist/{L}/404.html, its URL (routes.ts). Never in a sitemap or an alternate (A18).
+import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
+
+import NotFoundPage from '../../components/NotFoundPage.astro';
+import { siteQuery } from '../../content/query';
+
+export const getStaticPaths = (async () => {
+  const query = await siteQuery();
+  return query.staticPaths('notFound');
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { locale } = Astro.props as Props;
+---
+
+<NotFoundPage locale={locale} />
