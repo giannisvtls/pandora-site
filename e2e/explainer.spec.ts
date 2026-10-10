@@ -47,6 +47,9 @@ test.describe('the explainer', () => {
       'Needs',
       'On these systems',
     ]);
+    await expect(explainer.dialog.locator('.fx-what')).toContainText(
+      "reports the vehicle's position and movement",
+    );
     const systems = await entries(explainer, 'On these systems');
     expect(systems).toHaveLength(13);
     expect(systems.filter(([, beside]) => beside === 'Optional')).toEqual([

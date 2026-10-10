@@ -5,8 +5,8 @@ import { explainerNamed, explainerPage, featureButton } from './explainer-fixtur
 // The system cards of the interim index on the built /en/ (spec §7): every package plate is
 // square; below 1120px every feature button takes taps in a 44px area around its unchanged 24px
 // line (an invisible box), no two of those areas overlap, a tap anywhere in one opens the
-// explainer and the scroll margin stays; every level chip carries the feature buttons' info mark
-// while its name stays the tag.
+// explainer and the scroll margin stays, and the "See the system" link has 8px more room above it;
+// every level chip carries the feature buttons' info mark while its name stays the tag.
 
 const PHONE = { width: 390, height: 844 };
 const DESKTOP = { width: 1280, height: 800 };
@@ -163,6 +163,24 @@ test('keeps the feature buttons their 24px line, and no wider hit area, from 112
   }
   await expect(page.locator('main button[data-fx]').first()).toHaveCSS('position', 'static');
 });
+
+for (const [size, padding] of [
+  [PHONE, '8px'],
+  [DESKTOP, '0px'],
+] as const) {
+  test(`gives the "See the system" link ${padding} above its label at ${String(size.width)}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(size);
+    await page.goto('/en/');
+    const links = page.getByRole('link', { name: 'See the system', exact: true });
+
+    await expect(links).toHaveCount(16);
+    // 8px more room above it below 1120px, as the design's `.cta` below its 900px.
+    await expect(links.first()).toHaveCSS('padding-top', padding);
+    await expect(links.last()).toHaveCSS('padding-top', padding);
+  });
+}
 
 for (const size of [DESKTOP, PHONE]) {
   test(`marks every level chip with the info mark, its name the tag (${String(size.width)}px)`, async ({

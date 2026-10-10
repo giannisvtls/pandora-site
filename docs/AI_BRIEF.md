@@ -560,8 +560,10 @@ index's with `src/components/system-index.ts`. No component holds visible copy (
   (the prototype's, flagship first; the Content Layer hands the collection over sorted by id). No
   reveal classes, so the h1 (LCP) never starts hidden. The plates are square at every width
   (`min-height: 0`, see gotchas). Below 1120px the feature rows are 20px apart, so the buttons'
-  44px tap areas never overlap (the e2e measures each area and taps inside it), and the "See the system" link gets 8px more above it, as the
-  design's `.cta` (`e2e/index-cards.spec.ts`).
+  44px tap areas never overlap, and the "See the system" link gets 8px more room above it, as the
+  design's `.cta`: `e2e/index-cards.spec.ts` measures each tap area and taps inside it, and checks
+  the link's padding at 390 and 1280px (`header-menu.test.ts` pins both rules to the header's
+  breakpoint).
 - **Inline scripts and styles** (Phase 5's `_headers` needs a CSP hash for each, computed from the
   built files in `dist` at build time, since Astro and the Fonts API write some of them): the
   theme script in the head, the Fonts API's two `@font-face` `<style>` blocks in the head (one

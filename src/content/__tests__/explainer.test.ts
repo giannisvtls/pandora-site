@@ -81,6 +81,13 @@ describe('a feature', () => {
     expect(Object.keys(english.features)).toHaveLength(snapshot.features.length);
   });
 
+  it("says the vehicle's position in the GPS text, as the feature covers every vehicle type", () => {
+    const what = english.features.gps?.what ?? '';
+
+    expect(what).toContain("reports the vehicle's position and movement on the map");
+    expect(what).not.toContain("car's position");
+  });
+
   it('lists every product on the explainer of each feature it highlights', () => {
     expect(unlistedHighlights(snapshot)).toEqual([]);
     // A product whose matrix says No for a feature it highlights is reported, not dropped quietly.

@@ -105,6 +105,9 @@ describe('the mobile menu in the header (spec §8)', () => {
     expect(
       declaration(rulesOf('../../pages/[locale]/index.astro'), '.features', 'row-gap'),
     ).toEqual([[`@media ${COMPACT}`, '20px']]);
+    expect(declaration(rulesOf('../../pages/[locale]/index.astro'), '.cta', 'padding-top')).toEqual(
+      [[`@media ${COMPACT}`, '8px']],
+    );
   });
 
   it('renders the burger, named from Site copy, and the dialog closed, named by its nav', async () => {
