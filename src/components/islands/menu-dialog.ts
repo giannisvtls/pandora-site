@@ -88,6 +88,9 @@ export function wireMenu(menu: HTMLDialogElement, opener: HTMLElement): () => vo
     wrapFocus(menu, event);
   };
   const onClose = () => {
+    // The `close` event comes a task after close(): when the menu was opened again in between,
+    // this event belongs to the session before, and the open menu keeps its resize watch and focus.
+    if (menu.open) return;
     globalThis.removeEventListener('resize', onResize);
     returnFocus(opener, lastFocused);
   };

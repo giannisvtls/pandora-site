@@ -13,7 +13,7 @@
 //
 // Everything it shows comes in as props from the header (layouts/shell.ts); it imports types only,
 // so no content module (zod, the media glob) reaches the browser.
-import { useEffect, useRef } from 'preact/hooks';
+import { useLayoutEffect, useRef } from 'preact/hooks';
 
 import { wireMenu } from './menu-dialog';
 import type { Locale } from '../../content/contract';
@@ -84,8 +84,11 @@ export default function MobileMenu({ labels, links, languages }: MobileMenuProps
   const burger = useRef<HTMLButtonElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
 
-  // The behaviour (menu-dialog.ts) goes on the server's markup once the island is live.
-  useEffect(() => {
+  // The behaviour (menu-dialog.ts) goes on the server's markup once the island is live. A layout
+  // effect: Preact runs it inside hydrate(), before Astro removes the island's `ssr` attribute, so
+  // the burger works from that moment (a plain effect runs a frame later, and a click in between
+  // was lost).
+  useLayoutEffect(() => {
     const menu = dialog.current;
     const opener = burger.current;
     if (menu === null || opener === null) return;

@@ -2,9 +2,11 @@
 // The mobile menu island (spec §8) in jsdom, with the showModal() stand-in of src/test/setup.ts:
 // the burger opens the dialog with the nav and the switcher and focus moves to the first link;
 // Escape, the close button and following a link close it and give focus back to the burger; Tab
-// and Shift+Tab wrap at the ends; while open, the close button follows the burger through a resize,
-// and the menu closes once a resize hides the burger. What only a browser does (the inert page, the
-// scroll lock, the real Tab order, layout) is in e2e/menu.spec.ts and e2e/menu-resize.spec.ts.
+// and Shift+Tab wrap at the ends; while open, the close button follows the burger through a resize
+// (also when the menu was closed and opened again before the close event), and the menu closes once
+// a resize hides the burger, with focus on the header's own link. What only a browser does (the
+// inert page, the scroll lock, the real Tab order, layout) is in e2e/menu.spec.ts and
+// e2e/menu-resize.spec.ts.
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/preact';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -218,16 +220,53 @@ describe('MobileMenu', () => {
     ]);
   });
 
-  it('closes once a resize hides the burger (the screen grew past the breakpoint)', async () => {
-    const dialog = openMenu();
-    const opener = burger();
+  it('keeps the resize watch and focus of a menu opened again before the close event', async () => {
+    render(<MobileMenu {...PROPS} />);
+    placeBurger(30, 300);
+    fireEvent.click(burger());
+    const dialog = screen.getByRole('dialog', { name: 'Mobile' });
 
-    opener.style.display = 'none';
+    // Closed and opened again in one task: the close event of the first session comes after.
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Close menu' }));
+    fireEvent.click(burger());
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    expect(dialog).toHaveAttribute('open');
+    expect(within(dialog).getByRole('link', { name: 'Systems' })).toHaveFocus();
+    placeBurger(40, 120);
+    resize();
+    expect(closePlace(dialog)).toEqual(['40px', '120px']);
+  });
+
+  it('closes once a resize hides the burger, with focus on the header link to where it was', async () => {
+    // The header around the island, with its own nav (shown: it has boxes) where the menu's
+    // first link, Systems, is not the first.
+    render(
+      <header>
+        <nav aria-label="Primary">
+          <a href="/en/compare/">Compare</a>
+          <a href="/en/systems/car/">Systems</a>
+        </nav>
+        <MobileMenu {...PROPS} />
+      </header>,
+    );
+    const primary = screen.getByRole('navigation', { name: 'Primary' });
+    for (const link of within(primary).getAllByRole('link')) {
+      vi.spyOn(link, 'getClientRects').mockReturnValue([
+        DOMRect.fromRect({ width: 80, height: 20 }),
+      ] as unknown as DOMRectList);
+    }
+    fireEvent.click(burger());
+    const dialog = screen.getByRole('dialog', { name: 'Mobile' });
+    expect(within(dialog).getByRole('link', { name: 'Systems' })).toHaveFocus();
+
+    burger().style.display = 'none';
     resize();
 
     expect(dialog).not.toHaveAttribute('open');
-    // Focus goes to the header's own link (e2e/menu-resize.spec.ts), never to the hidden burger.
-    await new Promise((resolve) => setTimeout(resolve, 10));
-    expect(opener).not.toHaveFocus();
+    // Never the hidden burger: the header's own Systems link (e2e/menu-resize.spec.ts).
+    await waitFor(() => {
+      expect(within(primary).getByRole('link', { name: 'Systems' })).toHaveFocus();
+    });
   });
 });

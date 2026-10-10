@@ -616,8 +616,9 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: "Tab stays inside" fails on the press after the last control.
   - Fix: the island wraps Tab and Shift+Tab at the ends itself (`wrapFocus` in
     menu-dialog.ts); `e2e/menu.spec.ts` checks `hasFocus()` after each press.
-- **A click on a modal dialog's background focuses the dialog.** The open menu is a scroll
-  container, and Chromium gives it focus when its empty part is clicked.
+- **A click on a modal dialog's background focuses the dialog.** Chromium gives a modal dialog
+  focus when a click lands on its own box (an empty part, its padding), whether or not it scrolls
+  (it does so with `overflow: visible` too).
   - Symptom: the next Shift+Tab (or Tab) is not at a control, so a wrap that only looks at the
     first and last controls lets focus leave the page.
   - Fix: `wrapFocus` treats focus on anything that is not one of the controls as an end: Shift+Tab
@@ -632,8 +633,10 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Fix: while the dialog is open, a `resize` listener (added on opening, removed in the `close`
     event, which every way out ends in) measures again, or closes the menu once the burger is
     hidden and puts focus on the header's own link. Measure after `showModal()`, not before: the
-    scroll lock takes the page's scrollbar away and moves the burger (a headless browser shows no
-    scrollbar, so no e2e can see this).
+    scroll lock takes the page's 10px scrollbar away and moves the burger
+    (`e2e/menu-scrollbar.spec.ts` shows the scrollbar; see "Headless Chromium hides scrollbars").
+    The `close` event comes a task after `close()`: when the menu was opened again in between, the
+    handler returns at once (`menu.open`), or it would end the new session's resize watch.
 - **An absolutely positioned control scrolls with its dialog.** Inside a scrolling modal dialog, a
   `position: absolute` close button leaves the screen as soon as the menu scrolls (a phone held
   sideways).
@@ -645,6 +648,22 @@ are about to touch. When you hit a new one, add it here in the same shape.
   iOS, a click in some browsers).
   - Fix: the dialog's `close` event gives focus back to the burger, so every way out (Escape,
     the close button, a link) restores it.
+- **`useEffect` runs after Astro has marked the island hydrated.** Astro removes the island's
+  `ssr` attribute as soon as Preact's `hydrate()` returns; Preact runs `useEffect` callbacks a
+  frame later, `useLayoutEffect` callbacks inside `hydrate()`.
+  - Symptom: listeners wired in `useEffect` miss clicks for about 11-41 ms after `ssr` is gone, so
+    a test that waits for `ssr` to go (the readiness rule in the e2e section) still clicks a dead
+    burger now and then.
+  - Fix: wire native listeners in `useLayoutEffect` (MobileMenu.tsx); `e2e/menu.spec.ts` clicks
+    the burger in the microtask after `ssr` is removed.
+- **A mark drawn as a background disappears in forced colors.** In forced-colors mode (Windows
+  High Contrast) the browser paints backgrounds with the Canvas colour.
+  - Symptom: the burger's bars and the close button's X (span backgrounds) vanish, leaving two
+    empty 44px boxes.
+  - Fix: draw marks in the text colour, which forced colors keep visible: the bars are 2px
+    `currentColor` top borders; an icon is an inline SVG with `stroke="currentColor"`.
+    `e2e/forced-colors.spec.ts` checks the pixels inside each control with
+    `page.emulateMedia({ forcedColors: 'active' })`.
 
 ## Unit tests (Vitest)
 
@@ -760,7 +779,14 @@ are about to touch. When you hit a new one, add it here in the same shape.
   page; `page.goto` can return before it ran.
   - Symptom: a click on the burger does nothing, now and then.
   - Fix: wait until `astro-island` has lost its `ssr` attribute (Astro removes it once
-    hydrated) before using the island, as `e2e/menu.spec.ts` does.
+    hydrated) before using the island, as `e2e/menu.spec.ts` does. This holds because the islands
+    wire their listeners in `useLayoutEffect` (see the Islands section).
+- **Headless Chromium hides scrollbars.** Playwright launches it with `--hide-scrollbars`, so the
+  page's classic scrollbar (10px, base.css) takes no room.
+  - Symptom: no e2e sees layout that a scrollbar changes, such as the scroll lock taking the
+    scrollbar away and moving the burger.
+  - Fix: `test.use({ launchOptions: { ignoreDefaultArgs: ['--hide-scrollbars'] } })` at the top
+    of a spec file (a worker option: not inside a describe), as `e2e/menu-scrollbar.spec.ts` does.
 - **What axe checks.** The tag set is WCAG 2.0-2.2 A/AA (`wcag2a`, `wcag2aa`, `wcag21a`,
   `wcag21aa`, `wcag22aa`; axe-core 4.13 has no `wcag22a` tag).
   - Symptom: best-practice rules (`region`, `landmark-one-main`, `heading-order`,

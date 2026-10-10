@@ -21,7 +21,9 @@ export function menuOf(page: Page): Menu {
   };
 }
 
-// /en/ at `size`, once the island has hydrated (Astro drops `ssr` from the island then).
+// /en/ at `size`, once the island has hydrated: Astro drops `ssr` from the island when Preact's
+// hydrate() has returned, and the island wires its listeners inside it (a layout effect), so the
+// burger works from then on (menu.spec.ts clicks it the instant `ssr` goes).
 export async function menuPage(page: Page, size = PHONE): Promise<Menu> {
   await page.setViewportSize(size);
   await page.goto('/en/');

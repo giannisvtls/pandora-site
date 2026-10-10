@@ -454,10 +454,12 @@ index's with `src/components/system-index.ts`. No component holds visible copy (
   the product URL (404 until Phase 2). Systems come in their `order` (the prototype's, flagship
   first; the Content Layer hands the collection over sorted by id). No reveal classes, so the h1
   (LCP) never starts hidden.
-- **Inline scripts** (Phase 5's `_headers` needs a CSP hash for each): the theme script in the
-  head, the theme toggle's script (ThemeToggle), the overlay header's script (SiteHeader, overlay
-  pages only), Astro's island runtime with its `client:media` loader (and its `<style>`), which
-  Astro writes beside the first island, and the reveal script at the end of `<body>`.
+- **Inline scripts and styles** (Phase 5's `_headers` needs a CSP hash for each, computed from the
+  built files in `dist` at build time, since Astro and the Fonts API write some of them): the
+  theme script in the head, the Fonts API's two `@font-face` `<style>` blocks in the head (one
+  per family), the theme toggle's script (ThemeToggle), the overlay header's script (SiteHeader,
+  overlay pages only), Astro's island runtime with its `client:media` loader (and its `<style>`),
+  which Astro writes beside the first island, and the reveal script at the end of `<body>`.
 
 ## Islands
 
@@ -475,7 +477,10 @@ JavaScript nothing an island renders is needed (A11).
   with `isCurrent`, and the switcher's languages with their endonym. The burger
   (`aria-haspopup="dialog"`, `aria-controls`) opens a full-screen modal dialog named by its nav
   (`aria-labelledby` on the nav, whose `aria-label` is the mobile nav label: no new string). The
-  behaviour is `menu-dialog.ts` (`wireMenu`, native listeners on the server's markup). The close
+  behaviour is `menu-dialog.ts` (`wireMenu`, native listeners on the server's markup, added in a
+  layout effect, inside Preact's `hydrate()`, so the burger works the moment Astro removes the
+  island's `ssr` attribute). The burger's bars and the close button's X are `currentColor`
+  borders, so they stay visible in forced-colors mode. The close
   button sits over the burger, fixed to the screen: measured once the dialog is open (the scroll
   lock can move the burger) and again on every resize while it is open (rotation, zoom), kept on
   the screen, so it stays in reach while the menu scrolls; links that take focus stop below it
@@ -486,15 +491,19 @@ JavaScript nothing an island renders is needed (A11).
   button, following a link and a resize that hides the burger (the screen grew past the
   breakpoint) close it. The dialog's `close` event, which every way out ends in, ends the resize
   watch and gives focus back to the burger, or, once the burger is gone, to the header's own link
-  to where focus was in the menu (else its first nav link). The page under it does not scroll
+  to where focus was in the menu (else its first nav link); a `close` event that arrives after
+  the menu was opened again does nothing. The page under it does not scroll
   (`html:has(.m-nav[open]) { overflow: hidden }`, lifted on every close). The design's
   burger-to-X morph is not ported: the close button is a control of its own inside the modal,
   drawn as the X, so nothing animates. No reveal classes: the reveal script never sees island
   markup. Tests: `islands/__tests__/MobileMenu.test.tsx` (jsdom, with the `showModal()` stand-in
   of `src/test/setup.ts`), `components/__tests__/header-menu.test.ts` (Container API),
-  `e2e/menu.spec.ts` (390 × 844, 1280, 1120, 1119, without JavaScript, axe with the menu open in
-  both themes), `e2e/menu-resize.spec.ts` (rotation, zoom, scrolling, growing past the breakpoint,
-  a click on the background; helpers in `e2e/menu-fixtures.ts`) and `e2e/header-spacing.spec.ts`.
+  `e2e/menu.spec.ts` (390 × 844, a click the instant the island hydrates, 1280, 1120, 1119,
+  without JavaScript, axe with the menu open in both themes), `e2e/menu-resize.spec.ts` (rotation,
+  zoom, scrolling, a close and a reopen in one task, growing past the breakpoint, a click on the
+  background; helpers in `e2e/menu-fixtures.ts`), `e2e/menu-scrollbar.spec.ts` (the close button
+  on the burger with the page's scrollbar shown), `e2e/forced-colors.spec.ts` (the bars and the X
+  in forced colors) and `e2e/header-spacing.spec.ts`.
 
 ## i18n routing
 

@@ -56,6 +56,31 @@ test.describe('the mobile menu at 390 × 844', () => {
     await expect(menu.dialog).toBeHidden();
   });
 
+  test('opens on a click the instant the island has hydrated', async ({ page }) => {
+    await page.setViewportSize(PHONE);
+    // Clicks the burger in the microtask after Astro removes the island's `ssr` attribute, before
+    // the next frame, and records whether the menu opened.
+    await page.addInitScript(() => {
+      const observer = new MutationObserver((records) => {
+        for (const { target } of records) {
+          if (!(target instanceof Element) || target.hasAttribute('ssr')) continue;
+          const burger = target.querySelector<HTMLElement>('.menu-open');
+          if (burger === null) continue;
+          observer.disconnect();
+          burger.click();
+          const isOpen = target.querySelector('dialog')?.open;
+          document.documentElement.dataset.openedAtHydration = String(isOpen);
+        }
+      });
+      observer.observe(document, { subtree: true, attributeFilter: ['ssr'] });
+    });
+
+    await page.goto('/en/');
+
+    await expect(page.locator('html')).toHaveAttribute('data-opened-at-hydration', 'true');
+    await expect(menuOf(page).dialog).toBeVisible();
+  });
+
   test('opens with focus on the first link and the close button where the burger was', async ({
     page,
   }) => {

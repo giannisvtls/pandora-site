@@ -24,11 +24,14 @@
   cursor: pointer;
 }
 
+/* Each bar is a 2px top border in the button's text colour (`currentColor`), not a background: in
+   forced-colors mode (Windows High Contrast) the browser paints backgrounds with the Canvas colour,
+   which would leave two empty boxes, while a border takes the forced text colour. */
 .menu-btn span {
   display: block;
   width: 20px;
-  height: 2px;
-  background: var(--ink);
+  height: 0;
+  border-top: 2px solid;
 }
 
 /* The burger shows only with JavaScript, below 1120px: without JavaScript the header keeps its

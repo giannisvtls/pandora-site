@@ -3,9 +3,9 @@ import { expect, test, type Page } from '@playwright/test';
 import { focusInDialog, openMenu, overflowOf, type Menu } from './menu-fixtures';
 
 // The open mobile menu while the screen changes (spec §8): the close button stays over the burger
-// through a rotation or a zoom, and on the screen while the menu scrolls; the menu closes, with
-// focus on the header's own link, once the screen grows past the breakpoint; focus stays inside
-// after a click on the menu's background.
+// through a rotation or a zoom (also after a close and a reopen in one task), and on the screen
+// while the menu scrolls; the menu closes, with focus on the header's own link, once the screen
+// grows past the breakpoint; focus stays inside after a click on the menu's background.
 
 interface Size {
   readonly width: number;
@@ -91,6 +91,24 @@ test.describe('the open mobile menu when the screen changes', () => {
         (close?.y ?? 0) + (close?.height ?? 0),
       );
     }
+    await expect(menu.links.first()).toBeFocused();
+  });
+
+  test('keeps the close button over the burger when the menu was closed and opened in one task', async ({
+    page,
+  }) => {
+    const menu = await openMenu(page, { size: size(844, 390) });
+    // The close event of the first session comes a task later, after the menu is open again.
+    await menu.dialog.evaluate((dialog) => {
+      dialog.querySelector<HTMLElement>(':scope .menu-close')?.click();
+      dialog.ownerDocument.querySelector<HTMLElement>('.menu-open')?.click();
+    });
+    await expect(menu.dialog).toBeVisible();
+    await expect(menu.links.first()).toBeFocused();
+
+    await page.setViewportSize(size(390, 844));
+
+    await expectCloseOnBurger(menu);
     await expect(menu.links.first()).toBeFocused();
   });
 
