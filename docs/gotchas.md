@@ -138,7 +138,14 @@ are about to touch. When you hit a new one, add it here in the same shape.
 - **`../` and `./` imports form one import-x group.**
   - Symptom: `There should be no empty line within import group` when a blank line separates
     `from '../x'` and `from './y'`.
-  - Fix: no blank line between parent and sibling imports.
+  - Fix: no blank line between parent and sibling imports. Their order inside the group is not
+    always `../` first: in `BaseLayout.astro` and next to `../../../astro.config.mjs` the rule
+    wants `./` first. Let `eslint --fix` order them.
+- **`eslint --fix` in an `is:inline` script.** `unicorn/prefer-block-statement-over-iife` and
+  `unicorn/prefer-continue` fix the code but not its indentation.
+  - Symptom: after the hook's `eslint --fix`, a `<script is:inline>` body sits at column 0.
+  - Fix: write the script as a plain block (`{ const root = ...; }`) with early `continue`s, and
+    let Prettier indent it.
 - **Byte-exact fixtures.** Prettier formats `.html` files.
   - Symptom: `prettier --write .` would reformat `scripts/crawl/__fixtures__/*.html` and break
     the tests that compare bytes.
@@ -462,6 +469,41 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: on a white plate the image looks empty, in the browser and in an image viewer.
   - Fix: show it on a dark surface, or view it composited on a dark background to check it.
 
+## Styles and fonts
+
+- **The Fonts API's `npm` provider downloads the font files.** It reads the package's CSS from
+  `node_modules`, but rewrites every `url(./files/...)` to
+  `https://cdn.jsdelivr.net/npm/<package>@<version>/files/...` and fetches it (cached in
+  `node_modules/.astro/fonts/` afterwards, so only a clean build shows it). It also ignores the
+  family's `subsets`.
+  - Symptom: an offline build fails with `CannotFetchFontFile` naming a jsDelivr URL; online, a
+    fresh clone or CI downloads fonts at build time.
+  - Fix: use the repo's provider, `fontsourceVariable(pkg)` (`src/fonts/fontsource-variable.ts`),
+    which gives Astro the package's own files as absolute paths. The built-in `local` provider
+    reads files too, but its faces carry no subset, so `<Font preload>` cannot pick the latin one.
+- **A custom font provider is one instance per name and config.** The Fonts API keys providers by
+  a hash of `name` and `config`.
+  - Symptom: two families with `fontsourceVariable()` and no distinct `config` both resolve from
+    the first package.
+  - Fix: keep `config: { package: pkg }` in the provider.
+- **Font faces are named `<family>-<hash>`.** The Fonts API never declares the plain family name.
+  - Symptom: `font-family: 'Sofia Sans Extra Condensed'` falls back to a system font, and
+    `document.fonts.check('800 40px "Sofia Sans Extra Condensed"')` is true without any font
+    loaded (no face matches the name, so nothing is left to load).
+  - Fix: use `var(--display)` and `var(--body)` (the Fonts API's variables); in a test, read the
+    first family of `--display` and check that face.
+- **The built CSS is not the source CSS.** Astro minifies with Lightning CSS.
+  - Symptom: `rgba(14, 26, 36, 0.74)` ships as `#0e1a24bd`, `#ffffff` as `#fff`,
+    `translate3d(0, 60px, 0)` as `translateY(60px)`; a test that searches the built page for a
+    source value fails.
+  - Fix: check values in `src/styles/` (`tokens.test.ts`, `base.test.ts`), and in the browser
+    through computed styles.
+- **A reveal element at the end of a page.** The design's reveal script observes with
+  `rootMargin: '0px 0px -10% 0px'`.
+  - Symptom: a small `.rv` element in the bottom tenth of a page that cannot scroll further never
+    gets `.in` and stays invisible.
+  - Fix: BaseLayout observes with `threshold: 0.1` and no negative margin; keep it so.
+
 ## Unit tests (Vitest)
 
 - **No Vitest globals, so no automatic Preact Testing Library cleanup.**
@@ -481,6 +523,13 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: `props` is `Record<string, unknown>`, so wrong props in a test are not type errors;
     the rendered output has no doctype.
   - Fix: assert on the rendered output, and leave the doctype to the build and e2e.
+- **A component that calls `siteQuery()` renders nothing useful in Vitest.** `astro:content`
+  serves no entries there, so the adapter fails (`The global ... has no "global" entry`).
+  - Symptom: a Container test of `BaseLayout` throws before rendering.
+  - Fix: replace the adapter with a query over fixtures:
+    `vi.mock(import('../../content/query'), async (importOriginal) => ({ ...(await importOriginal()), siteQuery: ... }))`,
+    as `src/layouts/__tests__/BaseLayout.test.ts` does. Pass the site to the container
+    (`AstroContainer.create({ astroConfig: { site } })`) for `Astro.site`.
 - **Two copies of `@testing-library/dom`** (jest-dom's and Preact Testing Library's).
   - Symptom: `configure()` from Preact Testing Library does not reach jest-dom's copy.
   - Fix: harmless today; configure each copy where it is used if that ever matters.
@@ -519,6 +568,22 @@ are about to touch. When you hit a new one, add it here in the same shape.
 - **The html reporter's default.**
   - Symptom: on a failure it serves the report and the run never exits.
   - Fix: keep `open: 'never'` in `playwright.config.ts`.
+- **A default value in a test's fixture argument.** Playwright reads the fixture names from the
+  function's source.
+  - Symptom: `async ({ page, baseURL = '' })` fails the whole run with
+    `Test has unknown parameter "baseURL = ''"` (and `unicorn/prefer-default-parameters` asks for
+    that default when the body writes `baseURL ?? ''`).
+  - Fix: take fixtures without defaults; for the preview's origin use `new URL(page.url()).origin`
+    after `goto`.
+- **`page.evaluate` callbacks and `unicorn/isolated-functions`.** The rule treats them as isolated
+  and the e2e files have Node globals only.
+  - Symptom: `Variable document not defined in scope of isolated function`.
+  - Fix: evaluate on a locator and reach the page through the element:
+    `page.locator('html').evaluate((html) => html.ownerDocument.fonts.ready)`.
+- **Without JavaScript, `locator.evaluate` still works.** `test.use({ javaScriptEnabled: false })`
+  turns off the page's scripts, not Playwright's.
+  - Symptom: none; it is how `e2e/shell.spec.ts` inserts reveal probes into a no-JS page.
+  - Fix: use it to probe styles; never to stand in for a page script.
 - **The skip link needs `tabindex="-1"` on `<main>`.**
   - Symptom: without it, Chromium does not move focus to `main` after the skip link, and the
     skip-link test fails.

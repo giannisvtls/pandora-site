@@ -29,17 +29,24 @@ scripts/pricelist/    the pricelist check behind `npm run check:pricelist` (+ __
 src/
   content/            contract/ (Zod contract; contract.ts re-exports it), loader.ts, hues.ts,
                       routes.ts, rules.ts (+ completeness.ts), levels.ts, query.ts (+
-                      explainer.ts), media.ts, __tests__/
+                      explainer.ts), media.ts, copy.ts, __tests__/
   content.config.ts   every registered collection
   components/         ProductSummary.astro, __tests__/
-  layouts/            BaseLayout.astro (lang, title, skip link, main#main), __tests__/
+  fonts/              fontsource-variable.ts (the Fonts API provider), __tests__/
+  layouts/            BaseLayout.astro (head, theme script, skip link, main#main, reveal script),
+                      head.ts (what the head says), __tests__/
   pages/[locale]/     index.astro, the only page (one per built language: /en/)
+  styles/             tokens.css (design tokens), base.css (element defaults, utilities, reveal
+                      grammar), __tests__/
   test/               setup.ts, redirects.test.ts, fixtures/ (a test-only Preact island)
 ```
 
 ## Key Files
 
-- `astro.config.mjs` -- static output, `site`, Preact integration, i18n routing
+- `astro.config.mjs` -- static output, `site`, Preact integration, the two font families (Fonts
+  API), i18n routing
+- `src/layouts/BaseLayout.astro` -- the document shell of every page (see Styles, fonts and the
+  page shell)
 - `src/content/contract.ts` -- the content contract (re-exports `src/content/contract/`)
 - `src/content/loader.ts` -- `contentLoader(name)`, the `CONTENT_SOURCE` switch
 - `src/content/routes.ts`, `rules.ts`, `levels.ts` -- the URL map, the publish rules and the level
@@ -81,7 +88,9 @@ src/
 Every version is exact in `package.json` (no `^` or `~`); `engines.node` is `>=24` and `.nvmrc`
 is `24`.
 
-- **Site:** astro 7.3.8, @astrojs/preact 6.0.6, preact 10.29.8, zod 4.6.5
+- **Site:** astro 7.3.8, @astrojs/preact 6.0.6, preact 10.29.8, zod 4.6.5,
+  @fontsource-variable/sofia-sans 5.3.0, @fontsource-variable/sofia-sans-extra-condensed 5.3.0
+  (OFL-1.1; read at build time only)
 - **Types:** typescript 6.0.3, @astrojs/check 0.9.10, @types/node 24.19.1
 - **Lint:** eslint 10.12.0, @eslint/js 10.0.1, typescript-eslint 8.71.1, eslint-plugin-astro
   3.2.1, astro-eslint-parser 3.2.0, eslint-plugin-jsx-a11y 6.10.2, eslint-plugin-import-x 4.17.1,
@@ -327,6 +336,46 @@ Spec §5 (P1-1): the one way pages read content.
   id (`car.png` beside `car.webp`) never stand in for each other; an item whose file is missing
   is an error naming both.
 
+## Styles, fonts and the page shell
+
+Spec §6.
+
+- **`src/styles/tokens.css`:** the design's tokens with the design file's values (nightwatch.css):
+  the light ones on `:root`, and the dark scope on `:root[data-theme="dark"]` plus the surfaces
+  that are always night (`.hero`, `#log`, `.pg-head.img`, `.band`, `.shot`, `.hdr:not(.solid)`,
+  `.m-nav`). `tokens.test.ts` lists every token of the design file and checks value and scope.
+  The two type tokens are not in this file: `--display` and `--body` are the Fonts API's CSS
+  variables.
+- **`src/styles/base.css`:** element defaults, the utilities `.wrap`, `.b`, `.g`, `.muted`, `.sr`,
+  `.num`, the focus ring (`:focus-visible`), `::selection`, and the reveal grammar (`.rv`, `.rv-g`,
+  `.zoom`, `.wipe`, `.line-rv`). The reveal start states hide or move content only under `html.js`
+  (A11), so without JavaScript everything shows; reduced motion and print show everything at
+  once. Focus targets in `<main>` get `scroll-margin-top: calc(var(--hdr) + 16px)` so the fixed
+  header never covers them (WCAG 2.2 SC 2.4.11). Component styles go in each component's scoped
+  `<style>`.
+- **Fonts (A12):** `astro.config.mjs` declares Sofia Sans Extra Condensed (`--display`) and Sofia
+  Sans (`--body`) through the Fonts API, subsets latin, latin-ext and greek, normal style, with
+  the design's fallback lists. The provider is `fontsourceVariable(pkg)`
+  (`src/fonts/fontsource-variable.ts`): it reads the pinned `@fontsource-variable/*` package in
+  `node_modules` (its woff2 files, `unicode.json`, `metadata.json`), so the build makes no
+  request; Astro copies the files to `dist/_astro/fonts/` and the browser loads them from the
+  site. The built-in `npm` provider downloads the files from a CDN, and `local` knows no subsets
+  (see gotchas). The face names are `<family>-<hash>`: CSS reaches them only through
+  `var(--display)` / `var(--body)`. BaseLayout preloads the latin face of each family.
+- **`src/layouts/BaseLayout.astro`** (props `locale`, `page`, and for every page but home its
+  `name` and `description`, A5) builds its head with `pageHead()` (`head.ts`) from the query
+  module: the title (home's own; else Site copy `common.titleTemplate` around `name`), the
+  description, the absolute canonical URL (`pageUrl` against astro.config.mjs `site`), one
+  `hreflang` link per alternate plus `x-default`, `og:title` / `og:description` / `og:url` /
+  `og:locale` (`OG_LOCALES`: `en_GB`, `el_GR`, `it_IT`, `sq_AL`), the favicon, the fonts. An
+  inline script before any stylesheet sets `html.js` and `data-theme` (the saved `theme` in
+  localStorage when it is `dark`, else light; storage that throws means light, P1-6). The skip
+  link (Site copy `common.skipLink`) shows only while focused and leads to
+  `<main id="main" tabindex="-1">`. An inline script at the end of `<body>` adds `.in` to each
+  reveal element once a tenth of it is in view (IntersectionObserver).
+- **`src/content/copy.ts`:** `textIn(text, L, field)` (a Site copy value, or an error naming the
+  field) and `fill(template, values)` (a template's `{name}` placeholders, nothing else).
+
 ## i18n routing
 
 - `astro.config.mjs`: `locales: ['el', 'en', 'it', 'sq']`, `defaultLocale: 'el'`,
@@ -467,7 +516,8 @@ can point the crawler anywhere else.
 
 Phase 0 limits:
 
-- No styling: `/en/` is plain semantic HTML. The design port comes in Phase 1.
+- Styling so far is the shell only (tokens, base styles, fonts, skip link); the header, footer
+  and the interim index come later in Phase 1.
 - No deploy: no hosting project, no `_headers`, no Functions. `public/_redirects` is the only
   host file.
 - `/en/` lists the products visible in English (all 16 systems), and only `/en/` is built.
@@ -475,8 +525,6 @@ Phase 0 limits:
 - No 404 page yet (Phase 1, with a per-locale strategy).
 - No islands ship: the only Preact component is the test fixture
   `src/test/fixtures/FixtureToggle.tsx`, which no page imports.
-- The skip link text, "Skip to main content", is English on every locale until Phase 1's UI
-  strings translate it.
 - `redirects/crawl.json` is the inventory, not the redirect map: the crawler and the summary map
   no old URL to a new page (Phase 7 builds the map).
 

@@ -13,13 +13,13 @@ export const getStaticPaths = (async () => {
 
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
-const { locale } = Astro.props as Props;
+const { locale, page } = Astro.props as Props;
 // The products visible in this language (the publish rules applied).
 const query = await siteQuery();
 const products = query.products(locale);
 ---
 
-<BaseLayout lang={locale} title="INVETEC — Pandora vehicle security">
+<BaseLayout locale={locale} page={page}>
   <h1>Your car is not going anywhere without you.</h1>
   {products.map((product) => (
     <ProductSummary product={product} locale={locale} />

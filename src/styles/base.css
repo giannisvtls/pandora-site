@@ -1,0 +1,222 @@
+/* Element defaults, utilities and the reveal grammar of the Night Watch design (spec §6), with the
+   rules of nightwatch.css. Component rules live in each component's scoped <style>. */
+
+/* ---------- element defaults ---------- */
+* {
+  box-sizing: border-box;
+}
+
+/* Smooth in-page scrolling, unless the visitor asks for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--night);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--armed);
+  color: var(--night);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--night);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--field-2);
+  border-radius: 5px;
+  border: 2px solid var(--night);
+}
+
+/* The focus ring: every focusable element, <main> included (the skip link's target). A control
+   that resets its styles with `all: unset` declares it again. */
+:focus-visible {
+  outline: 2px solid var(--armed);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font-family: inherit;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* The fixed header (--hdr tall) must never cover the element that takes focus or a link's target
+   below it (WCAG 2.2 SC 2.4.11): the browser scrolls them into view this far below the top.
+   Not scroll-padding-top on html: Chromium then counts the header's own controls as obscured. */
+main,
+main * {
+  scroll-margin-top: calc(var(--hdr) + 16px);
+}
+
+/* ---------- utilities ---------- */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.wrap {
+  padding-inline: var(--gutter);
+}
+
+.b {
+  color: var(--blue-soft);
+}
+
+.g {
+  color: var(--armed);
+}
+
+.muted {
+  color: var(--ink-2);
+}
+
+.muted.sm {
+  font-size: 14px;
+}
+
+.muted.xs {
+  font-size: 13px;
+}
+
+/* Read by screen readers, not shown. */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- reveal grammar ----------
+   BaseLayout's reveal script adds `.in` when an element scrolls into view. The start states hide
+   or move content, so they apply only under html.js (set by the head script, A11): without
+   JavaScript, everything shows where it stands. */
+html.js .rv {
+  opacity: 0;
+  transform: translate3d(0, 60px, 0);
+  transition:
+    opacity 1s var(--ease),
+    transform 1s var(--ease);
+  transition-delay: var(--d, 0ms);
+}
+
+html.js .rv.in {
+  opacity: 1;
+  transform: none;
+}
+
+html.js .rv-g {
+  transform: scale3d(0.86, 0.86, 1);
+}
+
+.zoom {
+  overflow: hidden;
+}
+
+html.js .zoom img {
+  transform: scale(1.35);
+  transition: transform 1.6s var(--ease);
+  will-change: transform;
+}
+
+html.js .zoom.in img {
+  transform: scale(1);
+}
+
+.wipe {
+  position: relative;
+  overflow: hidden;
+}
+
+html.js .wipe::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--night);
+  transform: translateX(0);
+  transition: transform 1.1s var(--ease);
+  transition-delay: var(--d, 0ms);
+}
+
+html.js .wipe.in::after {
+  transform: translateX(101%);
+}
+
+html.js .field-bg .wipe::after {
+  background: var(--field);
+}
+
+.line-rv {
+  display: block;
+  overflow: hidden;
+}
+
+.line-rv > span {
+  display: block;
+}
+
+html.js .line-rv > span {
+  transform: translateY(110%);
+  transition: transform 1.1s var(--ease);
+  transition-delay: var(--d, 0ms);
+}
+
+html.js .in .line-rv > span,
+html.js .line-rv.in > span {
+  transform: none;
+}
+
+/* Reduced motion: no movement, everything shown at once. Print too: a page printed before it was
+   scrolled through would leave the unrevealed parts blank. */
+@media print, (prefers-reduced-motion: reduce) {
+  html.js .rv,
+  html.js .zoom img,
+  html.js .wipe::after,
+  html.js .line-rv > span {
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  html.js .wipe::after {
+    display: none;
+  }
+}
