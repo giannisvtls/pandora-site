@@ -2,6 +2,8 @@
 // by layouts/shell.ts: the nav sections the language shows, in their order, the page's section
 // marked; the compare link with its hidden count; the theme toggle's action labels; the language
 // switcher (P1-5); the solid and overlay variants.
+import { readFileSync } from 'node:fs';
+
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { describe, expect, it } from 'vitest';
 
@@ -9,9 +11,13 @@ import { LANGUAGE_NAMES, type Locale } from '../../content/contract';
 import type { Query } from '../../content/query';
 import type { Page } from '../../content/rules';
 import { headerContent } from '../../layouts/shell';
+import { cssRules } from '../../styles/__tests__/css-rules';
 import LanguageSwitcher from '../LanguageSwitcher.astro';
 import SiteHeader from '../SiteHeader.astro';
-import { between, shellQuery } from './shell-fixtures';
+import { ACCESSORIES_LABEL, between, shellQuery } from './shell-fixtures';
+
+// The component's source, for its scoped styles.
+const SOURCE = readFileSync(new URL('../SiteHeader.astro', import.meta.url), 'utf8');
 
 const container = await AstroContainer.create();
 const englishOnly = shellQuery(['en']);
@@ -69,6 +75,7 @@ describe('SiteHeader', () => {
       ['Find an installer', '/en/installers/'],
       ['Blog', '/en/blog/'],
       ['Partners', '/en/partners/'],
+      [ACCESSORIES_LABEL, '/en/accessories/'],
     ]);
     // The blog section is shown in English only.
     expect(greek.map(({ text, href }) => [text, href])).toEqual([
@@ -77,6 +84,7 @@ describe('SiteHeader', () => {
       ['Compare', '/el/compare/'],
       ['Find an installer', '/el/installers/'],
       ['Partners', '/el/partners/'],
+      [ACCESSORIES_LABEL, '/el/accessories/'],
     ]);
   });
 
@@ -85,6 +93,13 @@ describe('SiteHeader', () => {
     ['a product page', { type: 'product', id: 'elite' }, 'Systems'],
     ['the compare page', { type: 'compare' }, 'Compare'],
     ['a post', { type: 'post', id: 'motodays' }, 'Blog'],
+    ['the accessories page', { type: 'accessories' }, ACCESSORIES_LABEL],
+    [
+      'an accessories page of a vehicle',
+      { type: 'accessoriesVehicle', vehicle: 'car' },
+      ACCESSORIES_LABEL,
+    ],
+    ['an accessory page', { type: 'accessory', id: 'd-061' }, ACCESSORIES_LABEL],
   ])('marks the section of %s with aria-current="page"', async (_name, page, section) => {
     const links = navLinks(await renderHeader(page, 'en'));
 
@@ -96,7 +111,7 @@ describe('SiteHeader', () => {
   it('marks no section on home', async () => {
     const links = navLinks(await renderHeader(HOME, 'en'));
 
-    expect(links).toHaveLength(6);
+    expect(links).toHaveLength(7);
     expect(links.every(({ current }) => current === undefined)).toBe(true);
   });
 
@@ -144,6 +159,28 @@ describe('SiteHeader', () => {
     expect(overlay).not.toContain('<div class="hdr-space"');
     expect(overlay).toContain("header.classList.toggle('solid', !entry.isIntersecting)");
     expect(overlay).toContain('rootMargin: `-${String(header.offsetHeight)}px 0px 0px 0px`');
+    // Solid at once without IntersectionObserver, and on a page without a first section.
+    const script = between(overlay, 'const header = document.currentScript', '</script>');
+    expect(between(script, 'else {', '}')).toContain("header.classList.add('solid');");
+    expect(between(script, 'if (first === null) {', 'return;')).toContain(
+      "header.classList.add('solid');",
+    );
+  });
+
+  it('is transparent only with JavaScript, and only where it is fixed over the first section', () => {
+    const rules = cssRules(between(SOURCE, '<style>', '</style>').slice('<style>'.length));
+    const transparent = rules.filter(({ declarations }) =>
+      declarations.get('background')?.startsWith('linear-gradient('),
+    );
+
+    // Everywhere else, without JavaScript and in the page flow below 900px included, the overlay
+    // has the solid header's background.
+    expect(transparent.map(({ scope, selectors }) => [scope, selectors])).toEqual([
+      ['@media not all and (max-width: 900px)', [':global(html.js) .hdr.overlay:not(.solid)']],
+    ]);
+    const header = rules.find(({ scope, selectors }) => scope === '' && selectors.includes('.hdr'));
+    expect(header?.declarations.get('background')).toBe('rgba(var(--night-rgb),0.92)');
+    expect(header?.declarations.get('border-bottom')).toBe('1px solid var(--rule-2)');
   });
 
   it('holds the language switcher', async () => {

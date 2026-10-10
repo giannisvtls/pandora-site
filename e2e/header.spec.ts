@@ -94,6 +94,18 @@ test.describe('the site header', () => {
     await expect(html).toHaveAttribute('data-theme', 'light');
   });
 
+  test('draws the theme button as the design does: 38px, and 46px below 900px', async ({
+    page,
+  }) => {
+    await page.goto('/en/');
+    const toggle = page.locator('header button.theme-btn');
+
+    // The design's `all: unset` makes the button content-box: its 1px border adds to 36 / 44px.
+    expect(await toggle.boundingBox()).toMatchObject({ width: 38, height: 38 });
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(await toggle.boundingBox()).toMatchObject({ width: 46, height: 46 });
+  });
+
   test('keeps the toggle working when storage throws', async ({ page }) => {
     const errors: Error[] = [];
     page.on('pageerror', (error) => {

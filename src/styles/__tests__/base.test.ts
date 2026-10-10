@@ -15,18 +15,48 @@ const REDUCED_MOTION = '@media print, (prefers-reduced-motion: reduce)';
 
 const SRC_DIR = fileURLToPath(new URL('../../', import.meta.url));
 
-// The stylesheets and components under src/ that declare `all`, comments left out.
+// An `all` declaration: in a rule (`{all:` / `; all:`), an inline `style="all: unset"`, or a key
+// of a JSX style object (`{ all: 'unset' }`, `{ 'all': 'unset' }`).
+const ALL_DECLARATION = /(?:^|[\s"'`;{])all["'`]?\s*:/mu;
+
+// The `style` attribute values of JSX source: `style="..."`, `style='...'` and `style={...}`.
+function jsxStyleAttributes(source: string): string[] {
+  return source
+    .split(/\bstyle\s*=\s*/u)
+    .slice(1)
+    .map((rest) => {
+      const quote = rest.charAt(0);
+      if (quote === '"' || quote === "'") return rest.slice(1, rest.indexOf(quote, 1));
+      let depth = 0;
+      for (let index = 0; index < rest.length; index += 1) {
+        const char = rest.charAt(index);
+        depth += Number(char === '{') - Number(char === '}');
+        if (depth === 0) return rest.slice(0, index + 1);
+      }
+      return rest;
+    });
+}
+
+// Whether a source file declares `all`. A stylesheet or an `.astro` file is read whole, CSS
+// comments left out (its rules, inline `style` attributes and scripts); a `.tsx` island only in its
+// `style` attributes, so an ordinary object with an `all` key is no CSS.
+function hasAllDeclaration(file: string, source: string): boolean {
+  if (file.endsWith('.tsx')) {
+    return jsxStyleAttributes(source).some((style) => ALL_DECLARATION.test(style));
+  }
+  const text = source
+    .split('*/')
+    .map((part) => part.split('/*', 1)[0])
+    .join('');
+  return ALL_DECLARATION.test(text);
+}
+
+// The stylesheets, components and islands under src/ that declare `all`.
 function filesDeclaringAll(): string[] {
   return readdirSync(SRC_DIR, { recursive: true, withFileTypes: true })
-    .filter((entry) => entry.isFile() && /\.(?:astro|css)$/u.test(entry.name))
+    .filter((entry) => entry.isFile() && /\.(?:astro|css|tsx)$/u.test(entry.name))
     .map((entry) => path.join(entry.parentPath, entry.name))
-    .filter((file) => {
-      const text = readFileSync(file, 'utf8')
-        .split('*/')
-        .map((part) => part.split('/*', 1)[0])
-        .join('');
-      return /(?:^|[;{\s])all\s*:/mu.test(text);
-    })
+    .filter((file) => hasAllDeclaration(file, readFileSync(file, 'utf8')))
     .map((file) => path.relative(SRC_DIR, file).replaceAll('\\', '/'));
 }
 
@@ -120,5 +150,30 @@ describe('base.css', () => {
 
   it('is never undone by an `all` reset: it would clear the scroll margin (and the focus ring)', () => {
     expect(filesDeclaringAll()).toEqual([]);
+  });
+
+  it.each([
+    ['a rule', 'x.css', '.fx {\n  all: unset;\n}'],
+    ['a rule on one line', 'x.css', '.fx{color:red;all:unset}'],
+    ['an inline style attribute', 'X.astro', '<button style="all: unset">x</button>'],
+    ['a single-quoted inline style', 'X.astro', "<b style='color: red; all:unset'>x</b>"],
+    ['an island style object', 'X.tsx', "<button style={{ all: 'unset' }}>x</button>"],
+    ['a quoted style-object key', 'X.tsx', "<b style={{ color: 'red', 'all': 'unset' }} />"],
+    ['an island inline style', 'X.tsx', '<b style="all: unset" />'],
+  ])('finds `all` in %s', (_name, file, source) => {
+    expect(hasAllDeclaration(file, source)).toBe(true);
+  });
+
+  it.each([
+    ['a comment', 'x.css', '.fx {\n  /* all: unset */\n  color: red;\n}'],
+    ['a transition on all', 'x.css', '.fx { transition: all 0.3s; }'],
+    [
+      'an ordinary object in an island',
+      'X.tsx',
+      "const keys = { all: true };\n<b style={{ color: 'red' }} />",
+    ],
+    ['an island without styles', 'X.tsx', '<b class="all">{all}</b>'],
+  ])('finds no `all` in %s', (_name, file, source) => {
+    expect(hasAllDeclaration(file, source)).toBe(false);
   });
 });

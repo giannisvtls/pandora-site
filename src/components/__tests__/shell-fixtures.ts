@@ -1,22 +1,43 @@
 // A query over fixture content for the shell's Container tests (the publish-rule fixtures, with
 // the snapshot's Site copy): Greek complete wherever English is; the blog section shown in English
-// only and the contact section ordered first, so the header's order and visibility come from the
-// nav sections; a footer link with no URL yet beside linked ones.
+// only, the contact section ordered first and an accessories section last (the snapshot has none),
+// so the header's order and visibility come from the nav sections; a footer link with no URL yet
+// beside linked ones.
 import { fixtureContent, withLanguage } from '../../content/__tests__/rules-fixtures';
-import type { Locale } from '../../content/contract';
+import { LOCALES, navSectionSchema, type Locale } from '../../content/contract';
 import { createQuery, type Query } from '../../content/query';
 
-// The page types these tests build: home and the Phase 2 pages a header links to.
-const PAGE_TYPES = ['home', 'category', 'product', 'compare', 'blog', 'post'] as const;
+// The page types these tests build: home and the Phase 2 and 3 pages a header links to.
+const PAGE_TYPES = [
+  'home',
+  'category',
+  'product',
+  'compare',
+  'blog',
+  'post',
+  'accessories',
+  'accessoriesVehicle',
+  'accessory',
+] as const;
 
 // The footer link of the second column that has no URL yet.
 export const UNLINKED_LABEL = 'Careers (fixture)';
+
+// The nav section of the accessory pages, after the snapshot's six.
+export const ACCESSORIES_LABEL = 'Accessories (fixture)';
+const ACCESSORIES_SECTION = navSectionSchema.parse({
+  id: 'accessories',
+  route: 'accessories',
+  order: 7,
+  showIn: [...LOCALES],
+  label: { en: ACCESSORIES_LABEL, el: ACCESSORIES_LABEL },
+});
 
 export function shellQuery(live: readonly Locale[]): Query {
   const fixture = fixtureContent(live);
   // `languages` is keyed by language too: withLanguage would copy English's `live` to Greek.
   const content = { ...withLanguage(fixture, 'el'), languages: fixture.languages };
-  const navSections = content.navSections.map((section) => {
+  const navSections = [...content.navSections, ACCESSORIES_SECTION].map((section) => {
     if (section.id === 'blog') return { ...section, showIn: ['en' as const] };
     return section.id === 'contact' ? { ...section, order: 0 } : section;
   });

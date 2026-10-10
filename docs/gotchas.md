@@ -153,9 +153,13 @@ are about to touch. When you hit a new one, add it here in the same shape.
     button stays partly or wholly under the fixed header (WCAG 2.2 SC 2.4.11), while links around
     it are clear.
   - Fix: reset the browser's button styles one by one (`appearance`, `margin`, `padding`,
-    `border`, `background`, `color`, `font`, ...), never with `all`. `base.test.ts` fails on
-    an `all:` declaration under `src/`, and `e2e/header.spec.ts` checks the scroll margin of
-    every focus target below the header and a Shift+Tab onto a button under it.
+    `border`, `background`, `color`, `font`, ...), never with `all`. `all: unset` also resets
+    `box-sizing` to `content-box`, so a design size that counts on it (the theme button's 36px
+    plus its border, drawn 38px) needs `box-sizing: content-box` written out. `base.test.ts`
+    fails on an `all` declaration in a stylesheet or `.astro` file under `src/` (an inline
+    `style="all: unset"` included) and in the `style` attributes of a `.tsx` island (it reads only
+    those, so an ordinary object with an `all` key passes); `e2e/header.spec.ts` checks the scroll
+    margin of every focus target below the header and a Shift+Tab onto a button under it.
 - **Lint rules met by the shell (slice 8).**
   - Symptom: `sonarjs/super-linear-regex` rejects HTML-matching regexes such as
     `/<nav[^>]*>([\s\S]*?)<\/nav>/u` and `/<[^>]+>/gu` in tests; `unicorn/prefer-scoped-selector`
@@ -359,9 +363,11 @@ are about to touch. When you hit a new one, add it here in the same shape.
     `readSnapshot()` (the unit tests) keeps the file's order, so no unit test over the snapshot
     sees the difference.
   - Fix: any list whose order matters needs an `order` field or an explicit sort in the query.
-    Products have `order` (the prototype's, flagship first) and `products(L)` sorts by it, as
-    categories, nav sections, FAQ and the fixed-key sets do. Not yet: posts need a date sort,
-    accessories an order and accessory cards a fixed order when a page shows them (Phases 2-3).
+    Three readers sort today: `products(L)` (products have `order`, the prototype's, flagship
+    first), `categories(L)` and `navSections(L)`. Not yet: FAQ, spec rows and accessory groups
+    have `order` but no reader sorts them; posts need a date sort, accessories an order and
+    accessory cards a fixed order. Add each sort with the page that first shows the list
+    (Phases 2-3).
     A test that matters for order feeds the query the items reversed or sorted by id, and the e2e
     checks the built page.
 - **Image imports in Vitest are `ImageMetadata`.** Vitest runs through Astro's Vite config.
@@ -684,6 +690,14 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: adding, hiding or removing a system fails the count; editing the hero heading fails
     the h1; a nav section's route outside the spec's table fails the nav check.
   - Fix: update the specs together with the snapshot.
+- **No page uses the overlay header yet.** `/en/` has the solid header; the overlay waits for
+  Phase 2's hero.
+  - Symptom: an e2e of the overlay needs a page that the build does not make, and a test-only
+    route would ship in `dist/` (and fail the `BUILT_PAGE_TYPES` test).
+  - Fix: `e2e/overlay.spec.ts` makes a fixture page in the test: `page.route` rewrites the built
+    `/en/` into the overlay variant (class, no spacer, the overlay script cut from
+    `SiteHeader.astro`'s source). When Phase 2 builds the hero page, test the overlay there and
+    drop the fixture.
 - **The no-JS scan sees scripts and hidden-on-purpose elements.** The A11 check in
   `e2e/shell.spec.ts` lists every element of the header, `<main>` and the footer that is not
   shown.

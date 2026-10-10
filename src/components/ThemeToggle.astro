@@ -68,10 +68,14 @@ const { toDark, toLight } = Astro.props;
 
 <style>
   /* nightwatch.css `.theme-btn`: the moon in light, the sun in dark. The browser's button styles
-     are reset one by one, not with the design's `all: unset` (it would also clear the scroll margin
-     and the box sizing of base.css). */
+     are reset one by one, never with the design's `all: unset` (base.test.ts refuses it). Here in
+     the header, the only part of `all: unset` that changes the result is the box sizing: it puts
+     the button back to content-box, so the 1px border adds to the 36px (38px drawn, 46px below
+     900px), as the design draws it. (base.css's scroll margin, which `all` would clear, covers
+     <main> and the footer, not the header.) */
   .theme-btn {
     appearance: none;
+    box-sizing: content-box;
     margin: 0;
     padding: 0;
     background: none;

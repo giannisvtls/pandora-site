@@ -3,7 +3,9 @@
 // section marked, the compare link (its count badge stays hidden until Phase 2 fills it), the
 // theme toggle and the language switcher. `variant`: `solid` sits on the page's own background;
 // `overlay` is transparent over the page's first section (Phase 2's hero) and turns solid once
-// that section has scrolled up under it.
+// that section has scrolled up under it. It is transparent only where that can happen: with
+// JavaScript (html.js) and an IntersectionObserver, and while the header is fixed over the
+// section; without JavaScript, and in the page flow below 900px, it has the solid background.
 // Everything it shows comes from `content` (layouts/shell.ts, through the query module).
 // Until the mobile menu (slice 9) the nav and the switcher show at every width: below 900px the
 // header wraps and stays in the page flow instead of covering it.
@@ -61,17 +63,25 @@ const { home, nav, compare, theme, language } = content;
   {variant === 'overlay' && <script is:inline>
     {
       // The overlay header stays transparent while the page's first section (the hero) is
-      // under it, and turns solid once that section has scrolled up past it.
+      // under it, and turns solid once that section has scrolled up past it. A browser without
+      // IntersectionObserver, or a page without a first section, gets the solid header at once.
       const header = document.currentScript?.parentElement;
-      document.addEventListener('DOMContentLoaded', () => {
-        const first = document.querySelector('main > :first-child');
-        if (first === null || !('IntersectionObserver' in globalThis)) return;
-        const observer = new IntersectionObserver(
-          ([entry]) => header.classList.toggle('solid', !entry.isIntersecting),
-          { rootMargin: `-${String(header.offsetHeight)}px 0px 0px 0px` },
-        );
-        observer.observe(first);
-      });
+      if ('IntersectionObserver' in globalThis) {
+        document.addEventListener('DOMContentLoaded', () => {
+          const first = document.querySelector('main > :first-child');
+          if (first === null) {
+            header.classList.add('solid');
+            return;
+          }
+          const observer = new IntersectionObserver(
+            ([entry]) => header.classList.toggle('solid', !entry.isIntersecting),
+            { rootMargin: `-${String(header.offsetHeight)}px 0px 0px 0px` },
+          );
+          observer.observe(first);
+        });
+      } else {
+        header.classList.add('solid');
+      }
     }
   </script>}
 </header>
@@ -79,7 +89,9 @@ const { home, nav, compare, theme, language } = content;
 {variant === 'solid' && <div class="hdr-space" />}
 
 <style>
-  /* nightwatch.css "header", the rules this header uses. */
+  /* nightwatch.css "header", the rules this header uses. Its background is the design's
+     `.hdr.solid` look, for the solid variant and for the overlay wherever the overlay cannot be
+     transparent (below); an overlay without `.solid` keeps the night tokens of tokens.css. */
   .hdr {
     position: fixed;
     inset: 0 0 auto 0;
@@ -90,15 +102,23 @@ const { home, nav, compare, theme, language } = content;
     gap: 20px;
     min-height: var(--hdr);
     padding: 22px var(--gutter);
-    background: linear-gradient(rgba(10, 15, 20, 0.85), rgba(10, 15, 20, 0));
+    background: rgba(var(--night-rgb), 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule-2);
     color: var(--ink);
     transition: background 0.4s;
   }
 
-  .hdr.solid {
-    background: rgba(var(--night-rgb), 0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--rule-2);
+  /* The design's transparent `.hdr` over the page's first section: only with JavaScript, whose
+     script turns the header solid once the section has gone (the IntersectionObserver fallback
+     adds `.solid` at once), and only where the header is fixed over the section. Without
+     JavaScript, and in the page flow below 900px, the overlay keeps the solid look above. */
+  @media not all and (max-width: 900px) {
+    :global(html.js) .hdr.overlay:not(.solid) {
+      background: linear-gradient(rgba(10, 15, 20, 0.85), rgba(10, 15, 20, 0));
+      backdrop-filter: none;
+      border-bottom-color: transparent;
+    }
   }
 
   .hdr-space {

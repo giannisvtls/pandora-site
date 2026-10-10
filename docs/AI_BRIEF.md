@@ -360,7 +360,9 @@ Spec §6.
   once. Focus targets in `<main>` and the footer get `scroll-margin-top: calc(var(--hdr) + 16px)`
   so the fixed header (88px, `--hdr`, measured by the e2e) never covers them (WCAG 2.2 SC 2.4.11),
   as long as no component rule overrides it: controls reset the browser's button styles one by
-  one, never with `all: unset` (a unit test refuses `all:` under `src/`).
+  one, never with `all: unset` (a unit test refuses an `all` declaration in the stylesheets and
+  `.astro` files under `src/`, inline `style` attributes included, and in the `style` attributes
+  of `.tsx` islands).
   Component styles go in each component's scoped `<style>`.
 - **Fonts (A12):** `astro.config.mjs` declares Sofia Sans Extra Condensed (`--display`) and Sofia
   Sans (`--body`) through the Fonts API, subsets latin, latin-ext and greek, normal style, with
@@ -408,14 +410,19 @@ index's with `src/components/system-index.ts`. No component holds visible copy (
   `header.compareLinkLabel`, its count badge `hidden` until Phase 2), the theme toggle
   (`ThemeToggle.astro`) and the language switcher. `solid` sits on the page background, fixed,
   with an 88px spacer after it; `overlay` (Phase 2's hero) is transparent until the page's first
-  section has scrolled up under it. Below 900px, until the mobile menu (slice 9), the header wraps and stays in the page flow,
-  so the nav and the switcher show at every width and nothing is covered.
+  section has scrolled up under it, and only where its script can tell: with JavaScript
+  (`html.js`) and an IntersectionObserver (otherwise the script adds `solid` at once), while the
+  header is fixed over that section. Without JavaScript, and in the page flow below 900px, the
+  overlay has the solid background in its night tokens (`e2e/overlay.spec.ts`, on a fixture page
+  made from the built `/en/`). Below 900px, until the mobile menu (slice 9), the header wraps and
+  stays in the page flow, so the nav and the switcher show at every width and nothing is covered.
 - **`ThemeToggle.astro`:** a plain `<button>` whose `aria-label` names what a press does
   (`header.themeToDark` / `themeToLight`), no `aria-pressed` (an action label with a pressed state
   contradicts itself). The script after it sets the label from the theme the head script applied,
   then on a press flips `data-theme`, saves it (storage that throws only loses the save), updates
   the label and dispatches `themechange` on `document` (`detail`: the theme). Without JavaScript
-  the toggle is hidden.
+  the toggle is hidden. It is drawn 38px square (46px below 900px), content-box like the design's
+  `all: unset` button.
 - **`LanguageSwitcher.astro`** (P1-5): the query's `switcherTargets(page, L)`, one entry per
   built language: the current one as text with `aria-current="true"`, every other one as
   `<a href hreflang lang>` to the page there (else that language's home). Each shows the code
