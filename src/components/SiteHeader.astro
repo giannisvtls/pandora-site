@@ -1,0 +1,225 @@
+---
+// The site header (spec §7): the logo link to the language home, the primary nav with the page's
+// section marked, the compare link (its count badge stays hidden until Phase 2 fills it), the
+// theme toggle and the language switcher. `variant`: `solid` sits on the page's own background;
+// `overlay` is transparent over the page's first section (Phase 2's hero) and turns solid once
+// that section has scrolled up under it.
+// Everything it shows comes from `content` (layouts/shell.ts, through the query module).
+// Until the mobile menu (slice 9) the nav and the switcher show at every width: below 900px the
+// header wraps and stays in the page flow instead of covering it.
+import { Image } from 'astro:assets';
+
+import LanguageSwitcher from './LanguageSwitcher.astro';
+import ThemeToggle from './ThemeToggle.astro';
+import logoWhite from '../assets/brand/invetec-logo-lettering-white.webp';
+import logoDark from '../assets/brand/invetec-logo.webp';
+import type { HeaderContent } from '../layouts/shell';
+
+interface Props {
+  content: HeaderContent;
+  variant: 'solid' | 'overlay';
+}
+
+const { content, variant } = Astro.props;
+const { home, nav, compare, theme, language } = content;
+---
+
+<header class:list={['hdr', variant]}>
+  <a class="home" href={home.href} aria-label={home.label}>
+    <Image
+      class="lw"
+      src={logoWhite}
+      alt={home.logoAlt}
+      height={28}
+      densities={[1, 2]}
+      loading="eager"
+    />
+    <Image
+      class="ld"
+      src={logoDark}
+      alt={home.logoAlt}
+      height={28}
+      densities={[1, 2]}
+      loading="eager"
+    />
+  </a>
+  <nav aria-label={nav.label}>
+    {nav.links.map(({ label, href, isCurrent }) => (
+      <a href={href} aria-current={isCurrent ? 'page' : undefined}>
+        {label}
+      </a>
+    ))}
+  </nav>
+  <div class="hdr-right">
+    <a class="cmp-link" href={compare.href} aria-label={compare.label}>
+      {compare.text}
+      <b hidden>0</b>
+    </a>
+    <ThemeToggle toDark={theme.toDark} toLight={theme.toLight} />
+    <LanguageSwitcher label={language.label} targets={language.targets} />
+  </div>
+  {variant === 'overlay' && <script is:inline>
+    {
+      // The overlay header stays transparent while the page's first section (the hero) is
+      // under it, and turns solid once that section has scrolled up past it.
+      const header = document.currentScript?.parentElement;
+      document.addEventListener('DOMContentLoaded', () => {
+        const first = document.querySelector('main > :first-child');
+        if (first === null || !('IntersectionObserver' in globalThis)) return;
+        const observer = new IntersectionObserver(
+          ([entry]) => header.classList.toggle('solid', !entry.isIntersecting),
+          { rootMargin: `-${String(header.offsetHeight)}px 0px 0px 0px` },
+        );
+        observer.observe(first);
+      });
+    }
+  </script>}
+</header>
+{/* The solid header is fixed (out of the flow): this spacer starts the page below it. */}
+{variant === 'solid' && <div class="hdr-space" />}
+
+<style>
+  /* nightwatch.css "header", the rules this header uses. */
+  .hdr {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    min-height: var(--hdr);
+    padding: 22px var(--gutter);
+    background: linear-gradient(rgba(10, 15, 20, 0.85), rgba(10, 15, 20, 0));
+    color: var(--ink);
+    transition: background 0.4s;
+  }
+
+  .hdr.solid {
+    background: rgba(var(--night-rgb), 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule-2);
+  }
+
+  .hdr-space {
+    height: var(--hdr);
+  }
+
+  .home {
+    flex: none;
+  }
+
+  .hdr img {
+    height: 28px;
+    width: auto;
+  }
+
+  .hdr img.lw {
+    display: var(--lw);
+  }
+
+  .hdr img.ld {
+    display: var(--ld);
+  }
+
+  nav {
+    display: flex;
+    gap: clamp(18px, 2vw, 28px);
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  nav a {
+    position: relative;
+    padding: 6px 0;
+    white-space: nowrap;
+  }
+
+  nav a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.5s var(--ease);
+  }
+
+  nav a:hover::after,
+  nav a[aria-current]::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  .hdr-right {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+  }
+
+  .cmp-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    border: 1px solid var(--rule);
+    min-height: 36px;
+  }
+
+  .cmp-link b {
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background: var(--blue-soft);
+    color: var(--night);
+    display: inline-grid;
+    place-items: center;
+    font-size: 11px;
+  }
+
+  /* The badge shows only once something is selected (Phase 2). */
+  .cmp-link b[hidden] {
+    display: none;
+  }
+
+  /* Narrow screens, until the mobile menu (slice 9): everything stays shown, the header wraps and
+     sits in the page flow, so it never covers the content or the focused element. */
+  @media (max-width: 900px) {
+    .hdr {
+      position: relative;
+      flex-wrap: wrap;
+    }
+
+    nav {
+      flex-wrap: wrap;
+    }
+
+    .hdr-space {
+      display: none;
+    }
+
+    .cmp-link {
+      min-height: 44px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hdr {
+      gap: 12px;
+      padding-inline: clamp(16px, 4vw, 24px);
+    }
+
+    .hdr-right {
+      gap: 10px;
+    }
+  }
+</style>

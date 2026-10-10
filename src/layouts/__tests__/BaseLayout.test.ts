@@ -164,6 +164,21 @@ describe('BaseLayout', () => {
     );
   });
 
+  it('puts <main> between the site header (solid unless the page asks) and the site footer', async () => {
+    const html = await render({ locale: 'en', page: HOME });
+    const overlay = await container.renderToString(BaseLayout, {
+      props: { locale: 'en', page: HOME, header: 'overlay' },
+    });
+    const header = html.indexOf('<header class="hdr solid"');
+    const main = html.indexOf('<main id="main"');
+    const footer = html.indexOf('<footer class="ftr wrap"');
+
+    expect(header).toBeGreaterThan(html.indexOf('<a class="skip"'));
+    expect(main).toBeGreaterThan(header);
+    expect(footer).toBeGreaterThan(html.indexOf('</main>'));
+    expect(overlay).toContain('<header class="hdr overlay"');
+  });
+
   it('refuses a page the language does not have', async () => {
     await expect(render({ locale: 'en', page: { type: 'blog' } })).rejects.toThrow(
       'The blog page does not exist in "en", so it has no head',

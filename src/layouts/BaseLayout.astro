@@ -1,10 +1,14 @@
 ---
-// The document shell of every page (spec §6): the head (title, description, canonical, hreflang
-// alternates, og: tags, favicon, fonts), the theme applied before first paint, the localized skip
-// link, <main> and the reveal script. Everything it says comes through the query module.
+// The document shell of every page (spec §6, §7): the head (title, description, canonical,
+// hreflang alternates, og: tags, favicon, fonts), the theme applied before first paint, the
+// localized skip link, the site header, <main>, the site footer and the reveal script. Everything
+// it says comes through the query module.
 import { Font } from 'astro:assets';
 
 import { pageHead } from './head';
+import { footerContent, headerContent } from './shell';
+import SiteFooter from '../components/SiteFooter.astro';
+import SiteHeader from '../components/SiteHeader.astro';
 import type { Locale } from '../content/contract';
 import { siteQuery } from '../content/query';
 import type { Page } from '../content/rules';
@@ -19,11 +23,14 @@ interface Props {
   // Home passes neither: its title and description are its own Site copy.
   name?: string;
   description?: string;
+  // The header: `solid` (the default) on the page's background, `overlay` over a dark hero.
+  header?: 'solid' | 'overlay';
 }
 
-const { locale, page, name, description } = Astro.props;
+const { locale, page, name, description, header = 'solid' } = Astro.props;
 if (Astro.site === undefined) throw new Error('astro.config.mjs sets no site');
-const head = pageHead(await siteQuery(), Astro.site, { locale, page, name, description });
+const query = await siteQuery();
+const head = pageHead(query, Astro.site, { locale, page, name, description });
 ---
 
 <!doctype html>
@@ -66,15 +73,17 @@ const head = pageHead(await siteQuery(), Astro.site, { locale, page, name, descr
     <a class="skip" href="#main">
       {head.skipLink}
     </a>
+    <SiteHeader content={headerContent(query, page, locale)} variant={header} />
     <main id="main" tabindex="-1">
       <slot />
     </main>
+    <SiteFooter content={footerContent(query, locale, new Date().getFullYear())} />
     {/*
         The reveal grammar (base.css): `.in` once a tenth of an element is in view. An element
-        taller than nine viewports (a tenth of it barely fits, over ten it never does) gets `.in` as
-        soon as it is in view. No negative bottom margin (the design's -10%): a small element at the end of a
-        page that cannot scroll further would never reach the band and would stay hidden. Without
-        IntersectionObserver every element is revealed at once.
+        taller than nine viewports (a tenth of it barely fits, over ten it never does) gets `.in`
+        as soon as it is in view. No negative bottom margin (the design's -10%): a small element at
+        the end of a page that cannot scroll further would never reach the band and would stay
+        hidden. Without IntersectionObserver every element is revealed at once.
       */}
     <script is:inline>
       {

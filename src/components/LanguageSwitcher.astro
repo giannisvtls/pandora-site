@@ -1,0 +1,66 @@
+---
+// The language switcher (P1-5, spec §7): one entry per built (live) language, from the query's
+// switcher targets. The current language is text marked `aria-current`; every other one links to
+// this page in that language (else that language's home), with `hreflang` and `lang`.
+// Each entry shows the language code, as the design does, and carries the language's own name
+// (LANGUAGE_NAMES, never translated) for screen readers: the name reads "EL Ελληνικά", which keeps
+// the visible code in it (WCAG 2.5.3, Label in Name).
+import { LANGUAGE_NAMES } from '../content/contract';
+import type { SwitcherTarget } from '../content/rules';
+
+interface Props {
+  // The list's accessible name (Site copy `header.languageLabel`).
+  label: string;
+  targets: readonly SwitcherTarget[];
+}
+
+const { label, targets } = Astro.props;
+---
+
+<ul class="lang" aria-label={label}>
+  {targets.map(({ locale, path, isCurrent }) => (
+    <li>
+      {isCurrent ? (
+        <span aria-current="true">
+          {locale.toUpperCase()} <span class="sr">{LANGUAGE_NAMES[locale]}</span>
+        </span>
+      ) : (
+        <a href={path} hreflang={locale} lang={locale}>
+          {locale.toUpperCase()} <span class="sr">{LANGUAGE_NAMES[locale]}</span>
+        </a>
+      )}
+    </li>
+  ))}
+</ul>
+
+<style>
+  /* nightwatch.css `.lang`: the codes in a row, the current one in full ink. */
+  .lang {
+    display: flex;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+
+  .lang a,
+  .lang span[aria-current] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    min-height: 24px;
+  }
+
+  .lang a {
+    color: var(--ink-2);
+  }
+
+  .lang a:hover,
+  .lang span[aria-current] {
+    color: var(--ink);
+  }
+</style>

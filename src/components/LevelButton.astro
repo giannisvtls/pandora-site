@@ -1,0 +1,60 @@
+---
+// A level's explainer button (spec §8): `data-lvl` names the level, and the explainer island
+// (slice 10) opens its dialog from any such button on the page. Until then it opens nothing. It
+// shows the level tag, "Level {n} · {title}".
+import type { LevelId } from '../content/contract';
+
+interface Props {
+  level: LevelId;
+  // "Level 3 · Recovery" in the page's language (Site copy `common.level`).
+  label: string;
+}
+
+const { level, label } = Astro.props;
+---
+
+<button type="button" class="fx chipfx" data-lvl={level} aria-haspopup="dialog">
+  <span class:list={['lvl', { l2: level === '2', l3: level === '3' }]}>{label}</span>
+</button>
+
+<style>
+  /* nightwatch.css: the level tag (`.lvl`, coloured per level) inside a plain explainer button. */
+  .chipfx {
+    all: unset;
+    cursor: pointer;
+    display: inline-block;
+    max-width: 100%;
+  }
+
+  .chipfx:focus-visible {
+    outline: 2px solid var(--armed);
+    outline-offset: 3px;
+  }
+
+  .lvl {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    border: 1px solid var(--rule);
+    white-space: nowrap;
+    color: var(--ink-2);
+    transition: border-color 0.3s;
+  }
+
+  .lvl.l2 {
+    color: var(--blue-soft);
+    border-color: color-mix(in srgb, var(--blue-soft) 45%, transparent);
+  }
+
+  .lvl.l3 {
+    color: var(--armed);
+    border-color: color-mix(in srgb, var(--armed) 50%, transparent);
+  }
+
+  .chipfx:hover .lvl {
+    border-color: var(--ink);
+  }
+</style>

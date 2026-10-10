@@ -79,10 +79,12 @@ h3 {
 }
 
 /* The fixed header (--hdr tall) must never cover the element that takes focus or a link's target
-   below it (WCAG 2.2 SC 2.4.11): the browser scrolls them into view this far below the top.
+   below it, in <main> or the footer (WCAG 2.2 SC 2.4.11): the browser scrolls them into view
+   this far below the top.
    Not scroll-padding-top on html: Chromium then counts the header's own controls as obscured. */
 main,
-main * {
+main *,
+footer * {
   scroll-margin-top: calc(var(--hdr) + 16px);
 }
 

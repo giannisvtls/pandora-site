@@ -31,11 +31,15 @@ src/
                       routes.ts, rules.ts (+ completeness.ts), levels.ts, query.ts (+
                       explainer.ts), media.ts, copy.ts, __tests__/
   content.config.ts   every registered collection
-  components/         ProductSummary.astro, __tests__/
+  components/         SiteHeader.astro, ThemeToggle.astro, LanguageSwitcher.astro,
+                      SiteFooter.astro, FeatureButton.astro, LevelButton.astro, system-index.ts
+                      (the interim index's content), __tests__/
   fonts/              fontsource-variable.ts (the Fonts API provider), __tests__/
-  layouts/            BaseLayout.astro (head, theme script, skip link, main#main, reveal script),
-                      head.ts (what the head says), __tests__/
-  pages/[locale]/     index.astro, the only page (one per built language: /en/)
+  layouts/            BaseLayout.astro (head, theme script, skip link, header, main#main, footer,
+                      reveal script), head.ts (what the head says), shell.ts (what the header and
+                      footer say), __tests__/
+  pages/[locale]/     index.astro, the only page (one per built language: /en/), the interim
+                      system index
   styles/             tokens.css (design tokens), base.css (element defaults, utilities, reveal
                       grammar), __tests__/
   test/               setup.ts, redirects.test.ts, fixtures/ (a test-only Preact island)
@@ -210,9 +214,8 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
 3. **Collection** (`src/content.config.ts`): one `defineCollection()` per registered name, with
    `loader: contentLoader(name)` and that name's schema.
 4. **Pages** read through the query module (`src/content/query.ts`, see Query module below),
-   never `astro:content` (a unit test fails when a page imports it). `ProductSummary` shows name,
-   tag and blurb in the page's locale only: a field missing in that locale renders nothing, and
-   no price is shown (prices belong on product pages).
+   never `astro:content` (a unit test fails when a page imports it). Components get what they
+   show as props (see The site shell below); none reads content itself.
 
 - **The snapshot** (`content-snapshot/`) has one file per collection or global, and it is the
   source of truth: content edits go into these files directly (decision P1-10).
@@ -350,9 +353,9 @@ Spec §6.
   `.num`, the focus ring (`:focus-visible`), `::selection`, and the reveal grammar (`.rv`, `.rv-g`,
   `.zoom`, `.wipe`, `.line-rv`). The reveal start states hide or move content only under `html.js`
   (A11), so without JavaScript everything shows; reduced motion and print show everything at
-  once. Focus targets in `<main>` get `scroll-margin-top: calc(var(--hdr) + 16px)` so the fixed
-  header never covers them (WCAG 2.2 SC 2.4.11). Component styles go in each component's scoped
-  `<style>`.
+  once. Focus targets in `<main>` and the footer get `scroll-margin-top: calc(var(--hdr) + 16px)`
+  so the fixed header (88px, `--hdr`, measured by the e2e) never covers them (WCAG 2.2 SC 2.4.11).
+  Component styles go in each component's scoped `<style>`.
 - **Fonts (A12):** `astro.config.mjs` declares Sofia Sans Extra Condensed (`--display`) and Sofia
   Sans (`--body`) through the Fonts API, subsets latin, latin-ext and greek, normal style, with
   the design's fallback lists. The provider is `fontsourceVariable(pkg)`
@@ -363,10 +366,10 @@ Spec §6.
   (see gotchas). Each family is declared through `fontsourceFamily({ package, ... })`, which
   checks its subsets, styles and files while `astro.config.mjs` loads: a missing one stops the
   build ("Unable to load your Astro config"), where the Fonts API would only log the provider's
-  error and build without the family. The face names are `<family>-<hash>`: CSS reaches them only through
-  `var(--display)` / `var(--body)`. BaseLayout preloads the latin face of each family.
-- **`src/layouts/BaseLayout.astro`** (props `locale`, `page`, and for every page but home its
-  `name` and `description`, A5) builds its head with `pageHead()` (`head.ts`) from the query
+  error and build without the family. The face names are `<family>-<hash>`: CSS reaches them only
+  through `var(--display)` / `var(--body)`. BaseLayout preloads the latin face of each family.
+- **`src/layouts/BaseLayout.astro`** (props `locale`, `page`, `header` (`solid`, the default, or
+  `overlay`), and for every page but home its `name` and `description`, A5) builds its head with `pageHead()` (`head.ts`) from the query
   module: the title (home's own; else Site copy `common.titleTemplate` around `name`), the
   description, the absolute canonical URL (`pageUrl` against astro.config.mjs `site`), one
   `hreflang` link per alternate plus `x-default`, `og:title` / `og:description` / `og:url` /
@@ -374,12 +377,61 @@ Spec §6.
   inline script before any stylesheet sets `html.js` and `data-theme` (the saved `theme` in
   localStorage when it is `dark`, else light; storage that throws means light, P1-6). The skip
   link (Site copy `common.skipLink`) shows only while focused and leads to
-  `<main id="main" tabindex="-1">`. An inline script at the end of `<body>` adds `.in` to each
+  `<main id="main" tabindex="-1">`, between the site header and the site footer. An inline script at the end of `<body>` adds `.in` to each
   reveal element once a tenth of it is in view (IntersectionObserver), to an element taller than
   nine viewports as soon as it is in view, and to every reveal element at once where the browser
   has no IntersectionObserver.
 - **`src/content/copy.ts`:** `textIn(text, L, field)` (a Site copy value, or an error naming the
-  field) and `fill(template, values)` (a template's `{name}` placeholders, nothing else).
+  field), `fill(template, values)` (a template's `{name}` placeholders, nothing else) and
+  `pluralIn(plural, L, field, { count, ... })` (the form `Intl.PluralRules` picks, else `other`;
+  `{count}` written the language's way).
+
+## The site shell
+
+Spec §7. Everything visible comes through the query module: BaseLayout builds the header's and
+footer's content with `src/layouts/shell.ts` and passes it down as props, and the page builds the
+index's with `src/components/system-index.ts`. No component holds visible copy (A6).
+
+- **`SiteHeader.astro`** (`content` from `headerContent(query, page, L)`, `variant`): the logo
+  link to the language home (Site copy `header.homeLinkLabel`, alt `header.logoAlt`; the white
+  logo shows on the dark surfaces, the dark one on light), the primary nav (the nav sections shown
+  in `L`, in order; `aria-current="page"` on the page's section, `sectionOf(page)`: category and
+  product pages are `systems`, a post `blog`), the compare link (`common.pages.compare`, named
+  `header.compareLinkLabel`, its count badge `hidden` until Phase 2), the theme toggle
+  (`ThemeToggle.astro`) and the language switcher. `solid` sits on the page background, fixed,
+  with an 88px spacer after it; `overlay` (Phase 2's hero) is transparent until the page's first
+  section has scrolled up under it. Below 900px, until the mobile menu (slice 9), the header wraps and stays in the page flow,
+  so the nav and the switcher show at every width and nothing is covered.
+- **`ThemeToggle.astro`:** a plain `<button>` whose `aria-label` names what a press does
+  (`header.themeToDark` / `themeToLight`), no `aria-pressed` (an action label with a pressed state
+  contradicts itself). The script after it sets the label from the theme the head script applied,
+  then on a press flips `data-theme`, saves it (storage that throws only loses the save), updates
+  the label and dispatches `themechange` on `document` (`detail`: the theme). Without JavaScript
+  the toggle is hidden.
+- **`LanguageSwitcher.astro`** (P1-5): the query's `switcherTargets(page, L)`, one entry per
+  built language: the current one as text with `aria-current="true"`, every other one as
+  `<a href hreflang lang>` to the page there (else that language's home). Each shows the code
+  ("EN", as the design does) and carries the endonym (`LANGUAGE_NAMES`) in a `.sr` span, so its
+  name reads "EL Ελληνικά" and keeps the visible code (WCAG 2.5.3, Label in Name).
+- **`SiteFooter.astro`** (`content` from `footerContent(query, L, year)`): the company block in
+  `<address>` (name, the `addressLine` template, hours, `tel:` and `mailto:` links), the footer
+  copy's columns (h2) with their targets resolved by `routes.ts` (A9: a link with no target and a
+  column left without links are not rendered), the legal line (the build year's copyright and the
+  tagline).
+- **`FeatureButton.astro` / `LevelButton.astro`** (spec §8): a
+  `<button type="button" aria-haspopup="dialog">` with `data-fx` (the feature key; shows the
+  feature's title) or `data-lvl` (the level; shows `common.level`, "Level 3 · Recovery"). They
+  open nothing until the explainer island (slice 10).
+- **The interim index** (P1-8, `src/pages/[locale]/index.astro`): the home hero heading as the h1
+  (`lead <span class="b">payload</span>`), then, in order, each category that has a visible
+  system, as an h2 over its systems: the package shot through `<Image>` (A19; `widths` 320 and
+  640, lazy), the name (h3), the level button, the tag, the highlight feature buttons and the "See the system" link to
+  the product URL (404 until Phase 2). Systems come in the build's order (by id: the Content Layer
+  sorts entries by id), since products have no order field. No reveal classes, so the h1 (LCP)
+  never starts hidden.
+- **Inline scripts** (Phase 5's `_headers` needs a CSP hash for each): the theme script in the
+  head, the theme toggle's script (ThemeToggle), the overlay header's script (SiteHeader, overlay
+  pages only) and the reveal script at the end of `<body>`.
 
 ## i18n routing
 
@@ -521,11 +573,12 @@ can point the crawler anywhere else.
 
 Phase 0 limits:
 
-- Styling so far is the shell only (tokens, base styles, fonts, skip link); the header, footer
-  and the interim index come later in Phase 1.
+- Styling so far is the shell (tokens, base styles, fonts, skip link, header, footer) and the
+  interim index; the mobile menu and the explainer islands come later in Phase 1.
 - No deploy: no hosting project, no `_headers`, no Functions. `public/_redirects` is the only
   host file.
-- `/en/` lists the products visible in English (all 16 systems), and only `/en/` is built.
+- `/en/` is the interim system index (the 16 systems visible in English), and only `/en/` is
+  built; its system links 404 until Phase 2.
 - No CMS yet: `CONTENT_SOURCE=payload` throws until Phase 5.
 - No 404 page yet (Phase 1, with a per-locale strategy).
 - No islands ship: the only Preact component is the test fixture

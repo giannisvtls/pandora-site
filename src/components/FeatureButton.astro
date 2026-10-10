@@ -1,0 +1,65 @@
+---
+// A feature's explainer button (spec §8): `data-fx` names the feature, and the explainer island
+// (slice 10) opens its dialog from any such button on the page. Until then it opens nothing.
+interface Props {
+  // The feature key (`gps`).
+  feature: string;
+  // The feature's title in the page's language.
+  title: string;
+}
+
+const { feature, title } = Astro.props;
+---
+
+<button type="button" class="fx" data-fx={feature} aria-haspopup="dialog">
+  {title}
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="9"></circle>
+    <path d="M12 11v5M12 8h.01"></path>
+  </svg>
+</button>
+
+<style>
+  /* nightwatch.css "feature explainers": a dotted underline and an info mark. */
+  .fx {
+    all: unset;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 24px;
+    border-bottom: 1px dotted var(--ink-3);
+    padding-bottom: 1px;
+    color: inherit;
+    font: inherit;
+    transition:
+      border-color 0.3s,
+      color 0.3s;
+  }
+
+  .fx svg {
+    width: 14px;
+    height: 14px;
+    color: var(--blue-soft);
+    flex: none;
+  }
+
+  .fx:hover {
+    border-bottom-style: solid;
+    border-bottom-color: var(--ink);
+    color: var(--ink);
+  }
+
+  /* `all: unset` clears the global focus ring: declared again. */
+  .fx:focus-visible {
+    outline: 2px solid var(--armed);
+    outline-offset: 3px;
+  }
+</style>

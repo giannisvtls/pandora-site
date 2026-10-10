@@ -91,6 +91,9 @@ describe('base.css', () => {
       'calc(var(--hdr) + 16px)',
     );
     expect(ruleFor('main')?.declarations.get('scroll-margin-top')).toBe('calc(var(--hdr) + 16px)');
+    expect(ruleFor('footer *')?.declarations.get('scroll-margin-top')).toBe(
+      'calc(var(--hdr) + 16px)',
+    );
     expect(base.some(({ declarations }) => declarations.has('scroll-padding-top'))).toBe(false);
   });
 });

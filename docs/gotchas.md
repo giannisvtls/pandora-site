@@ -146,6 +146,15 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: after the hook's `eslint --fix`, a `<script is:inline>` body sits at column 0.
   - Fix: write the script as a plain block (`{ const root = ...; }`) with early `continue`s, and
     let Prettier indent it.
+- **Lint rules met by the shell (slice 8).**
+  - Symptom: `sonarjs/super-linear-regex` rejects HTML-matching regexes such as
+    `/<nav[^>]*>([\s\S]*?)<\/nav>/u` and `/<[^>]+>/gu` in tests; `unicorn/prefer-scoped-selector`
+    rejects a descendant selector in `querySelector` (`'main h2'`, `'header *'`);
+    `unicorn/prefer-observer-apis` rejects a scroll listener that reads layout (`scrollY`,
+    `innerHeight`), in an inline script too.
+  - Fix: cut HTML with `indexOf` (`between()` and `textOf()` in
+    `src/components/__tests__/shell-fixtures.ts`); start such selectors with `:scope`
+    (`':scope > main *'`); watch the element with an IntersectionObserver (the overlay header).
 - **Byte-exact fixtures.** Prettier formats `.html` files.
   - Symptom: `prettier --write .` would reformat `scripts/crawl/__fixtures__/*.html` and break
     the tests that compare bytes.
@@ -305,13 +314,40 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: `[WARN] [content] The collection "installers" does not exist or is empty` while
     the build generates its routes (the query adapter loads every collection).
   - Fix: expected; it goes away when the snapshot has an installer.
+- **Astro drops a line break between an expression and an element.**
+  - Symptom: `{heading.lead}` on one line and `<span class="b">` on the next render as
+    `anywhere<span class="b">without you.</span>`: the accessible name loses its space
+    ("anywherewithout you.").
+  - Fix: write the space explicitly, `{' '}` (inside a fragment it survives Prettier), or keep the
+    expression and the element on one line with a space (Prettier itself joins them so in
+    `LanguageSwitcher.astro`). Check the built HTML.
 - **Every media file lands in `dist/_astro/`.** `MEDIA_FILES` (`src/content/media.ts`) imports
   every image under `src/assets/media/` eagerly, and Astro emits each imported image as a file;
   it deletes an original only after `<Image>` optimized it and nothing used its raw `src`.
-  - Symptom: `dist/_astro/` holds all the media originals (about 5 MB) although no page shows
-    most of them.
+  - Symptom: `dist/_astro/` holds the media originals no page shows (70 files, about 3.2 MB, with
+    the interim index showing 16 package shots).
   - Fix: expected; visitors download only what a page references. A page that shows an image
     goes through `<Image>` (A19), so its original is replaced by the optimized output.
+- **Reading a property of an imported image keeps its original in `dist/`.** An image import is a
+  proxy: any property read in the page (`src.width`, `src.src`) marks the original as used, and
+  the build then ships it beside the `<Image>` output.
+  - Symptom: after `width={Math.min(640, image.src.width)}`, the 16 originals of the index's
+    package shots (1.6 MB, a 2700 px PNG among them) are back in `dist/_astro/`.
+  - Fix: pass the `ImageMetadata` to `<Image>` untouched; size it with props that need no read
+    (`widths`, `sizes`).
+- **`<Image widths>` without `width` writes the full-size image as `src`.** Astro keeps the
+  original dimensions for `src` (converted to WebP) and caps `widths` at the original width.
+  - Symptom: a 2700 px package shot ships a 2700 px `src` (149 KB) beside its 320w and 640w files,
+    and `width="2700"`.
+  - Fix: harmless (browsers that read `srcset` never fetch `src`; the attributes keep the aspect
+    ratio). A fixed `width` larger than a small original adds yet another file, so the index
+    passes `widths` only.
+- **The Content Layer returns a collection sorted by id.** Astro's data store writes entries in
+  id order, whatever order the loader set them in.
+  - Symptom: the build lists products elite, immo, light, lightpro, ..., while
+    `readSnapshot()` (the unit tests) keeps the file's order; the snapshot's order is lost.
+  - Fix: give a collection that a page shows in a set order an `order` field (categories and nav
+    sections have one); products do not yet, so the interim index lists them by id.
 - **Image imports in Vitest are `ImageMetadata`.** Vitest runs through Astro's Vite config.
   - Symptom: `src` is a dev-server URL (`/@fs/.../x.webp?origWidth=...`), not the build's
     `/_astro/x.<hash>.webp`.
@@ -546,6 +582,13 @@ are about to touch. When you hit a new one, add it here in the same shape.
 - **Two copies of `@testing-library/dom`** (jest-dom's and Preact Testing Library's).
   - Symptom: `configure()` from Preact Testing Library does not reach jest-dom's copy.
   - Fix: harmless today; configure each copy where it is used if that ever matters.
+- **`withLanguage()` also copies `languages`.** The `languages` global is keyed by language, so
+  the fixture helper (`src/content/__tests__/rules-fixtures.ts`) takes it for text and copies
+  English's `{ live: true }` to the other language.
+  - Symptom: a query over `withLanguage(fixtureContent(['en']), 'el')` builds Greek too (the
+    switcher shows a Greek link).
+  - Fix: put the fixture's own `languages` back after `withLanguage`, as `shellQuery()` in
+    `src/components/__tests__/shell-fixtures.ts` does.
 - **Testing an unset environment variable.**
   - Symptom: setting it to `''` is not the same as unset.
   - Fix: `vi.stubEnv('CONTENT_SOURCE', undefined)` deletes the variable; restore with
@@ -617,7 +660,15 @@ are about to touch. When you hit a new one, add it here in the same shape.
     Chromium build is missing.
   - Fix: `npx playwright install chromium`. CI adds `--with-deps`, which also installs the Linux
     system libraries through the package manager; a workstation does not need it.
-- **The spec names a snapshot product.**
-  - Symptom: `e2e/home.spec.ts` expects the heading "Camper V3", so removing or renaming that
-    product breaks it.
-  - Fix: update the spec together with `content-snapshot/products.json`.
+- **The home spec counts the snapshot.** `e2e/home.spec.ts` reads the products, categories and
+  nav sections from `content-snapshot/`, but pins the h1 and 16 systems.
+  - Symptom: adding, hiding or removing a system fails the count; editing the hero heading fails
+    the h1.
+  - Fix: update the spec together with the snapshot.
+- **The no-JS scan sees scripts and hidden-on-purpose elements.** The A11 check in
+  `e2e/shell.spec.ts` lists every element of the header, `<main>` and the footer that is not
+  shown.
+  - Symptom: it reports `script#` (the toggle's inline script), the compare count (`hidden`
+    until Phase 2), the logo for the other theme or the theme toggle (hidden without
+    JavaScript).
+  - Fix: those are skipped by name in the test; a new element hidden on purpose needs the same.

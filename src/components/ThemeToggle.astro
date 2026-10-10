@@ -1,0 +1,119 @@
+---
+// The theme toggle (spec §7, P1-6): a plain button whose label names what a press does, for the
+// theme in force (Site copy `header.themeToDark` / `themeToLight`). No aria-pressed: an action
+// label with a pressed state contradicts itself (cycle 7 lead decision). The script after it sets
+// the label from the theme the head script applied (a saved dark theme is announced right before
+// the first press), then on a press flips `data-theme`, saves the choice, updates the label and
+// dispatches `themechange` (`detail`: the theme). Without JavaScript it is not shown.
+interface Props {
+  toDark: string;
+  toLight: string;
+}
+
+const { toDark, toLight } = Astro.props;
+---
+
+<button
+  class="theme-btn"
+  type="button"
+  aria-label={toDark}
+  data-to-dark={toDark}
+  data-to-light={toLight}
+>
+  <svg
+    class="moon"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+  </svg>
+  <svg
+    class="sun"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="4"></circle>
+    <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+  </svg>
+</button>
+<script is:inline>
+  {
+    const button = document.currentScript?.previousElementSibling;
+    const root = document.documentElement;
+    const labelFor = (theme) => (theme === 'dark' ? button.dataset.toLight : button.dataset.toDark);
+    button.setAttribute('aria-label', labelFor(root.dataset.theme));
+    button.addEventListener('click', () => {
+      const theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = theme;
+      try {
+        localStorage.setItem('theme', theme);
+      } catch {
+        // Storage is blocked: the choice lasts for this page only.
+      }
+      button.setAttribute('aria-label', labelFor(theme));
+      document.dispatchEvent(new CustomEvent('themechange', { detail: theme }));
+    });
+  }
+</script>
+
+<style>
+  /* nightwatch.css `.theme-btn`: the moon in light, the sun in dark. */
+  .theme-btn {
+    all: unset;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    transition: border-color 0.3s;
+  }
+
+  .theme-btn:hover {
+    border-color: var(--ink);
+  }
+
+  /* `all: unset` clears the global focus ring: declared again. */
+  .theme-btn:focus-visible {
+    outline: 2px solid var(--armed);
+    outline-offset: 3px;
+  }
+
+  .theme-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .theme-btn .sun,
+  :global(:root[data-theme='dark']) .theme-btn .moon {
+    display: none;
+  }
+
+  :global(:root[data-theme='dark']) .theme-btn .sun {
+    display: block;
+  }
+
+  /* Without JavaScript a press could do nothing. */
+  :global(html:not(.js)) .theme-btn {
+    display: none;
+  }
+
+  /* Touch-sized below 900px, as the design's header there. */
+  @media (max-width: 900px) {
+    .theme-btn {
+      width: 44px;
+      height: 44px;
+    }
+  }
+</style>

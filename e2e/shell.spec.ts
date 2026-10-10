@@ -1,9 +1,9 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import { expect, test, type APIRequestContext } from '@playwright/test';
 
 // The page shell of spec §6 on the built /en/: the theme before first paint, the self-hosted
-// fonts, nothing loaded from another origin, the content without JavaScript, the reveal grammar,
-// the skip link.
+// fonts, nothing loaded from another origin, the content without JavaScript, the skip link. The
+// reveal grammar is in reveal.spec.ts.
 
 // WCAG 2.0, 2.1 and 2.2 at levels A and AA. axe-core 4.13 defines no `wcag22a` tag.
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
@@ -99,6 +99,8 @@ test.describe('the theme before first paint (P1-6)', () => {
     expect(script).toBeGreaterThan(html.indexOf('<head>'));
     expect(styles).not.toEqual([]);
     expect(script).toBeLessThan(Math.min(...styles));
+    // The site's CSS is past Astro's 4 KB inline threshold: one external stylesheet, after it.
+    expect(html.match(/<link rel="stylesheet"/gu)).toHaveLength(1);
   });
 
   test('has no WCAG 2.2 AA violations in dark (axe)', async ({ page }) => {
@@ -193,7 +195,9 @@ test.describe('the self-hosted fonts (A12)', () => {
 test.describe('without JavaScript (A11)', () => {
   test.use({ javaScriptEnabled: false });
 
-  test('shows every element of /en/, and a reveal start state hides nothing', async ({ page }) => {
+  test('shows every element of the header, main and footer, and a reveal start state hides nothing', async ({
+    page,
+  }) => {
     await page.goto('/en/');
     await expect(page.locator('html')).not.toHaveClass('js');
     // Probes of the reveal grammar, as later pages will use it.
@@ -205,8 +209,19 @@ test.describe('without JavaScript (A11)', () => {
       );
     });
 
-    const hidden = await page.locator('main').evaluate((main) =>
-      [main, ...main.querySelectorAll('*')]
+    const hidden = await page.locator('body').evaluate((body) =>
+      [
+        ...body.querySelectorAll(
+          ':scope > header, :scope > header *, :scope > main, :scope > main *, ' +
+            ':scope > footer, :scope > footer *',
+        ),
+      ]
+        // Hidden on purpose: an element with `hidden` (the compare count, filled in Phase 2), the
+        // logo meant for the dark theme, the theme toggle (it needs JavaScript) and its script.
+        .filter(
+          (element) =>
+            !element.closest('[hidden], .theme-btn') && !element.matches('img.lw, script'),
+        )
         .filter((element) => {
           const style = getComputedStyle(element);
           const box = element.getBoundingClientRect();
@@ -228,106 +243,12 @@ test.describe('without JavaScript (A11)', () => {
     expect(hidden).toEqual([]);
     expect(wipe).toBe('none');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  });
-});
-
-test.describe('the reveal grammar with JavaScript', () => {
-  // A reveal probe served inside /en/'s <main>, so the reveal script finds it.
-  test.beforeEach(async ({ page }) => {
-    await page.route('**/en/', async (route) => {
-      const response = await route.fetch();
-      const text = await response.text();
-      const body = text.replace('</main>', '<p class="rv" id="probe-rv">Probe</p></main>');
-      await route.fulfill({ response, body });
-    });
-  });
-
-  test('hides a start state until it scrolls into view, then reveals it', async ({ page }) => {
-    await page.goto('/en/');
-    const probe = page.locator('#probe-rv');
-
-    await expect(probe).toHaveCSS('opacity', '0');
-    await probe.scrollIntoViewIfNeeded();
-    await expect(probe).toHaveClass('rv in');
-    await expect(probe).toHaveCSS('opacity', '1');
-  });
-
-  test('shows everything at once under reduced motion and in print', async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto('/en/');
-
-    await expect(page.locator('#probe-rv')).toHaveCSS('opacity', '1');
-    await expect(page.locator('#probe-rv')).toHaveCSS('transform', 'none');
-
-    await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await expect(page.locator('#probe-rv')).toHaveCSS('opacity', '0');
-    await page.emulateMedia({ media: 'print' });
-    await expect(page.locator('#probe-rv')).toHaveCSS('opacity', '1');
-  });
-});
-
-// Serves /en/ with `html` added at the end of its <main>, where the reveal script finds it.
-async function serveWithProbe(page: Page, html: string): Promise<void> {
-  await page.route('**/en/', async (route) => {
-    const response = await route.fetch();
-    const text = await response.text();
-    await route.fulfill({ response, body: text.replace('</main>', () => `${html}</main>`) });
-  });
-}
-
-test.describe('the reveal script', () => {
-  test('reveals an element taller than ten viewports while it covers the viewport', async ({
-    page,
-  }) => {
-    await serveWithProbe(page, '<div class="rv" id="probe-tall" style="height: 1200vh">Tall</div>');
-    await page.goto('/en/');
-    const probe = page.locator('#probe-tall');
-    await expect(probe).not.toBeInViewport();
-
-    await probe.evaluate((element) => {
-      element.scrollIntoView({ behavior: 'instant', block: 'start' });
-    });
-    await page.mouse.wheel(0, 3000);
-    // The element now covers the whole viewport, and a tenth of it can never be in view.
-    await expect
-      .poll(async () =>
-        probe.evaluate((element) => {
-          const box = element.getBoundingClientRect();
-          return box.top < 0 && box.bottom > (element.ownerDocument.defaultView?.innerHeight ?? 0);
-        }),
-      )
-      .toBe(true);
-    await expect(probe).toHaveClass('rv in');
-    await expect(probe).toHaveCSS('opacity', '1');
-  });
-
-  test('reveals every element at once without IntersectionObserver, with no error', async ({
-    page,
-  }) => {
-    const errors: Error[] = [];
-    page.on('pageerror', (error) => {
-      errors.push(error);
-    });
-    await page.addInitScript(() => {
-      Reflect.deleteProperty(globalThis, 'IntersectionObserver');
-    });
-    await serveWithProbe(
-      page,
-      '<p class="rv" id="probe-rv">Probe</p><div class="wipe" id="probe-wipe">Wipe</div>' +
-        '<div class="zoom" id="probe-zoom"><img alt="" src="/favicon.webp"></div>' +
-        '<h2><span class="line-rv" id="probe-line"><span>Line</span></span></h2>',
+    // The nav and the footer links work without JavaScript (A11); the toggle is not offered.
+    await expect(page.getByRole('navigation', { name: 'Primary' }).getByRole('link')).toHaveCount(
+      6,
     );
-    await page.goto('/en/');
-
-    const targets = page.locator('.rv, .zoom, .wipe, .line-rv');
-    await expect(targets).not.toHaveCount(0);
-    const unrevealed = await targets.evaluateAll((elements) =>
-      elements.filter((element) => !element.classList.contains('in')).map(({ id }) => id),
-    );
-    expect(unrevealed).toEqual([]);
-    await expect(page.locator('#probe-rv')).toHaveCSS('opacity', '1');
-    await expect(page.locator('#probe-rv')).toHaveCSS('transform', 'none');
-    expect(errors).toEqual([]);
+    await expect(page.getByRole('contentinfo').getByRole('link').first()).toBeVisible();
+    await expect(page.locator('header .theme-btn')).toBeHidden();
   });
 });
 
