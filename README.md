@@ -37,7 +37,8 @@ preview and the e2e run all use port 4321, so stop `npm run dev` before `npm run
 | `npm run check:pricelist`  | Check the snapshot against PRICELIST 2026 (systems, prices, levels) |
 | `npm run crawl`            | Read-only crawl of the live sites' URLs, for the redirect map       |
 | `npm run crawl:summary`    | Write `redirects/CRAWL.md` from the crawl (no network)              |
-| `npm run media:fetch`      | The one-time image download: done, see below                        |
+| `npm run media:sources`    | The one-time image list from the prototype: done, no network        |
+| `npm run media:fetch`      | The one-time image download and copy: done, see below               |
 | `npm run snapshot:convert` | The one-time prototype conversion: done, see below                  |
 
 ## Gates
@@ -54,9 +55,10 @@ on the staged files. Pull request titles follow Conventional Commits.
   checked against the content contract (`src/content/contract/`) when the site builds.
 - Never re-run `npm run snapshot:convert`: it converted the design prototype once, and running it
   again would overwrite every edit made since.
-- Never re-run `npm run media:fetch` unless the site owner asks: it downloaded the site's images
-  from invetec.eu once, and they are now committed under `src/assets/` and `public/`. No page
-  loads anything from another origin.
+- Never re-run `npm run media:fetch` unless the site owner asks: it wrote the site's images once,
+  downloaded from invetec.eu or copied from the design prototype (the pricelist PNGs), and they
+  are now committed under `src/assets/` and `public/`. A run would replace any image edited since.
+  No page loads anything from another origin.
 
 ## Routing
 

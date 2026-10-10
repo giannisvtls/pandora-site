@@ -1,13 +1,12 @@
-// The pricelist check (`npm run check:pricelist`): the snapshot's facts against PRICELIST 2026 as
-// transcribed in the project's pricelist catalogue spec. The constants are the transcription,
-// held verbatim from the framework tool this replaces (tools/check-pricelist.mjs of the design
-// folder); a change to the transcription is made in both until that tool retires. The checks are
-// the tool's, read through the content contract instead of the prototype data:
+// The pricelist check (`npm run check:pricelist`): the snapshot's facts against PRICELIST 2026.
+// The constants below are a verbatim transcription of that pricelist; change them only when the
+// pricelist itself changes, never to make the check pass. The checks read the snapshot through the
+// content contract:
 // - the matrix (p. 16, product-page overrides applied): the spec rows in order, the systems that
 //   have a matrix, a feature explainer per row, every value;
 // - the system prices and the accessory prices, groups and fits;
-// - the launch catalogue is exactly the pricelist's systems (the tool checked the parked items
-//   and the hidden multimedia category; the snapshot has neither, so it checks the product set);
+// - the launch catalogue is exactly the pricelist's systems (the snapshot has no parked items and
+//   no hidden multimedia category, so the check compares the product set);
 // - the Finder picks and the level lists, with the site's level rule (src/content/levels.ts,
 //   P1-7): a system with a matrix takes its level from it, one without from the level that lists
 //   it.
@@ -16,7 +15,7 @@ import { byCodeUnit } from '../crawl/output';
 import { REPO_ROOT } from '../snapshot/paths';
 import { readSnapshot, type SnapshotData } from '../snapshot/read-snapshot';
 
-// Spec 1.1: columns and rows of the p. 16 transcription (product-page overrides applied).
+// The p. 16 matrix: its columns (systems) and rows (product-page overrides applied).
 // prettier-ignore
 export const SYS: readonly string[] = ['elite', 'professional', 'smartpro', 'smart', 'lightpro', 'light', 'primo', 'immo',
   'camperv3', 'camperpro', 'motoevo', 'motov2', 'marine', 'truck'];
@@ -30,12 +29,12 @@ export const MATRIX: Readonly<Record<string, string>> = {
   keyless: '11111100110000', preheater: '11111100110000',
 };
 
-// Spec 1.3 + car prices (pricelist product pages, valid from 5/2026).
+// The system prices (the pricelist's product pages, valid from 5/2026).
 // prettier-ignore
 export const PRICES: Readonly<Record<string, number>> = { elite: 1499, professional: 989, smartpro: 689, smart: 519, lightpro: 399, light: 269, primo: 299, immo: 179,
   camperpro: 1499, camperv3: 899, motoevo: 499, motov2: 319, marine: 799, truck: 799, finder: 195, tracer: 219 };
 
-// Spec 1.4: accessories and their prices.
+// The accessories and their prices.
 // prettier-ignore
 export const ACC: Readonly<Record<string, number>> = { 'd-061': 259, 'd-061-camper': 269, 'd-062': 199, 'd-022-lora': 149, 'd-010': 89, 'd-011': 89, 'r-500-bt': 139,
   'r-387-r-389': 25, band: 75, 'ps-330': 35, 'ps-331-bt': 69, 'ps-332-bt': 85, 'ps-333': 39, 'vs-22d': 59, 'dms-100-bt': 69,

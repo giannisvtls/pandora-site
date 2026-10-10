@@ -51,8 +51,8 @@ const SPEC_TABLE: readonly (readonly [RouteKey, Readonly<Record<string, string>>
 // The URL segment rule, as the messages name it.
 const SEGMENT_RULE = 'lowercase words of a-z and 0-9 joined by single hyphens';
 
-// The item routes (lead decision, cycle 5: no Site copy link names one), the 404 page (no link
-// leads there), and the routes a link can name.
+// The item routes (no Site copy link names one: a link carries one slug or id for every
+// language), the 404 page (no link leads there), and the routes a link can name.
 const ITEM_ROUTES: ReadonlySet<RouteKey> = new Set(['product', 'accessory', 'post']);
 const LINK_ROUTES = ROUTE_KEYS.filter((route) => !ITEM_ROUTES.has(route) && route !== 'notFound');
 

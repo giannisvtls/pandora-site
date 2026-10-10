@@ -318,8 +318,8 @@ describe('the footer', () => {
     // The parameters each route needs, no more (ROUTE_PARAMS, shared with routes.ts).
     [{ route: 'category' }, '.params.vehicle'],
     [{ route: 'contact', params: { vehicle: 'car' } }, '.params.vehicle'],
-    // Static and category pages only: no item route (lead decision, cycle 5) and no 404 page, so
-    // no slug or id either.
+    // Static and category pages only: no item route (a target carries one slug or id for every
+    // language) and no 404 page, so no slug or id either.
     [{ route: 'product' }, '.route'],
     [{ route: 'accessory' }, '.route'],
     [{ route: 'post' }, '.route'],

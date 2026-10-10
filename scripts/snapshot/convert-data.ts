@@ -55,8 +55,8 @@ export interface Converted {
 
 // The nav sections, in the prototype header's desktop order (`<nav aria-label="Primary">` in the
 // prototype page, labels verbatim). The site's mobile menu uses this order too, while the
-// prototype's mobile nav swaps Partners and Contact (one `order` field, lead decision in cycle
-// 3). The page is not the converter's source, so the labels are held here.
+// prototype's mobile nav swaps Partners and Contact: one `order` field keeps the navigation
+// consistent. The page is not the converter's source, so the labels are held here.
 export const NAV_SECTIONS = [
   ['systems', 'Systems'],
   ['compare', 'Compare'],

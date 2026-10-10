@@ -1,10 +1,11 @@
 ---
 // The theme toggle (spec §7, P1-6): a plain button whose label names what a press does, for the
 // theme in force (Site copy `header.themeToDark` / `themeToLight`). No aria-pressed: an action
-// label with a pressed state contradicts itself (cycle 7 lead decision). The script after it sets
-// the label from the theme the head script applied (a saved dark theme is announced right before
-// the first press), then on a press flips `data-theme`, saves the choice, updates the label and
-// dispatches `themechange` (`detail`: the theme). Without JavaScript it is not shown.
+// label with a pressed state contradicts itself, and Site copy holds only the action labels. The
+// script after it sets the label from the theme the head script applied (a saved dark theme is
+// announced right before the first press), then on a press flips `data-theme`, saves the choice,
+// updates the label and dispatches `themechange` (`detail`: the theme). Without JavaScript it is
+// not shown.
 interface Props {
   toDark: string;
   toLight: string;

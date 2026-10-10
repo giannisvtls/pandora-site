@@ -218,17 +218,20 @@ from the site's own origin. Nothing is hotlinked from the live site.
   and page (images only parked items use are left out), and `--check` compares. Both commands
   refuse a source on another origin, with a query string or outside the asset folders.
 - **The fetch ran once** (`npm run media:fetch`, 2026-10-09): robots.txt plus one request per
-  file, all answered 200. Its rules are fixed in `scripts/assets/config.ts`, and no flag changes
-  them: GET only, `https://invetec.eu` only (a redirect that leaves it is refused), robots.txt
-  obeyed, the crawler's politeness (2 requests in flight, 250 ms pause, 20 s timeout, 2 retries),
-  `image/*` responses only, no query string, at most 15 MB per body.
+  downloaded file (57: the 54 media, the 2 logos, the favicon), all answered 200; the 38
+  pricelist PNGs were copied from the prototype (`--design-dir`), not requested. Its rules are
+  fixed in `scripts/assets/config.ts`, and no flag changes them: GET only, `https://invetec.eu`
+  only (a redirect that leaves it is refused), robots.txt obeyed, the crawler's politeness (2
+  requests in flight, 250 ms pause, 20 s timeout, 2 retries), `image/*` responses only, no query
+  string, at most 15 MB per body.
 - **Never run it again unless the site owner asks.** It is idempotent: a file whose bytes match
   its manifest record is skipped, and a run with every file current sends no request at all
   (robots.txt included). CI never runs it. Its tests serve loopback fixtures under the global
   fetch guard (see Redirect crawl, Tests).
 - **Guard:** `scripts/assets/__tests__/committed.test.ts` (no network) checks that the manifest has
-  exactly one record per listed source and that each file exists with that size and SHA-256, so
-  a listed image that is edited or lost fails the tests.
+  exactly one record per listed source, that each file exists with that size and SHA-256, and that
+  `src/assets/media/`, `src/assets/brand/` and `public/favicon.webp` hold no image file without a
+  record, so an image edited, lost or added without its record fails the tests.
 
 ## Content seam
 
@@ -351,7 +354,7 @@ types it; the snapshot readers in `scripts/` use the same type).
   `ROUTE_PARAMS` in `contract/keys.ts`, which the Site copy `routeTarget` schema checks too
   (`{ route: 'category' }` without a vehicle fails at `params.vehicle`). Every value that fills a
   path follows one rule, `URL_SEGMENT` (`contract/primitives.ts`: lowercase words of a-z and 0-9
-  joined by single hyphens), in the contract (slugs, an accessory's id) and in the builders.
+  joined by single hyphens), in the contract (slugs, an accessory's id) and in the path builders.
   `systems` is the nav key of the car category page.
 - **Nav sections** lead to a page whose path takes no parameter, the 404 page excepted
   (`NAV_ROUTE_KEYS` in `contract/nav-sections.ts`, derived from `ROUTE_PARAMS`): a section has no
@@ -360,9 +363,9 @@ types it; the snapshot readers in `scripts/` use the same type).
 - **Site copy link targets** (`routeTarget`, the footer's links) name static and category pages
   only. A target would carry one slug or id for every language and nothing resolves it against
   the item, so the item routes `product`, `accessory` and `post` fail at `route`, and so does the
-  404 page (`notFound`), which no link leads to. The only parameter a
-  target can carry is therefore a `vehicle`; a `slug` or `id` key is unknown. A later phase that
-  needs an item link adds an id-based target resolved through the page rules.
+  404 page (`notFound`), which no link leads to. The only parameter a target can carry is
+  therefore a `vehicle`; a `slug` or `id` key is unknown. A later phase that needs an item link
+  adds an id-based target resolved through the page rules.
 - **The item rule (`completeness.ts`, re-exported by `rules.ts`):** `gapsIn(value, L, media)`
   lists what a value lacks in `L`: every language map with a value in the source language
   (`showIn[0]` for items, English otherwise) and none in `L`, found by walking the value (a
@@ -708,11 +711,11 @@ Spec §9, generated from the rules: no URL, name or fact is written in code (A6)
   `{L}/404/index.html` to `{L}/404.html` (Astro writes only the root `/404` as `404.html`; the
   build fails when a live language has no 404 page), and deletes the images directly in
   `_astro/` that no other built file names (HTML, CSS, JavaScript, XML, SVG). `media.ts` imports
-  every media file, so Astro
-  writes each distinct original: 86 files for the 92 media items, since six media files are
-  byte-identical copies of others. Astro itself removes the 16 that `<Image>` replaced (the
-  index's package shots), and the integration prunes the other 70 (3.1 MB): `dist/_astro` goes
-  from 4.30 MB to 1.08 MB. Fonts and `public/` files are never touched.
+  every media file, so Astro writes each distinct original: 86 files for the 92 media items, since
+  six media files are byte-identical copies of others. Astro itself removes the 16 that `<Image>`
+  replaced (the index's package shots), and the integration prunes the other 70 (3.22 MB):
+  `dist/_astro` goes from 4.31 MB to 1.08 MB (decimal megabytes; the build log gives the pruned
+  size in KiB, 3148 KB). Fonts and `public/` files are never touched.
 - Tests: `content/__tests__/seo.test.ts` (fixtures with en, en + el, it and a preview build),
   `seo-xml.test.ts` (the XML through a parser), `integrations/__tests__/build-files.test.ts`,
   `components/__tests__/not-found.test.ts`, `root-not-found.test.ts` (the root 404 page in
@@ -852,8 +855,13 @@ the launch.
 - Only English is live. The build makes `/en/`, the interim system index standing in for the
   home (the 16 systems by category), the 404 pages and the SEO files. The real home (and with it
   the first page with the overlay header), the category, product and compare pages come in
-  Phase 2, the other pages in Phase 3. Until then the index's "See the system" links 404, and
-  `BUILT_PAGE_TYPES` keeps every page not built out of the sitemaps and alternates.
+  Phase 2, the other pages in Phase 3. Until then every link to them on `/en/` 404s: the index's
+  "See the system" links, every header nav link, the compare link and every footer page link
+  (only the logo link to `/en/` and the `tel:` and `mailto:` links work). `BUILT_PAGE_TYPES`
+  keeps every page not built out of the sitemaps and alternates.
+- The nav and footer links come from the route table, not from `pageUrl`: once a page can be
+  missing in a language, a link to it there needs that check (the page rules know; the links do
+  not ask yet).
 - Lists no page shows yet have no sort: FAQ, spec rows and accessory groups have `order` that
   nothing reads, posts need a date sort, accessories and accessory cards an order, and product
   pages (`pagesIn('product')`) follow the id order. Add each sort with the page that first shows
@@ -866,6 +874,13 @@ the launch.
   (Phase 2). Where the prototype changes English strings in code (the category heading's
   highlight, the lower-cased "all" list), Phase 2 needs per-language copy or
   `toLocaleLowerCase(L)`.
+- Phase 2 also: a breadcrumb landmark label would be new English copy (Site copy has none); the
+  hero's LCP text must stay out of the reveal start states; the Wi-Fi explainer is checked
+  through a button the e2e adds to `/en/` (no system on the index highlights Wi-Fi), so check it
+  from a real button on the product page.
+- Phase 3 forms and installers: `forms.partners.trades` has no stable key to submit (only its
+  labels), `installers.results.headOffice` has no data hook, and the browser's native validation
+  messages follow the browser's language, not the page's.
 
 **Islands and the shell**
 
@@ -903,8 +918,15 @@ the launch.
   CMS's `languages` in place of the snapshot's. CMS accessory ids must follow the URL segment
   rule; the contract accepts duplicate `order` values (ties fall back to the id order).
 - No draft preview (Phase 6): `siteQuery()` takes no request, the media resolver knows local
-  files only, `image()` throws on a missing alt in a preview language, and a preview build needs
-  at least one live language and fails at `/el/404` until the Greek 404 copy exists.
+  files only, `image()` throws on a missing alt in a preview language, `explainer.levels` is a
+  type cast rather than a checked shape, and a preview build needs at least one live language
+  and fails at `/el/404` until the Greek 404 copy exists.
+- No way to add an image yet: `media-sources.json` is written from the prototype and
+  `committed.test.ts` pins its counts and every file, so a new image (its source entry, its
+  manifest record and its media item) needs a workflow that Phase 2 or 3 defines, until the CMS
+  takes over the media (Phase 5).
+- `scriptJson` (`seo.ts`) escapes only `<`: right for the JSON-LD data block, which the browser
+  never runs; never reuse it to put data into a script that runs.
 - The Organization JSON-LD names the hashed logo file under `/_astro/`; a stable logo path in
   `public/` would suit crawler caches before launch. No `sameAs` until the social profiles have
   URLs, and no `addressCountry` (the footer has no country field).

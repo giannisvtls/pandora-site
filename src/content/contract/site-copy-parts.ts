@@ -66,11 +66,11 @@ function linkRefusal(route: RouteKey): string | undefined {
 
 // A static or category page of the site by its route key (spec §4), with exactly the parameters
 // its path needs (ROUTE_PARAMS: `{ route: 'category' }` needs a vehicle) and an optional `#hash`;
-// routes.ts builds the URL. Item routes (product, accessory, post) are refused (lead decision,
-// cycle 5): a target carries one slug or id for every language and nothing resolves it against
-// the item, so a later phase that needs such a link adds an id-based target resolved through the
-// page rules. The 404 page is refused too: no link leads there. So the only parameter a target
-// can carry is a vehicle; a route that needed another one could never pass.
+// routes.ts builds the URL. Item routes (product, accessory, post) are refused: a target carries
+// one slug or id for every language and nothing resolves it against the item, so a later phase
+// that needs such a link adds an id-based target resolved through the page rules. The 404 page is
+// refused too: no link leads there. So the only parameter a target can carry is a vehicle; a route
+// that needed another one could never pass.
 export const routeTarget = z
   .strictObject({
     route: routeKey.superRefine((route, context) => {

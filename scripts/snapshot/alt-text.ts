@@ -8,7 +8,8 @@
 // - an accessory: "Pandora {code}".
 // Category heads are decorative (no alt in any language). The home hero poster is not: its file
 // is also Smart V4's install image, so its media item has an alt, and the hero renders it with
-// alt="" because of where it sits (spec §3.1, lead decision after cycle 4).
+// alt="" because of where it sits (spec §3.1): dropping its alt would lose what the install image
+// shows.
 //
 // ALT_BY_MEDIA holds the alt written after viewing each image where no pattern applies (gallery
 // shots, post images) or the pattern does not match the picture; it wins over a pattern. A media

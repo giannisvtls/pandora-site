@@ -1,8 +1,9 @@
-// The committed media: scripts/assets/media-sources.json is valid, and
+// The committed media: scripts/assets/media-sources.json is valid,
 // src/assets/media/manifest.json holds exactly one record per source whose file exists in the
-// repository with that sha256 and size. No network: this reads committed files only, so CI checks
-// that no image was edited, lost or added without its record.
-import { readFile } from 'node:fs/promises';
+// repository with that sha256 and size, and the asset folders hold no image file without a
+// record. No network: this reads committed files only, so CI checks that no image was edited,
+// lost or added without its record.
+import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -21,6 +22,18 @@ import { contentTypeOfFile, readManifest, sha256, sourceKey } from '../manifest'
 import { parseSources } from '../sources';
 
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url));
+
+// Files an operating system leaves in a folder (both are in .gitignore), never committed.
+const OS_FILES = new Set(['.DS_Store', 'Thumbs.db']);
+
+// Every file under `dir` (relative to the repository root), as a path from the root with `/`.
+async function filesUnder(dir: string): Promise<string[]> {
+  const entries = await readdir(path.join(ROOT, dir), { recursive: true, withFileTypes: true });
+  return entries
+    .filter((entry) => entry.isFile() && !OS_FILES.has(entry.name))
+    .map((entry) => path.relative(ROOT, path.join(entry.parentPath, entry.name)))
+    .map((file) => file.replaceAll(path.sep, '/'));
+}
 
 const sourcesText = await readFile(path.join(ROOT, SOURCES_FILE), 'utf8');
 const sources = parseSources(sourcesText, ALLOWED_ORIGINS);
@@ -74,6 +87,19 @@ describe('the committed media manifest', () => {
         contentType: contentTypeOfFile(record.file),
       });
     }
+  });
+
+  it('records every image file of the asset folders and the favicon, and nothing else', async () => {
+    const media = await filesUnder(MEDIA_DIR);
+    const brand = await filesUnder(BRAND_DIR);
+    const favicon = await filesUnder(path.posix.dirname(FAVICON_FILE));
+    const onDisk = [
+      ...media.filter((file) => file !== MANIFEST_FILE),
+      ...brand,
+      ...favicon.filter((file) => file === FAVICON_FILE),
+    ];
+
+    expect(onDisk.toSorted(byCodeUnit)).toEqual(records.keys().toArray().toSorted(byCodeUnit));
   });
 
   it('matches every file in the repository by size and sha256', async () => {

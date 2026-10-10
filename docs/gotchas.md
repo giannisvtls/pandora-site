@@ -290,13 +290,16 @@ are about to touch. When you hit a new one, add it here in the same shape.
 
 ## Media fetch
 
-- **`npm run media:fetch` requests the live site and replaces changed images.** It ran once, and
-  every image it fetched is committed.
-  - Symptom: a run reads invetec.eu's robots.txt and downloads every listed file whose bytes no
-    longer match its manifest record, so an image edited or re-compressed in `src/assets/media/`
-    is fetched again over the edit (the tests already fail on that file's size and SHA-256).
-  - Fix: never run it unless the site owner asks; leave the committed images as fetched. A run
-    with every file current sends no request at all, robots.txt included.
+- **`npm run media:fetch` replaces changed images.** It ran once, and every image it wrote is
+  committed: 57 downloaded from invetec.eu (54 media, the 2 logos, the favicon) and the 38
+  `src/assets/media/pricelist/` PNGs copied from the design prototype (`designFile` sources).
+  - Symptom: a run redoes every listed file whose bytes no longer match its manifest record (the
+    tests already fail on that file's size and SHA-256). An edited live image is downloaded again
+    (after a fresh robots.txt read), and an edited pricelist PNG is copied again from the
+    prototype with `--design-dir`; without it, the run stops before any request ("prototype images
+    are missing or changed ... Nothing was requested", exit 2). Either way the edit is replaced.
+  - Fix: never run it unless the site owner asks; leave the committed images as they were written.
+    A run with every file current sends no request at all, robots.txt included.
 - **The crawler's `createHttp` reads every response body as text.**
   - Symptom: an image fetched through it comes back as a decoded string, its bytes corrupted.
   - Fix: `scripts/assets/download.ts` gives createHttp a fetch that reads a `200 image/*` body
@@ -358,9 +361,9 @@ are about to touch. When you hit a new one, add it here in the same shape.
   it deletes an original only after `<Image>` optimized it and nothing used its raw `src`. A lazy
   glob would not help: its dynamic imports still load, and so emit, every image.
   - Symptom: without the build integration, `dist/_astro/` holds the media originals no page
-    shows (70 files, about 3.1 MB, with the interim index showing 16 package shots).
+    shows (70 files, 3.22 MB, with the interim index showing 16 package shots).
   - Fix: `src/integrations/build-files.ts` deletes, after the build, every image directly in
-    `dist/_astro/` whose file name no other built file holds (`dist/_astro` 4.30 MB -> 1.08 MB).
+    `dist/_astro/` whose file name no other built file holds (`dist/_astro` 4.31 MB -> 1.08 MB).
     A page that shows an image goes through `<Image>` (A19), so its original is replaced by the
     optimized output; `e2e/seo.spec.ts` requests every `/_astro/` file the pages and their CSS
     name.
@@ -461,8 +464,8 @@ are about to touch. When you hit a new one, add it here in the same shape.
 - **A Site copy link to a product, accessory, post or the 404 page fails at `route`.** A link
   target would carry one slug or id for every language, and nothing resolves it against the item
   (a post's slug differs per language, an item can be hidden in a language), so `routeTarget`
-  refuses the item routes; no link leads to the 404 page either. A
-  target's `params` therefore take a `vehicle` only.
+  refuses the item routes; no link leads to the 404 page either. A target's `params` therefore
+  take a `vehicle` only.
   - Symptom: `{ route: 'post' }` fails at `target.route` ("A Site copy link names a static or
     category page, not the item route "post""), `{ route: 'notFound' }` likewise ("... not the
     404 page"); a `slug` or `id` in `params` is an unknown key at `target.params`.

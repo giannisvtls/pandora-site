@@ -65,7 +65,7 @@ describe('the committed snapshot', () => {
 const CATEGORY_HEADS = ['camper', 'car', 'fleet-final', 'motori', 'yaucht'];
 
 // Each image a product shows (image, gallery, install image) that is decorative: a product image
-// says what it shows, so none may be (the Smart V4 frame is also its install image, cycle 4).
+// says what it shows, so none may be (the Smart V4 frame is also its install image).
 function decorativeProductMedia(s: SnapshotData): string[] {
   const decorative = new Set(
     s.media.filter((item) => item.decorative === true).map(({ id }) => id),

@@ -10,8 +10,8 @@ export const MEDIA_DIR = 'src/assets/media/';
 const KEBAB = /^[a-z\d]+(?:-[a-z\d]+)*$/u;
 const IMAGE_EXTENSIONS = new Set(['avif', 'gif', 'jpeg', 'jpg', 'png', 'svg', 'webp']);
 
-// The id of the media item for a file (lead decision, cycle 2): its path under src/assets/media/
-// without the extension, `/` replaced by `-` (`pricelist/acc-band.png` -> `pricelist-acc-band`).
+// The id of the media item for a file: its path under src/assets/media/ without the extension,
+// `/` replaced by `-` (`pricelist/acc-band.png` -> `pricelist-acc-band`), since an id has no `/`.
 // A name without an extension stays whole. The snapshot converter gives ids this way, and the
 // snapshot integrity test checks every id against it.
 export function mediaIdOf(file: string): string {

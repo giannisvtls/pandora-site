@@ -64,7 +64,7 @@ async function runOn(root: string) {
 }
 
 describe('the transcription', () => {
-  it('holds the framework tool constants: 14 systems x 22 rows, 16 prices, 38 accessories', () => {
+  it('holds the pricelist constants: 14 systems x 22 rows, 16 prices, 38 accessories', () => {
     expect(SYS).toHaveLength(14);
     expect(Object.keys(MATRIX)).toHaveLength(22);
     expect(Object.values(MATRIX).every((row) => row.length === SYS.length)).toBe(true);

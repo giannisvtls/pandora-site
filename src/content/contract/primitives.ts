@@ -2,9 +2,9 @@
 // templated text values Site copy uses. Plain `zod`, never astro:content's re-export.
 //
 // The source language: every language map an item carries must have a value in the item's source
-// language (`showIn[0]` for items, `en` for media, fixed-key sets and globals). The builders take
-// that language as `source`; without it they accept any languages, which is how an item is parsed
-// before its `showIn` is known (see `itemSchema` in ./item).
+// language (`showIn[0]` for items, `en` for media, fixed-key sets and globals). Schema builders
+// take that language as `source`; without it they accept any languages, which is how an item is
+// parsed before its `showIn` is known (see `itemSchema` in ./item).
 import { z } from 'zod';
 
 export const LOCALES = ['en', 'el', 'it', 'sq'] as const;
