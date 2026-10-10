@@ -18,11 +18,16 @@ function itemOf(name: string, id: string): Loose {
 
 describe('the products', () => {
   it('are the systems, accessory cards apart, with the facts and texts of the data', () => {
-    expect(items.products?.map(({ id }) => id)).toEqual(['alpha', 'beta']);
+    // `order` keeps the data's order (the build gets the collection sorted by id).
+    expect(items.products?.map(({ id, order }) => [id, order])).toEqual([
+      ['alpha', 1],
+      ['beta', 2],
+    ]);
     expect(itemOf('products', 'alpha')).toStrictEqual({
       id: 'alpha',
       slug: 'alpha-pro-v2',
       category: 'car',
+      order: 1,
       brand: 'Pandora',
       showIn: ['en', 'el', 'it', 'sq'],
       name: { en: 'Alpha Pro V2' },
@@ -61,6 +66,7 @@ describe('the products', () => {
       'id',
       'slug',
       'category',
+      'order',
       'brand',
       'showIn',
       'name',

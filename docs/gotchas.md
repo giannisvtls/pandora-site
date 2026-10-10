@@ -352,12 +352,18 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Fix: harmless (browsers that read `srcset` never fetch `src`; the attributes keep the aspect
     ratio). A fixed `width` larger than a small original adds yet another file, so the index
     passes `widths` only.
-- **The Content Layer returns a collection sorted by id.** Astro's data store writes entries in
-  id order, whatever order the loader set them in.
-  - Symptom: the build lists products elite, immo, light, lightpro, ..., while
-    `readSnapshot()` (the unit tests) keeps the file's order; the snapshot's order is lost.
-  - Fix: give a collection that a page shows in a set order an `order` field (categories and nav
-    sections have one); products do not yet, so the interim index lists them by id.
+- **The Content Layer returns a collection sorted by id.** Astro's data store
+  (`astro/dist/content/data-store-writer.js`) writes entries in id order, whatever order the
+  loader set them in.
+  - Symptom: without a sort, the build lists products elite, immo, light, lightpro, ..., while
+    `readSnapshot()` (the unit tests) keeps the file's order, so no unit test over the snapshot
+    sees the difference.
+  - Fix: any list whose order matters needs an `order` field or an explicit sort in the query.
+    Products have `order` (the prototype's, flagship first) and `products(L)` sorts by it, as
+    categories, nav sections, FAQ and the fixed-key sets do. Not yet: posts need a date sort,
+    accessories an order and accessory cards a fixed order when a page shows them (Phases 2-3).
+    A test that matters for order feeds the query the items reversed or sorted by id, and the e2e
+    checks the built page.
 - **Image imports in Vitest are `ImageMetadata`.** Vitest runs through Astro's Vite config.
   - Symptom: `src` is a dev-server URL (`/@fs/.../x.webp?origWidth=...`), not the build's
     `/_astro/x.<hash>.webp`.

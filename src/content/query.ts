@@ -58,7 +58,8 @@ import {
 export type QueryOptions = SiteOptions;
 
 // A product visible in the language, with its page (P1-2) and its level (P1-7). The page exists
-// once product pages are built (Phase 2); the interim index links to it already.
+// once product pages are built (Phase 2); the interim index links to it already. Products come in
+// their `order` (the data store hands them over sorted by id).
 export type ProductIn = Product & { readonly url: string; readonly level: ProductLevel };
 // An accessory with its page under its first vehicle; none without a vehicle (Phase 3).
 export type AccessoryIn = Accessory & { readonly url: string | undefined };
@@ -122,7 +123,7 @@ interface LocaleView {
 }
 
 function viewOf(content: ContentIn, locale: Locale): LocaleView {
-  const products = content.products.map((product) => ({
+  const products = content.products.toSorted(byOrder).map((product) => ({
     ...product,
     url: productPath(locale, product),
     level: levelOf(product, content.levels),

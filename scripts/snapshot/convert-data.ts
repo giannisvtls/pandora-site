@@ -143,7 +143,12 @@ export function convertPrototype(data: PrototypeData, inputs: ConvertInputs): Co
   const media = mediaRefsOf(data, inputs);
   const photos = photoUses(data);
   const systems = data.products.filter((product) => !isAccessoryCard(product));
-  const products = systems.map((product) => productOf(data, media, photos, product));
+  // `order` keeps the prototype's order (the flagship first), which the build cannot see: Astro's
+  // data store returns a collection sorted by id.
+  const products = systems.map((product, index) => ({
+    ...productOf(data, media, photos, product),
+    order: index + 1,
+  }));
   const accessoryCards = data.products
     .filter((product) => isAccessoryCard(product))
     .map((product) => accessoryCardOf(data, media, product));

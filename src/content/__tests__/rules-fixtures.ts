@@ -71,8 +71,9 @@ function product(id: string, patch: Loose = {}): Loose {
   return { ...value, ...patch };
 }
 
-// Products: `elite` complete in English and Greek; `smart` with one Greek spec bullet missing;
-// `light` complete in both, but its image has no Greek alt; `tracer` shown in Italian only.
+// Products, ordered as listed: `elite` complete in English and Greek; `smart` with one Greek spec
+// bullet missing; `light` complete in both, but its image has no Greek alt; `tracer` shown in
+// Italian only.
 function products() {
   const smart = withLanguage(product('smart'), 'el');
   const bullets = (smart.specGroups as { items: Loose[] }[])[0]?.items;
@@ -83,7 +84,7 @@ function products() {
     smart,
     withLanguage(product('light', { image: 'beta-package' }), 'el'),
     tracer,
-  ].map((value) => productSchema.parse(value));
+  ].map((value, index) => productSchema.parse({ ...value, order: index + 1 }));
 }
 
 // Accessories: `d-061` fits every product and is shown in English and Greek, though complete in

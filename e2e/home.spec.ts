@@ -17,12 +17,13 @@ function snapshotOf<T>(name: string): T {
 
 interface SnapshotProduct {
   readonly category: string;
+  readonly order: number;
   readonly slug: string;
   readonly name: { readonly en: string };
 }
 
 const PRODUCTS = snapshotOf<SnapshotProduct[]>('products');
-const CATEGORIES = snapshotOf<{ order: number; title: { en: string } }[]>('categories');
+const CATEGORIES = snapshotOf<{ id: string; order: number; title: { en: string } }[]>('categories');
 const byOrder = (a: { order: number }, b: { order: number }) => a.order - b.order;
 
 test.describe('/en/ home page', () => {
@@ -75,6 +76,21 @@ test.describe('the interim system index (P1-8)', () => {
     await expect(page.locator('main').getByRole('heading', { level: 2 })).toHaveText(
       CATEGORIES.toSorted(byOrder).map(({ title }) => title.en),
     );
+  });
+
+  test("lists each category's systems in their snapshot order, not the data store's", async ({
+    page,
+  }) => {
+    await page.goto('/en/');
+
+    for (const { id } of CATEGORIES) {
+      const names = PRODUCTS.filter(({ category }) => category === id)
+        .toSorted(byOrder)
+        .map(({ name }) => name.en);
+      await expect(page.locator(`main section[aria-labelledby="cat-${id}"] h3`), id).toHaveText(
+        names,
+      );
+    }
   });
 
   test('shows the 16 systems by name, each with one level button and its feature buttons', async ({

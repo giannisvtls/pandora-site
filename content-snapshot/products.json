@@ -3,6 +3,7 @@
     "id": "elite",
     "slug": "elite-v3",
     "category": "car",
+    "order": 1,
     "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {
@@ -178,6 +179,7 @@
     "id": "professional",
     "slug": "professional-v3",
     "category": "car",
+    "order": 2,
     "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {
@@ -353,6 +355,7 @@
     "id": "smartpro",
     "slug": "smart-pro-v4-fd",
     "category": "car",
+    "order": 3,
     "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {
@@ -542,6 +545,7 @@
     "id": "smart",
     "slug": "smart-v4",
     "category": "car",
+    "order": 4,
     "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {
@@ -729,6 +733,7 @@
     "id": "lightpro",
     "slug": "light-pro-v2",
     "category": "car",
+    "order": 5,
     "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {
@@ -905,6 +910,7 @@
     "id": "light",
     "slug": "light-v3",
     "category": "car",
+    "order": 6,
     "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {
@@ -1058,6 +1064,7 @@
     "id": "primo",
     "slug": "primo",
     "category": "car",
+    "order": 7,
     "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {
@@ -1202,6 +1209,7 @@
     "id": "immo",
     "slug": "immo",
     "category": "car",
+    "order": 8,
     "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {
@@ -1324,6 +1332,7 @@
     "id": "motoevo",
     "slug": "moto-evo-v2",
     "category": "moto",
+    "order": 9,
     "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {
@@ -1478,6 +1487,7 @@
     "id": "motov2",
     "slug": "moto-v2",
     "category": "moto",
+    "order": 10,
     "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {
@@ -1581,6 +1591,7 @@
     "id": "camperpro",
     "slug": "camper-pro-v2",
     "category": "camper",
+    "order": 11,
     "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {
@@ -1741,6 +1752,7 @@
     "id": "camperv3",
     "slug": "camper-v3",
     "category": "camper",
+    "order": 12,
     "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {
@@ -1893,6 +1905,7 @@
     "id": "marine",
     "slug": "marine",
     "category": "marine",
+    "order": 13,
     "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {
@@ -2029,6 +2042,7 @@
     "id": "truck",
     "slug": "truck",
     "category": "fleet",
+    "order": 14,
     "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {
@@ -2161,6 +2175,7 @@
     "id": "finder",
     "slug": "finder",
     "category": "fleet",
+    "order": 15,
     "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {
@@ -2247,6 +2262,7 @@
     "id": "tracer",
     "slug": "tracer",
     "category": "fleet",
+    "order": 16,
     "brand": "Pandora",
     "showIn": ["en", "el", "it", "sq"],
     "name": {

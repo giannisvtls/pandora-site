@@ -227,6 +227,9 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
     again would overwrite every edit made since; it is kept for the record and its tests.
   - English everywhere; Greek only where the prototype had it (6 product blurbs, the 38 accessory
     descriptions, the camper category description). Every item has `showIn` all four languages.
+  - Products carry `order`, their place in the prototype (the flagship first in each category):
+    added to `products.json` by hand after the conversion (cycle 8), and written by the converter
+    too, so a re-run gives the same file.
   - Media: one item per file of `src/assets/media/` the content uses (92), its id the file path
     without the extension, `/` as `-` (`pricelist-acc-band`). Alt text follows the patterns of
     spec §3.1 or, where none fits the picture, `ALT_BY_MEDIA` in `scripts/snapshot/alt-text.ts`,
@@ -310,7 +313,8 @@ Spec §5 (P1-1): the one way pages read content.
   is not built (an error); the page rules answer for the built languages only, so there `pageUrl`
   is `undefined`, `sitemapEntries` is `[]`, and `alternates` and `switcherTargets` list the built
   languages (none of the targets current):
-  - `products(L)` (visible, each with `url` = its product page and `level` = `levelOf`),
+  - `products(L)` (visible, in their `order`, each with `url` = its product page and `level` =
+    `levelOf`),
     `categories(L)` (in order), `accessories(L)` (`url` under `vehicles[0]`, none without a
     vehicle), `posts(L)` (`url` with the slug in `L`), `navSections(L)` (in order, with `url`),
     `siteCopy(L)` (the 12 groups by short name: `home`, `common`, ...), `finder(L)`;
@@ -430,9 +434,9 @@ index's with `src/components/system-index.ts`. No component holds visible copy (
   (`lead <span class="b">payload</span>`), then, in order, each category that has a visible
   system, as an h2 over its systems: the package shot through `<Image>` (A19; `widths` 320 and
   640, lazy), the name (h3), the level button, the tag, the highlight feature buttons and the "See the system" link to
-  the product URL (404 until Phase 2). Systems come in the build's order (by id: the Content Layer
-  sorts entries by id), since products have no order field. No reveal classes, so the h1 (LCP)
-  never starts hidden.
+  the product URL (404 until Phase 2). Systems come in their `order` (the prototype's, flagship
+  first; the Content Layer hands the collection over sorted by id). No reveal classes, so the h1
+  (LCP) never starts hidden.
 - **Inline scripts** (Phase 5's `_headers` needs a CSP hash for each): the theme script in the
   head, the theme toggle's script (ThemeToggle), the overlay header's script (SiteHeader, overlay
   pages only) and the reveal script at the end of `<body>`.

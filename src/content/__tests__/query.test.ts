@@ -93,6 +93,30 @@ describe('the items a language shows', () => {
     expect(idsOf(reversed.navSections('en'))).toEqual(idsOf(site.navSections('en')));
   });
 
+  it('lists the products by their order, however the data store hands them over', () => {
+    // The order the snapshot gives: the flagship first in each category, as the prototype.
+    const ORDER = [
+      ['elite', 'professional', 'smartpro', 'smart', 'lightpro', 'light', 'primo', 'immo'],
+      ['motoevo', 'motov2', 'camperpro', 'camperv3', 'marine', 'truck', 'finder', 'tracer'],
+    ].flat();
+    // Astro's data store sorts a collection by id; reversed and by id are two other orders.
+    const byId = snapshot.products.toSorted((a, b) => byCodeUnit(a.id, b.id));
+    const reversed = snapshot.products.toReversed();
+
+    for (const products of [snapshot.products, byId, reversed]) {
+      const query = createQuery({ ...snapshot, products }, { preview: false });
+      expect(idsOf(query.products('en'))).toEqual(ORDER);
+      // Every list built from the products follows: the level and feature explainers.
+      expect(idsOf(query.explainer('en').levels['3'].systems)).toEqual(
+        ORDER.filter((id) => query.products('en').find((item) => item.id === id)?.level === 3),
+      );
+      expect(idsOf(query.explainer('en').features.gps?.systems ?? [])).toEqual(
+        idsOf(site.explainer('en').features.gps?.systems ?? []),
+      );
+    }
+    expect(snapshot.products.map(({ order }) => order)).toEqual(ORDER.map((_, index) => index + 1));
+  });
+
   it('gives the Site copy groups by short name, and the Finder as the language shows it', () => {
     const copy = site.siteCopy('en');
 

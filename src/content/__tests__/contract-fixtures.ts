@@ -20,6 +20,7 @@ export const fixtures = {
     id: 'elite',
     slug: 'elite-v3',
     category: 'car',
+    order: 1,
     brand: 'Pandora',
     showIn: ['en', 'el', 'it', 'sq'],
     name: { en: 'Elite V3' },

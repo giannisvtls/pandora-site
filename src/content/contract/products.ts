@@ -7,6 +7,7 @@ import { categoryId, specRowKey } from './keys';
 import {
   idSchema,
   mediaId,
+  orderSchema,
   showIn,
   slugSchema,
   text,
@@ -34,6 +35,10 @@ const productShape = (source?: Locale) =>
     // ASCII kebab from the English name (A17); one slug for every language.
     slug: slugSchema,
     category: categoryId,
+    // Where the system stands in every list of systems (lowest first; the prototype lists the
+    // flagship first). Astro's data store returns the collection sorted by id, so the query sorts
+    // by this.
+    order: orderSchema,
     brand: textValue,
     showIn,
     name: text(source),
