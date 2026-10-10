@@ -117,10 +117,10 @@ test.describe('the site header', () => {
   });
 });
 
-// The focused element, whether it sits in the header, and its box and the header's, once the
-// page has stopped scrolling.
-async function focusState(page: Page) {
-  return page.locator('html').evaluate(async (root) => {
+// Waits until the page has stopped scrolling (a focus scroll is smooth without reduced motion):
+// three frames in a row at the same position.
+async function scrollEnd(page: Page): Promise<void> {
+  await page.locator('html').evaluate(async (root) => {
     const view = root.ownerDocument.defaultView;
     let last = -1;
     let still = 0;
@@ -129,6 +129,15 @@ async function focusState(page: Page) {
       still = view.scrollY === last ? still + 1 : 0;
       last = view.scrollY;
     }
+  });
+}
+
+// The focused element, whether it sits in the header, and its box and the header's, once the
+// page has stopped scrolling.
+async function focusState(page: Page) {
+  await scrollEnd(page);
+  return page.locator('html').evaluate((root) => {
+    const view = root.ownerDocument.defaultView;
     const focused = root.ownerDocument.activeElement ?? root;
     const header = root.ownerDocument.querySelector('header') ?? root;
     const box = focused.getBoundingClientRect();
@@ -216,11 +225,14 @@ test.describe('the fixed header and keyboard focus (WCAG 2.2 SC 2.4.11)', () => 
     const card = page.locator('main li.sys').nth(1);
     const button = card.locator('button[data-fx]').last();
     await card.getByRole('link', { name: 'See the system', exact: true }).focus();
-    // The page scrolled so that the button before the focused link sits under the header.
+    // Once the focus scroll is over, the page is scrolled so that the button before the focused
+    // link sits under the header.
+    await scrollEnd(page);
     await button.evaluate((element) => {
       const top = element.getBoundingClientRect().top - 30;
       element.ownerDocument.defaultView?.scrollBy({ top, behavior: 'instant' });
     });
+    await scrollEnd(page);
     const under = await button.boundingBox();
     expect(under?.y).toBeGreaterThanOrEqual(0);
     expect((under?.y ?? 0) + (under?.height ?? 0)).toBeLessThan(88);
