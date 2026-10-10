@@ -146,6 +146,16 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: after the hook's `eslint --fix`, a `<script is:inline>` body sits at column 0.
   - Fix: write the script as a plain block (`{ const root = ...; }`) with early `continue`s, and
     let Prettier indent it.
+- **`all: unset` clears the scroll margin too.** The design resets its buttons (`.fx`,
+  `.chipfx`, `.theme-btn`) with `all: unset`, and a component's scoped rule outranks base.css's
+  `main *`.
+  - Symptom: every explainer button computes `scroll-margin-top: 0`; reached by Shift+Tab, a
+    button stays partly or wholly under the fixed header (WCAG 2.2 SC 2.4.11), while links around
+    it are clear.
+  - Fix: reset the browser's button styles one by one (`appearance`, `margin`, `padding`,
+    `border`, `background`, `color`, `font`, ...), never with `all`. `base.test.ts` fails on
+    an `all:` declaration under `src/`, and `e2e/header.spec.ts` checks the scroll margin of
+    every focus target below the header and a Shift+Tab onto a button under it.
 - **Lint rules met by the shell (slice 8).**
   - Symptom: `sonarjs/super-linear-regex` rejects HTML-matching regexes such as
     `/<nav[^>]*>([\s\S]*?)<\/nav>/u` and `/<[^>]+>/gu` in tests; `unicorn/prefer-scoped-selector`
@@ -524,7 +534,9 @@ are about to touch. When you hit a new one, add it here in the same shape.
     the site falls back to system fonts.
   - Fix: declare every family through `fontsourceFamily()` in `astro.config.mjs`; it runs the
     provider's check while the config loads, so a missing subset, style or file stops the build
-    with "Unable to load your Astro config" and the reason.
+    with "Unable to load your Astro config" and the reason. A unit test requires every
+    `config.fonts` entry to be in `CHECKED_FAMILIES` (what `fontsourceFamily()` returned), so a
+    family declared with a bare `provider: fontsourceVariable(pkg)` fails the tests.
 - **A custom font provider is one instance per name and config.** The Fonts API keys providers by
   a hash of `name` and `config`.
   - Symptom: two families with `fontsourceVariable()` and no distinct `config` both resolve from
@@ -660,11 +672,12 @@ are about to touch. When you hit a new one, add it here in the same shape.
     Chromium build is missing.
   - Fix: `npx playwright install chromium`. CI adds `--with-deps`, which also installs the Linux
     system libraries through the package manager; a workstation does not need it.
-- **The home spec counts the snapshot.** `e2e/home.spec.ts` reads the products, categories and
-  nav sections from `content-snapshot/`, but pins the h1 and 16 systems.
+- **The e2e specs count the snapshot.** `e2e/home.spec.ts` reads the products and categories
+  from `content-snapshot/` and pins the h1 and 16 systems; `e2e/header.spec.ts` reads the nav
+  sections.
   - Symptom: adding, hiding or removing a system fails the count; editing the hero heading fails
-    the h1.
-  - Fix: update the spec together with the snapshot.
+    the h1; a nav section's route outside the spec's table fails the nav check.
+  - Fix: update the specs together with the snapshot.
 - **The no-JS scan sees scripts and hidden-on-purpose elements.** The A11 check in
   `e2e/shell.spec.ts` lists every element of the header, `<main>` and the footer that is not
   shown.

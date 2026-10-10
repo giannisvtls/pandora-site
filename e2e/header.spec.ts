@@ -180,6 +180,69 @@ test.describe('the fixed header and keyboard focus (WCAG 2.2 SC 2.4.11)', () => 
     expect(measured).toEqual({ height: 88, position: 'fixed', token: '88px', margin: '104px' });
   });
 
+  test('gives every focus target below the header a scroll margin of its height plus 16px', async ({
+    page,
+  }) => {
+    await page.goto('/en/');
+    const found = await page.locator('body').evaluate((body) => {
+      const header = body.querySelector(':scope > header');
+      const expected = `${String((header?.getBoundingClientRect().height ?? 0) + 16)}px`;
+      const focusable = ':is(a[href], button, input, select, textarea, summary, [tabindex])';
+      const targets = [
+        ...body.querySelectorAll(
+          `:scope > main, :scope > main ${focusable}, :scope > footer ${focusable}`,
+        ),
+      ];
+      return {
+        expected,
+        count: targets.length,
+        wrong: targets
+          .map((target) => ({ target, margin: getComputedStyle(target).scrollMarginTop }))
+          .filter(({ margin }) => margin !== expected)
+          .map(({ target, margin }) => `${target.tagName} ${target.className} ${margin}`),
+      };
+    });
+
+    expect(found.expected).toBe('104px');
+    // <main>, 16 level buttons, the feature buttons, 16 system links, the footer links.
+    expect(found.count).toBeGreaterThan(150);
+    expect(found.wrong).toEqual([]);
+  });
+
+  test('scrolls a feature button reached by Shift+Tab out from under the header', async ({
+    page,
+  }) => {
+    await page.goto('/en/');
+    const card = page.locator('main li.sys').nth(1);
+    const button = card.locator('button[data-fx]').last();
+    await card.getByRole('link', { name: 'See the system', exact: true }).focus();
+    // The page scrolled so that the button before the focused link sits under the header.
+    await button.evaluate((element) => {
+      const top = element.getBoundingClientRect().top - 30;
+      element.ownerDocument.defaultView?.scrollBy({ top, behavior: 'instant' });
+    });
+    const under = await button.boundingBox();
+    expect(under?.y).toBeGreaterThanOrEqual(0);
+    expect((under?.y ?? 0) + (under?.height ?? 0)).toBeLessThan(88);
+
+    await page.keyboard.press('Shift+Tab');
+    await expect(button).toBeFocused();
+    const state = await focusState(page);
+
+    expect(state.top).toBeGreaterThanOrEqual(state.headerBottom);
+    expect(state.bottom).toBeLessThanOrEqual(state.viewHeight);
+  });
+
+  test('never covers the focused element, tabbing back from the footer through the index', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1024, height: 600 });
+    await page.goto('/en/');
+    await page.locator('footer a[href]').last().focus();
+
+    expect(await expectNothingCovered(page, 'Shift+Tab', 70)).toBe(70);
+  });
+
   test('never covers the focused element, tabbing through the header and the index and back', async ({
     page,
   }) => {

@@ -21,6 +21,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 
 import config from '../../../astro.config.mjs';
 import {
+  CHECKED_FAMILIES,
   fontsourceFamily,
   fontsourceVariable,
   type FontsourceFamily,
@@ -146,6 +147,13 @@ describe('the font families of astro.config.mjs', () => {
       PACKAGES.map((pkg) => ({ package: pkg })),
     );
   });
+
+  it('are each declared through fontsourceFamily, so a missing file stops the build', () => {
+    expect(families).toHaveLength(2);
+    for (const family of families) {
+      expect(CHECKED_FAMILIES.has(family), family.name).toBe(true);
+    }
+  });
 });
 
 // The body family as astro.config.mjs declares it, with a package to read.
@@ -190,7 +198,7 @@ describe('a package without one of the woff2 files a family asks for', () => {
     expect(await facesOf(FAMILY.package, ['latin'], ['normal'], root)).toHaveLength(1);
   });
 
-  it('stops astro.config.mjs while it loads (fontsourceFamily)', () => {
+  it('makes fontsourceFamily throw, naming the file (the check astro.config.mjs runs)', () => {
     expect(() => fontsourceFamily(FAMILY, root)).toThrow(
       `${FAMILY.package} has no file ${missing}`,
     );

@@ -94,6 +94,11 @@ export interface FontsourceFamily {
   readonly fallbacks: string[];
 }
 
+// Every family `fontsourceFamily()` has checked and returned. A unit test loads astro.config.mjs
+// and requires each of its `fonts` to be one of them: a family declared with a bare provider
+// would skip the check, and a missing file would again build without fonts.
+export const CHECKED_FAMILIES = new WeakSet<FontFamily>();
+
 // The Fonts API family for `family`, checked now: every subset and style it asks for has its file
 // in the installed package (`root`: the project root, where node_modules is), else this throws
 // naming what is missing. Called while astro.config.mjs loads, a throw stops `astro build` before
@@ -101,5 +106,7 @@ export interface FontsourceFamily {
 export function fontsourceFamily(family: FontsourceFamily, root?: URL): FontFamily {
   const { package: pkg, ...rest } = family;
   facesOf(requireFrom(root), pkg, family.subsets, family.styles);
-  return { ...rest, provider: fontsourceVariable(pkg) };
+  const checked = { ...rest, provider: fontsourceVariable(pkg) };
+  CHECKED_FAMILIES.add(checked);
+  return checked;
 }

@@ -18,9 +18,21 @@ const { level, label } = Astro.props;
 </button>
 
 <style>
-  /* nightwatch.css: the level tag (`.lvl`, coloured per level) inside a plain explainer button. */
+  /* nightwatch.css: the level tag (`.lvl`, coloured per level) inside a plain explainer button.
+     The browser's button styles are reset one by one, not with the design's `all: unset`, which
+     would also clear base.css's scroll margin (the fixed header would cover the focused button). */
   .chipfx {
-    all: unset;
+    appearance: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-align: inherit;
+    text-transform: inherit;
     cursor: pointer;
     display: inline-block;
     max-width: 100%;

@@ -354,7 +354,9 @@ Spec §6.
   `.zoom`, `.wipe`, `.line-rv`). The reveal start states hide or move content only under `html.js`
   (A11), so without JavaScript everything shows; reduced motion and print show everything at
   once. Focus targets in `<main>` and the footer get `scroll-margin-top: calc(var(--hdr) + 16px)`
-  so the fixed header (88px, `--hdr`, measured by the e2e) never covers them (WCAG 2.2 SC 2.4.11).
+  so the fixed header (88px, `--hdr`, measured by the e2e) never covers them (WCAG 2.2 SC 2.4.11),
+  as long as no component rule overrides it: controls reset the browser's button styles one by
+  one, never with `all: unset` (a unit test refuses `all:` under `src/`).
   Component styles go in each component's scoped `<style>`.
 - **Fonts (A12):** `astro.config.mjs` declares Sofia Sans Extra Condensed (`--display`) and Sofia
   Sans (`--body`) through the Fonts API, subsets latin, latin-ext and greek, normal style, with
@@ -366,11 +368,13 @@ Spec §6.
   (see gotchas). Each family is declared through `fontsourceFamily({ package, ... })`, which
   checks its subsets, styles and files while `astro.config.mjs` loads: a missing one stops the
   build ("Unable to load your Astro config"), where the Fonts API would only log the provider's
-  error and build without the family. The face names are `<family>-<hash>`: CSS reaches them only
+  error and build without the family (a unit test requires every `config.fonts` entry to come
+  from it, `CHECKED_FAMILIES`). The face names are `<family>-<hash>`: CSS reaches them only
   through `var(--display)` / `var(--body)`. BaseLayout preloads the latin face of each family.
 - **`src/layouts/BaseLayout.astro`** (props `locale`, `page`, `header` (`solid`, the default, or
-  `overlay`), and for every page but home its `name` and `description`, A5) builds its head with `pageHead()` (`head.ts`) from the query
-  module: the title (home's own; else Site copy `common.titleTemplate` around `name`), the
+  `overlay`), and for every page but home its `name` and `description`, A5) builds its head
+  with `pageHead()` (`head.ts`) from the query module: the title (home's own; else Site copy
+  `common.titleTemplate` around `name`), the
   description, the absolute canonical URL (`pageUrl` against astro.config.mjs `site`), one
   `hreflang` link per alternate plus `x-default`, `og:title` / `og:description` / `og:url` /
   `og:locale` (`OG_LOCALES`: `en_GB`, `el_GR`, `it_IT`, `sq_AL`), the favicon, the fonts. An

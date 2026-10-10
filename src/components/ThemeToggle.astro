@@ -67,9 +67,15 @@ const { toDark, toLight } = Astro.props;
 </script>
 
 <style>
-  /* nightwatch.css `.theme-btn`: the moon in light, the sun in dark. */
+  /* nightwatch.css `.theme-btn`: the moon in light, the sun in dark. The browser's button styles
+     are reset one by one, not with the design's `all: unset` (it would also clear the scroll margin
+     and the box sizing of base.css). */
   .theme-btn {
-    all: unset;
+    appearance: none;
+    margin: 0;
+    padding: 0;
+    background: none;
+    font: inherit;
     cursor: pointer;
     width: 36px;
     height: 36px;
@@ -84,7 +90,7 @@ const { toDark, toLight } = Astro.props;
     border-color: var(--ink);
   }
 
-  /* `all: unset` clears the global focus ring: declared again. */
+  /* The design's ring for these controls: a 3px offset. */
   .theme-btn:focus-visible {
     outline: 2px solid var(--armed);
     outline-offset: 3px;

@@ -27,18 +27,28 @@ const { feature, title } = Astro.props;
 </button>
 
 <style>
-  /* nightwatch.css "feature explainers": a dotted underline and an info mark. */
+  /* nightwatch.css "feature explainers": a dotted underline and an info mark. The design resets
+     the button with `all: unset`, which would also clear base.css's scroll margin and let the
+     fixed header cover the button when it takes focus: the browser's button styles are reset one
+     by one instead. */
   .fx {
-    all: unset;
+    appearance: none;
+    margin: 0;
+    padding: 0 0 1px;
+    border: 0;
+    border-bottom: 1px dotted var(--ink-3);
+    border-radius: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-align: inherit;
+    text-transform: inherit;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 6px;
     min-height: 24px;
-    border-bottom: 1px dotted var(--ink-3);
-    padding-bottom: 1px;
-    color: inherit;
-    font: inherit;
     transition:
       border-color 0.3s,
       color 0.3s;
@@ -57,7 +67,7 @@ const { feature, title } = Astro.props;
     color: var(--ink);
   }
 
-  /* `all: unset` clears the global focus ring: declared again. */
+  /* The design's ring for these controls: a 3px offset. */
   .fx:focus-visible {
     outline: 2px solid var(--armed);
     outline-offset: 3px;

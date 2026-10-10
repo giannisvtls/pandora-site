@@ -43,8 +43,9 @@ body {
   border: 2px solid var(--night);
 }
 
-/* The focus ring: every focusable element, <main> included (the skip link's target). A control
-   that resets its styles with `all: unset` declares it again. */
+/* The focus ring: every focusable element, <main> included (the skip link's target). Controls
+   reset the browser's button styles one by one, never with `all: unset`: it would also clear the
+   scroll margin below. */
 :focus-visible {
   outline: 2px solid var(--armed);
   outline-offset: 4px;

@@ -1,6 +1,10 @@
 // base.css (spec §6): the element defaults and utilities of the design, the focus ring, and the
 // reveal grammar, whose start states hide or move content only under html.js (A11) and which
 // reduced motion turns off.
+import { readdirSync, readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { describe, expect, it } from 'vitest';
 
 import { readCss, type CssRule } from './css-rules';
@@ -8,6 +12,23 @@ import { readCss, type CssRule } from './css-rules';
 const base = readCss('base.css');
 
 const REDUCED_MOTION = '@media print, (prefers-reduced-motion: reduce)';
+
+const SRC_DIR = fileURLToPath(new URL('../../', import.meta.url));
+
+// The stylesheets and components under src/ that declare `all`, comments left out.
+function filesDeclaringAll(): string[] {
+  return readdirSync(SRC_DIR, { recursive: true, withFileTypes: true })
+    .filter((entry) => entry.isFile() && /\.(?:astro|css)$/u.test(entry.name))
+    .map((entry) => path.join(entry.parentPath, entry.name))
+    .filter((file) => {
+      const text = readFileSync(file, 'utf8')
+        .split('*/')
+        .map((part) => part.split('/*', 1)[0])
+        .join('');
+      return /(?:^|[;{\s])all\s*:/mu.test(text);
+    })
+    .map((file) => path.relative(SRC_DIR, file).replaceAll('\\', '/'));
+}
 
 // The rule for `selector` in `scope` ('' for none), with its declarations.
 function ruleFor(selector: string, scope = ''): CssRule | undefined {
@@ -95,5 +116,9 @@ describe('base.css', () => {
       'calc(var(--hdr) + 16px)',
     );
     expect(base.some(({ declarations }) => declarations.has('scroll-padding-top'))).toBe(false);
+  });
+
+  it('is never undone by an `all` reset: it would clear the scroll margin (and the focus ring)', () => {
+    expect(filesDeclaringAll()).toEqual([]);
   });
 });
