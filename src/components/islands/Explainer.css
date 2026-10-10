@@ -4,8 +4,11 @@
    scope. Button styles are reset one by one, never with `all` (base.test.ts). */
 
 /* The dialog is only the panel's frame, without padding or border of its own: the panel (.fx-body)
-   fills its box, so a click whose target is the dialog itself is on the backdrop (the browser gives
-   both the dialog as the target). `display` stays the browser's: a closed dialog stays hidden. */
+   fills its box, so a press whose target is the dialog itself is on the backdrop (the browser gives
+   both the dialog as the target). A click's target is not enough: a press in the panel released
+   on the backdrop (a dragged selection) sends the click to the dialog too, so explainer-dialog.ts
+   also checks where the press started. `display` stays the browser's: a closed dialog stays
+   hidden. */
 .fx-panel {
   position: fixed;
   inset: 0 0 0 auto;
@@ -73,6 +76,13 @@
 
 .fx-close:hover {
   border-color: var(--ink);
+}
+
+/* The design's ring for the close button: flush with its border and square (base.css's ring has a
+   4px offset and rounded corners). */
+.fx-close:focus-visible {
+  outline-offset: 0;
+  border-radius: 0;
 }
 
 /* The design's 4px above the title is in the close button's bottom margin. */

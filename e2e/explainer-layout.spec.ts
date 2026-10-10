@@ -10,9 +10,9 @@ import {
 
 // The open explainer on small screens and at 400% zoom (spec §8): the panel fills the screen and
 // scrolls inside, the close button stays in its corner and in reach, nothing scrolls sideways
-// (WCAG 1.4.10) and a focused link is never under the close button (2.4.11). The opening slides
-// in, unless reduced motion is asked for. Focus lands somewhere visible when the button that
-// opened it is hidden meanwhile.
+// (WCAG 1.4.10) and a focused link is never under the close button (2.4.11). After a click on the
+// panel's text the keyboard scrolls the panel. The opening slides in, unless reduced motion is
+// asked for. Focus lands somewhere visible when the button that opened it is hidden meanwhile.
 
 const GPS = 'GPS/GLONASS tracking';
 const LEVEL_3 = 'Level 3 · Recovery';
@@ -92,6 +92,28 @@ for (const screen of SCREENS) {
     });
   });
 }
+
+test.describe('the keyboard after a click on the panel', () => {
+  test('scrolls the panel, and Tab still goes to Close (390×600)', async ({ page }) => {
+    await explainerPage(page, { width: 390, height: 600 });
+    const explainer = await openExplainer(page, levelButton(page, '3'), LEVEL_3);
+
+    // The click focuses the panel (it can take focus), not the dialog, and shows no ring.
+    await explainer.dialog.locator('.fx-what').click();
+    const focus = await explainer.panel.evaluate((panel) => ({
+      isFocused: panel.matches(':focus'),
+      hasRing: panel.matches(':focus-visible'),
+    }));
+    expect(focus).toEqual({ isFocused: true, hasRing: false });
+    await page.keyboard.press('PageDown');
+
+    await expect
+      .poll(async () => explainer.panel.evaluate((panel) => panel.scrollTop))
+      .toBeGreaterThan(0);
+    await page.keyboard.press('Tab');
+    await expect(explainer.close).toBeFocused();
+  });
+});
 
 test.describe('motion', () => {
   test('slides the panel in and fades the backdrop, unless reduced motion is asked for', async ({

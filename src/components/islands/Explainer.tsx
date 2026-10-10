@@ -221,9 +221,16 @@ export default function Explainer(props: ExplainerProps) {
     if (view !== undefined && dialog.current !== null) openDialog(dialog.current);
   }, [view]);
 
+  // Named by its title only while a view renders it (closed, the dialog has no title to point to).
+  // The panel is the scroll container and can take focus (not in the Tab order): a click on its
+  // text focuses it rather than the dialog, so the keyboard then scrolls it.
   return (
-    <dialog ref={dialog} class="fx-panel" aria-labelledby={TITLE_ID}>
-      <div class="fx-body">
+    <dialog
+      ref={dialog}
+      class="fx-panel"
+      aria-labelledby={view === undefined ? undefined : TITLE_ID}
+    >
+      <div class="fx-body" tabIndex={-1}>
         <CloseButton labels={props.labels} />
         {view?.kind === 'feature' && <FeatureBody feature={view.feature} props={props} />}
         {view?.kind === 'level' && <LevelBody level={view.level} props={props} />}

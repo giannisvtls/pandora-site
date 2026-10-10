@@ -618,13 +618,16 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: "Tab stays inside" fails on the press after the last control.
   - Fix: the island wraps Tab and Shift+Tab at the ends itself (`wrapFocus` in
     menu-dialog.ts); `e2e/menu.spec.ts` checks `hasFocus()` after each press.
-- **A click on a modal dialog's background focuses the dialog.** Chromium gives a modal dialog
-  focus when a click lands on its own box (an empty part, its padding), whether or not it scrolls
-  (it does so with `overflow: visible` too).
+- **A click on a modal dialog's content focuses the dialog.** Chromium gives a modal dialog focus
+  when a click lands on anything inside it that cannot take focus itself (its padding, text,
+  headings, an empty area), whatever its overflow.
   - Symptom: the next Shift+Tab (or Tab) is not at a control, so a wrap that only looks at the
-    first and last controls lets focus leave the page.
+    first and last controls lets focus leave the page. And when the dialog is not the element that
+    scrolls, PageDown, the arrow keys and Space then scroll nothing.
   - Fix: `wrapFocus` treats focus on anything that is not one of the controls as an end: Shift+Tab
     goes to the last control, Tab to the first (`e2e/menu-resize.spec.ts` clicks the background).
+    The explainer's scrolling panel has `tabindex="-1"`, so a click on its text focuses the panel
+    (no ring on a mouse focus) and the keyboard scrolls it (`e2e/explainer-layout.spec.ts`).
 - **A top-layer dialog does not follow a resize.** Whatever was measured when the dialog opened
   (the close button's place over the burger) goes stale when the phone turns or the page zooms,
   and the browser does nothing about it.
@@ -667,14 +670,21 @@ are about to touch. When you hit a new one, add it here in the same shape.
     `currentColor` top borders; an icon is an inline SVG with `stroke="currentColor"`.
     `e2e/forced-colors.spec.ts` checks the pixels inside each control with
     `page.emulateMedia({ forcedColors: 'active' })`.
-- **A click on a dialog's padding looks like a backdrop click.** The browser gives a click on a
-  modal dialog's `::backdrop` the dialog itself as its target, and a click on the dialog's own
-  padding or border too.
+- **A click's target does not tell a backdrop click.** The browser gives a click on a modal
+  dialog's `::backdrop` the dialog itself as its target, and a click on the dialog's own padding
+  or border too. A press and a release on two elements send the click to their nearest common
+  ancestor, which is the dialog for a drag between the panel and the backdrop. A double-click's
+  second click on an explainer button lands on the backdrop of the dialog the first one opened.
   - Symptom: a backdrop check on `event.target === dialog` closes the explainer when its panel's
-    padding is clicked.
-  - Fix: the dialog has no padding or border; its panel (`.fx-body`) fills the dialog's box and
-    carries them, so only the backdrop leaves the dialog as the target. `e2e/explainer.spec.ts`
-    clicks the panel's padding and border (stays open) and the backdrop (closes).
+    padding is clicked, when a text selection is dragged from the panel onto the backdrop (the
+    selection is lost), when a press on the backdrop is released over the panel, and on a
+    double-click on the button that opens it.
+  - Fix: the dialog has no padding or border (its panel, `.fx-body`, fills the dialog's box and
+    carries them), and a click closes it only when the latest `pointerdown` and `pointerup` both
+    had the dialog itself as their target and `event.detail` is at most 1
+    (`explainer-dialog.ts`). `e2e/explainer.spec.ts` clicks the panel's padding and border, drags
+    both ways across the panel's edge and double-clicks the button (stays open), and clicks the
+    backdrop (closes).
 - **Sticky offsets inside a scroll container count its padding.** Chromium constrains a sticky
   element to the scroll container's padding box minus its padding.
   - Symptom: the explainer's sticky close button, `top: 14px` in a panel with 56px of top padding,
@@ -693,10 +703,14 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Fix: look up keys that come from the page with `Object.hasOwn` (`viewFor` in Explainer.tsx).
 - **`client:idle` loses a click before hydration.** The explainer's buttons are on the page from
   the first paint; its script runs once the browser is idle after load.
-  - Symptom: a click in that window opens nothing (on `/en/` from the local preview: none on a
-    desktop, about 65-100 ms and up to 200 ms at 4x CPU throttling; a network adds a round trip).
+  - Symptom: a click in that window opens nothing. From the local preview on `/en/`: none on a
+    desktop, about 65-100 ms and up to 200 ms at 4x CPU throttling. Over a network the scripts
+    come in two round trips after the idle callback (the component and the renderer, then the
+    Preact, hooks and shared chunks they import; Astro writes no modulepreload): about 0.9 s after
+    first paint at a 300 ms round trip.
   - Fix: none in Phase 1 (a queue would need an inline script with its own CSP hash, or
-    `client:load`); the next click works.
+    `client:load`); the next click works. Later options: modulepreload links for the island's
+    chunks, or hydrating on the first interaction.
 
 ## Unit tests (Vitest)
 

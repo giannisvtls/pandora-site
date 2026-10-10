@@ -533,32 +533,41 @@ JavaScript nothing an island renders is needed (A11).
   added in a layout effect, so the buttons work the moment Astro removes `ssr`): one
   document-level click listener opens the dialog from any `[data-fx]` / `[data-lvl]` button the
   props have a view for (own keys only), buttons added after load included. The island renders
-  the view (a native modal `<dialog>` named by its h2 through `aria-labelledby`: the feature's
+  the view (a native modal `<dialog>` named by its h2 through `aria-labelledby`, set only while a
+  view renders, so the closed dialog points at no missing id: the feature's
   title, what, "How it works", "Needs", "On these systems" with each system's link and Included /
   Optional; or the level's title, what, "What you get", "Where it stops", "Systems that reach this
   level" with each vehicle word; h3 section heads, each list named by its head, a section without
   text left out), then opens it on the close button. Tab and Shift+Tab wrap (`dialog-focus.ts`);
   Escape, the close button, a click on the backdrop and following a link close it. The panel
-  (`.fx-body`) fills the dialog's box (the dialog has no padding or border), so a click whose
-  target is the dialog itself is on the backdrop. The dialog's `close` event gives focus back to
+  (`.fx-body`) fills the dialog's box (the dialog has no padding or border), so a pointer event
+  whose target is the dialog itself is on the backdrop; a click closes it only when its press and
+  its release were both there and it is a single click (a click's own target is the dialog for a
+  drag across the panel's edge too, and a double-click's second click on the opening button
+  lands on the backdrop). The panel takes focus on a click on its text (`tabindex="-1"`, not in
+  the Tab order), so the keyboard scrolls it. The dialog's `close` event gives focus back to
   the button that opened it, or to `<main>` (without scrolling) when that button has gone or is
   hidden; a late `close` event after a reopen does nothing. The look is the design's panel: on the
   right, 460px wide (the whole screen below that), over a veiled, blurred page; the panel scrolls
-  inside, the close button (46px, an inline SVG X in `currentColor`) stays 14px from its corner
-  while it scrolls (sticky) and links that take focus stop below it. The page under it does not
+  inside, the close button (46px, an inline SVG X in `currentColor`, its focus ring flush and
+  square as the design's) stays 14px from its corner while it scrolls (sticky) and links that take
+  focus stop below it. The page under it does not
   scroll (`html:has(.fx-panel[open])`). The panel slides in and the backdrop fades only without
   `prefers-reduced-motion`; closing is instant. Without JavaScript the buttons are hidden and their
   labels show as text. Before the island hydrates a click on a button does nothing: on `/en/`
   the island hydrates by first paint on a desktop, and about 65-100 ms after it (up to 200 ms) at
-  4x CPU throttling, from the local preview; a network adds a round trip for the scripts. No
-  pre-hydration queue in Phase 1. Tests: `islands/__tests__/Explainer.test.tsx` (the views) and
+  4x CPU throttling, from the local preview. Over a network the scripts come in two round trips
+  after the idle callback (the component and the renderer, then the Preact, hooks and shared chunks
+  they import; no modulepreload): about 0.9 s after first paint at a 300 ms round trip. No
+  pre-hydration queue in Phase 1 (later options: modulepreload links, hydrating on the first
+  interaction). Tests: `islands/__tests__/Explainer.test.tsx` (the views) and
   `explainer-dialog.test.tsx` (closing and focus; jsdom, fixtures in `explainer-fixtures.tsx`),
   `layouts/__tests__/explainer-content.test.ts` (the props on the snapshot),
   `components/__tests__/explainer-buttons.test.ts`, `layouts/__tests__/BaseLayout.test.ts`,
   `e2e/explainer.spec.ts` (GPS, Wi-Fi positioning, Level 3, Tab, every way out, the backdrop
-  against the panel, a click the instant it hydrates, the props size, axe open in both themes),
+  against the panel, drags across its edge, a double-click on the button, the Close ring, a click the instant it hydrates, the props size, axe open in both themes),
   `e2e/explainer-layout.spec.ts` (390 × 844 and 320 × 256, focus clear of the close button,
-  reduced motion, a hidden opener; helpers in `e2e/explainer-fixtures.ts`), `e2e/shell.spec.ts`
+  keyboard scrolling after a click on the panel, reduced motion, a hidden opener; helpers in `e2e/explainer-fixtures.ts`), `e2e/shell.spec.ts`
   (without JavaScript) and `e2e/forced-colors.spec.ts`.
 
 ## i18n routing

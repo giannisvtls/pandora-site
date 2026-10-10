@@ -4,6 +4,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
 import {
+  DESKTOP,
   entries,
   explainerIsland,
   explainerNamed,
@@ -11,15 +12,17 @@ import {
   featureButton,
   levelButton,
   openExplainer,
+  settled,
   stayOnPage,
 } from './explainer-fixtures';
 import { focusInDialog, overflowOf } from './menu-fixtures';
 
 // The explainer island on the built /en/ (spec §8, A10): every feature and level button opens a
 // native modal dialog named by its title, with focus on Close; Tab stays inside; Escape, the close
-// button, a click on the backdrop and following a link close it, focus goes back to the button
-// that opened it, and the page does not scroll meanwhile. Its props stay under 40 KB, axe finds
-// nothing with it open. Small screens, zoom and motion are in explainer-layout.spec.ts.
+// button, a click on the backdrop (not a drag across its edge, nor a double-click's second click)
+// and following a link close it, focus goes back to the button that opened it, and the page does
+// not scroll meanwhile. Its props stay under 40 KB, axe finds nothing with it open. Small screens,
+// zoom, keyboard scrolling and motion are in explainer-layout.spec.ts.
 
 // WCAG 2.0, 2.1 and 2.2 at levels A and AA. axe-core 4.13 defines no `wcag22a` tag.
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
@@ -145,6 +148,76 @@ test.describe('the explainer', () => {
     await page.mouse.click(box.x - 200, box.y + box.height / 2);
 
     await expectClosedWithFocusOn(page, explainer.dialog, button);
+  });
+
+  test('stays open when a press and its release land on the panel and the backdrop', async ({
+    page,
+  }) => {
+    await explainerPage(page);
+    const explainer = await openExplainer(page, featureButton(page, 'gps'), GPS);
+    const text = await explainer.dialog.locator('.fx-what').boundingBox();
+    const box = await explainer.dialog.boundingBox();
+    if (text === null || box === null) throw new Error('No box');
+    const selected = () =>
+      page.locator('html').evaluate((html) => html.ownerDocument.getSelection()?.toString() ?? '');
+
+    // A text selection dragged from the panel onto the backdrop: the click goes to the dialog,
+    // their common ancestor, but the press was not on the backdrop.
+    await page.mouse.move(text.x + 4, text.y + 10);
+    await page.mouse.down();
+    await page.mouse.move(box.x - 60, text.y + 40, { steps: 8 });
+    await page.mouse.up();
+    await expect(explainer.dialog).toBeVisible();
+    const selection = await selected();
+    expect(selection.length).toBeGreaterThan(20);
+
+    // A press on the backdrop released over the panel.
+    await page.mouse.move(box.x - 60, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 120, box.y + box.height / 2, { steps: 8 });
+    await page.mouse.up();
+    await expect(explainer.dialog).toBeVisible();
+  });
+
+  for (const size of [DESKTOP, { width: 390, height: 844 }]) {
+    test(`stays open after a double-click on its button (${String(size.width)}px)`, async ({
+      page,
+    }) => {
+      await explainerPage(page, size);
+
+      // The second click lands on the backdrop of the dialog the first one opened (at 390px while
+      // the panel slides in).
+      await featureButton(page, 'gps').dblclick();
+
+      const { dialog } = explainerNamed(page, GPS);
+      await expect(dialog).toBeVisible();
+      await settled(page);
+      await expect(dialog).toBeVisible();
+    });
+  }
+
+  test("draws Close's focus ring flush and square, as the design's", async ({ page }) => {
+    await explainerPage(page);
+    await featureButton(page, 'gps').focus();
+    await page.keyboard.press('Enter');
+    const { close } = explainerNamed(page, GPS);
+    await expect(close).toBeFocused();
+
+    const ring = await close.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        isFocusVisible: element.matches(':focus-visible'),
+        outline: `${style.outlineStyle} ${style.outlineWidth}`,
+        offset: style.outlineOffset,
+        radius: style.borderRadius,
+      };
+    });
+    expect(ring).toEqual({
+      isFocusVisible: true,
+      outline: 'solid 2px',
+      offset: '0px',
+      radius: '0px',
+    });
   });
 
   test('closes with the close button and when a system link is followed', async ({ page }) => {

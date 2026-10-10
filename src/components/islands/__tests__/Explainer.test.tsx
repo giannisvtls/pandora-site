@@ -33,6 +33,8 @@ describe('Explainer', () => {
     const dialog = document.querySelector('dialog');
     expect(dialog).not.toHaveAttribute('open');
     expect(dialog?.querySelectorAll('h2, p, ul')).toHaveLength(0);
+    // No name pointing at a title that is not there.
+    expect(dialog).not.toHaveAttribute('aria-labelledby');
   });
 
   it('opens the feature view, named by its title, with focus on the close button', () => {

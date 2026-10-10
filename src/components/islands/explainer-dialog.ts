@@ -1,10 +1,11 @@
 // What the explainer does once it is live (Explainer.tsx renders its views; this wires the dialog
 // with native listeners): one document-level click listener opens it from any explainer button on
 // the page (`data-fx`, `data-lvl`, spec §8), buttons added later included; the close button, a
-// click on the backdrop, a followed link and Escape (the browser's close request) close it; Tab
-// and Shift+Tab wrap at the ends (dialog-focus.ts). Every way out ends in the dialog's `close`
-// event, which gives focus back to the button that opened it or, when that button has gone or is
-// hidden, to <main>.
+// click on the backdrop (pressed and released there, not the end of a drag out of the panel, nor
+// the second click of a double-click), a followed link and Escape (the browser's close request)
+// close it; Tab and Shift+Tab wrap at the ends (dialog-focus.ts). Every way out ends in the
+// dialog's `close` event, which gives focus back to the button that opened it or, when that button
+// has gone or is hidden, to <main>.
 import { isShown, wrapFocus } from './dialog-focus';
 
 // The explainer buttons (FeatureButton.astro, LevelButton.astro).
@@ -50,10 +51,26 @@ export function wireExplainer<View>(
     opener = button;
     show(view);
   };
+  // Whether the latest press, and the latest release, were on the backdrop. The panel fills the
+  // dialog's box, so a pointer event whose target is the dialog itself is on the backdrop. A
+  // click's target alone cannot tell: a press and a release on two elements (a text selection
+  // dragged out of the panel, or a press on the backdrop released over it) send the click to
+  // their common ancestor, the dialog.
+  let isPressOnBackdrop = false;
+  let isReleaseOnBackdrop = false;
+  const onPointerDown = (event: PointerEvent) => {
+    isPressOnBackdrop = event.target === dialog;
+  };
+  const onPointerUp = (event: PointerEvent) => {
+    isReleaseOnBackdrop = event.target === dialog;
+  };
   const onClick = (event: MouseEvent) => {
     const target = event.target instanceof Element ? event.target : null;
-    // The panel fills the dialog's box, so a click on the dialog itself is on its backdrop.
-    if (target === dialog || target?.closest('a[href], .fx-close') != null) dialog.close();
+    // A backdrop click: pressed and released there, and a single click (the second click of a
+    // double-click on an explainer button lands on the backdrop of the dialog the first opened).
+    const isBackdropClick =
+      target === dialog && isPressOnBackdrop && isReleaseOnBackdrop && event.detail <= 1;
+    if (isBackdropClick || target?.closest('a[href], .fx-close') != null) dialog.close();
   };
   const onKeyDown = (event: KeyboardEvent) => {
     wrapFocus(dialog, event);
@@ -65,11 +82,15 @@ export function wireExplainer<View>(
     show(undefined);
   };
   page.addEventListener('click', onPageClick);
+  dialog.addEventListener('pointerdown', onPointerDown);
+  dialog.addEventListener('pointerup', onPointerUp);
   dialog.addEventListener('click', onClick);
   dialog.addEventListener('keydown', onKeyDown);
   dialog.addEventListener('close', onClose);
   return () => {
     page.removeEventListener('click', onPageClick);
+    dialog.removeEventListener('pointerdown', onPointerDown);
+    dialog.removeEventListener('pointerup', onPointerUp);
     dialog.removeEventListener('click', onClick);
     dialog.removeEventListener('keydown', onKeyDown);
     dialog.removeEventListener('close', onClose);

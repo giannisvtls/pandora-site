@@ -2,7 +2,8 @@
 // The explainer island (spec §8) in jsdom, with the showModal() stand-in of src/test/setup.ts:
 // closing and focus. Escape, the close button, a click on the backdrop and following a system link
 // close it, and focus goes back to the button that opened it (another one each time), or to <main>
-// once that button has gone or is hidden; a click inside the panel leaves it open; Tab and
+// once that button has gone or is hidden; a click inside the panel, a click on the dialog whose
+// press started elsewhere (a drag) and the second click of a double-click leave it open; Tab and
 // Shift+Tab wrap at the ends; a dialog closed and opened again in one task keeps its new view.
 import { fireEvent, screen, waitFor, within } from '@testing-library/preact';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -24,6 +25,19 @@ afterEach(() => {
   document.removeEventListener('click', stayOnPage);
 });
 
+// A press on `from` released on `to`, then the click, which the browser sends to their common
+// ancestor: the dialog itself when either is the backdrop (the dialog is their target).
+function pressAndRelease(from: Element, to: Element, dialog: HTMLElement, detail = 1): void {
+  fireEvent.pointerDown(from);
+  fireEvent.pointerUp(to);
+  fireEvent.click(dialog, { detail });
+}
+
+// A click on the backdrop.
+const clickBackdrop = (dialog: HTMLElement, detail = 1) => {
+  pressAndRelease(dialog, dialog, dialog, detail);
+};
+
 // The ways out of the open dialog.
 const CLOSE_PATHS: readonly (readonly [string, (dialog: HTMLElement) => void])[] = [
   [
@@ -38,11 +52,10 @@ const CLOSE_PATHS: readonly (readonly [string, (dialog: HTMLElement) => void])[]
       fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
     },
   ],
-  // The browser gives a click on the backdrop the dialog itself as its target.
   [
     'a click on the backdrop',
     (dialog) => {
-      fireEvent.click(dialog);
+      clickBackdrop(dialog);
     },
   ],
   [
@@ -81,7 +94,7 @@ describe('closing the explainer', () => {
     await expectClosedWithFocusOn(opener('GPS/GLONASS tracking'));
 
     fireEvent.click(opener('Level 3 · Recovery'));
-    fireEvent.click(dialogNamed('Level 3 · Recovery'));
+    clickBackdrop(dialogNamed('Level 3 · Recovery'));
 
     await expectClosedWithFocusOn(opener('Level 3 · Recovery'));
   });
@@ -94,6 +107,32 @@ describe('closing the explainer', () => {
     fireEvent.click(dialog.querySelector('.fx-body') ?? dialog);
     fireEvent.click(within(dialog).getByRole('heading', { level: 2 }));
     fireEvent.click(within(dialog).getByText('Cost.'));
+
+    expect(dialog).toHaveAttribute('open');
+  });
+
+  it('stays open on a press and a release on the panel and the backdrop (a drag)', () => {
+    renderPage();
+    fireEvent.click(opener('Level 3 · Recovery'));
+    const dialog = dialogNamed('Level 3 · Recovery');
+    const text = within(dialog).getByText('Cost.');
+
+    // Pressed on the panel's text and released on the backdrop, and the other way round.
+    pressAndRelease(text, dialog, dialog);
+    pressAndRelease(dialog, text, dialog);
+
+    expect(dialog).toHaveAttribute('open');
+    // The next press on the backdrop counts again.
+    clickBackdrop(dialog);
+    expect(dialog).not.toHaveAttribute('open');
+  });
+
+  it('stays open on the second click of a double-click on the backdrop', () => {
+    renderPage();
+    fireEvent.click(opener('Level 3 · Recovery'));
+    const dialog = dialogNamed('Level 3 · Recovery');
+
+    clickBackdrop(dialog, 2);
 
     expect(dialog).toHaveAttribute('open');
   });

@@ -188,8 +188,8 @@ describe('BaseLayout', () => {
     expect(start).toBeGreaterThan(html.indexOf('</footer>'));
     expect(island).toContain(' client="idle"');
     expect(island).toMatch(/component-url="[^"]*Explainer[^"]*"/u);
-    // A closed dialog (no `open`), named by the title a button will put in it.
-    expect(island).toContain('<dialog class="fx-panel" aria-labelledby="fx-title">');
+    // A closed dialog (no `open`), unnamed until a button puts a title in it.
+    expect(island).toContain('<dialog class="fx-panel"><div class="fx-body" tabindex="-1">');
     expect(props).toContain('"close":[0,"Close"]');
     expect(props).toContain('"title":[0,"Level 3 · Recovery"]');
     // The reveal script comes after it.
