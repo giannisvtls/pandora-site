@@ -95,21 +95,27 @@ are about to touch. When you hit a new one, add it here in the same shape.
 - **unicorn 77 boolean names cover functions too.** `unicorn/consistent-boolean-name` checks
   boolean variables and parameters, and also functions and callback parameters that return a
   boolean.
-  - Symptom: lint errors on names such as `fresh`, `retryable`, `wantBody` or `sameHosts()`.
+  - Symptom: lint errors on names such as `fresh`, `retryable`, `wantBody` or `sameHosts()`, on
+    a spec name such as `pageExists`, and on Astro's `export const prerender = true`.
   - Fix: start them with `is`, `are`, `has`, `have`, `can`, `should`, `was`, `were`, `did`,
-    `will` or `requires` (`shouldReset`, `shouldRetry`, `shouldReadBody`, `hasSameHosts()`).
-- **More unicorn 77 and sonarjs rules that bite in `scripts/`.**
+    `will` or `requires` (`shouldReset`, `shouldRetry`, `shouldReadBody`, `hasSameHosts()`;
+    `hasPage` for spec §4's `pageExists`). Leave `prerender` out: the static output prerenders
+    every route.
+- **More unicorn 77 and sonarjs rules that bite in `scripts/` and `src/`.**
   - Symptom: `unicorn/prefer-https` and `sonarjs/no-clear-text-protocols` reject `http://` (and
-    `ftp://`) literals, `prefer-https` even in comments; `unicorn/consistent-class-member-order`
-    wants private methods before public ones; `unicorn/no-top-level-assignment-in-function`
-    rejects `beforeAll(async () => { value = ... })` on a module-level `let`;
+    `ftp://`) literals, `prefer-https` even in comments, and so a name that must stay `http://`
+    (the sitemap namespace, `'http://www.sitemaps.org/schemas/sitemap/0.9'`);
+    `unicorn/consistent-class-member-order` wants private methods before public ones;
+    `unicorn/no-top-level-assignment-in-function` rejects
+    `beforeAll(async () => { value = ... })` on a module-level `let`;
     `unicorn/require-array-sort-compare` and `sonarjs/no-alphabetical-sort` reject a bare
     `toSorted()`.
-  - Fix: build a plain-HTTP test URL with `url.protocol = 'http:'`; order class members as
-    fields, constructor, private methods, public methods; in a test, top-level `await` a setup
-    function that returns everything (see `scripts/crawl/__tests__/dry-run.test.ts`); sort
-    strings with `byCodeUnit` from `scripts/crawl/output.ts` (code-unit order, the same on every
-    machine, unlike `localeCompare`).
+  - Fix: build a plain-HTTP test URL with `url.protocol = 'http:'`, and a namespace name through
+    `URL` (`namespaceName` in `src/content/seo.ts`); order class members as fields, constructor,
+    private methods, public methods; in a test, top-level `await` a setup function that returns
+    everything (see `scripts/crawl/__tests__/dry-run.test.ts`); sort strings with `byCodeUnit`
+    from `scripts/crawl/output.ts` (code-unit order, the same on every machine, unlike
+    `localeCompare`).
 - **`eslint --fix` rewrites `http://` inside strings.** `unicorn/prefer-https` has an autofix,
   and lint-staged runs `eslint --fix` on every commit.
   - Symptom: a test's expected text such as `origin http://invetec.eu is not allowed` silently
@@ -130,11 +136,9 @@ are about to touch. When you hit a new one, add it here in the same shape.
 - **More unicorn 77 rules met in `src/content/`.**
   - Symptom: `unicorn/no-unsafe-string-replacement` rejects `path.replace('{L}', locale)` (a `$&`
     or `$1` in the value would be expanded); `unicorn/no-useless-recursion` rejects a function
-    that calls itself once to rewrite its own arguments; `unicorn/consistent-boolean-name` rejects
-    a spec name such as `pageExists`.
+    that calls itself once to rewrite its own arguments.
   - Fix: pass a replacer function (`.replace('{L}', () => locale)`); rewrite the arguments before
-    the work instead of recursing; give the name a boolean prefix (`hasPage` for spec §4's
-    `pageExists`).
+    the work instead of recursing.
 - **`../` and `./` imports form one import-x group.**
   - Symptom: `There should be no empty line within import group` when a blank line separates
     `from '../x'` and `from './y'`.
@@ -160,7 +164,7 @@ are about to touch. When you hit a new one, add it here in the same shape.
     `style="all: unset"` included) and in the `style` attributes of a `.tsx` island (it reads only
     those, so an ordinary object with an `all` key passes); `e2e/header.spec.ts` checks the scroll
     margin of every focus target below the header and a Shift+Tab onto a button under it.
-- **Lint rules met by the shell (slice 8).**
+- **Lint rules met by the shell and its tests.**
   - Symptom: `sonarjs/super-linear-regex` rejects HTML-matching regexes such as
     `/<nav[^>]*>([\s\S]*?)<\/nav>/u` and `/<[^>]+>/gu` in tests; `unicorn/prefer-scoped-selector`
     rejects a descendant selector in `querySelector` (`'main h2'`, `'header *'`);
@@ -169,16 +173,12 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Fix: cut HTML with `indexOf` (`between()` and `textOf()` in
     `src/components/__tests__/shell-fixtures.ts`); start such selectors with `:scope`
     (`':scope > main *'`); watch the element with an IntersectionObserver (the overlay header).
-- **Lint rules met by the SEO files (slice 11).**
-  - Symptom: `sonarjs/no-clear-text-protocols` rejects the sitemap namespace literal
-    (`'http://www.sitemaps.org/schemas/sitemap/0.9'`), and the name must stay `http://`;
-    `unicorn/consistent-boolean-name` rejects Astro's `export const prerender = true`;
-    `@typescript-eslint/naming-convention` rejects an integration's hook names
+- **Lint rules met by the build integration and the endpoints.**
+  - Symptom: `@typescript-eslint/naming-convention` rejects an integration's hook names
     (`'astro:build:done'`); `unicorn/filename-case` rejects an endpoint with a parameter in its
     name (`sitemap-[locale].xml.ts`).
-  - Fix: build a namespace name through `URL` (`namespaceName` in `src/content/seo.ts`); leave
-    `prerender` out (the static output prerenders every route); `eslint.config.js` lets quoted
-    method names and `[param]` route files keep their own spelling.
+  - Fix: none needed in code: `eslint.config.js` lets quoted method names and `[param]` route
+    files keep their own spelling.
 - **Byte-exact fixtures.** Prettier formats `.html` files.
   - Symptom: `prettier --write .` would reformat `scripts/crawl/__fixtures__/*.html` and break
     the tests that compare bytes.
@@ -216,7 +216,7 @@ are about to touch. When you hit a new one, add it here in the same shape.
 - **A run exits 3 without `crawl.json`.**
   - Symptom: the run ends with exit code 3 and one of `STOPPED (max-minutes)`,
     `STOPPED (max-requests)`, `STOPPED (failures)`, `STOPPED (retry): N URLs to retry` or
-    `STOPPED (seed-incomplete)`; wrappers such as `gates.sh run crawl` report a failure.
+    `STOPPED (seed-incomplete)`; a wrapper script that runs `npm run crawl` reports a failure.
   - Fix: expected. Run the same command again until it prints `COMPLETE` and exits 0; only that
     run writes `redirects/crawl.json`. `retry` means every URL was tried but some failed
     (network error, timeout, 403, 429, 5xx) and still have runs left; `seed-incomplete` means a
@@ -290,6 +290,13 @@ are about to touch. When you hit a new one, add it here in the same shape.
 
 ## Media fetch
 
+- **`npm run media:fetch` requests the live site and replaces changed images.** It ran once, and
+  every image it fetched is committed.
+  - Symptom: a run reads invetec.eu's robots.txt and downloads every listed file whose bytes no
+    longer match its manifest record, so an image edited or re-compressed in `src/assets/media/`
+    is fetched again over the edit (the tests already fail on that file's size and SHA-256).
+  - Fix: never run it unless the site owner asks; leave the committed images as fetched. A run
+    with every file current sends no request at all, robots.txt included.
 - **The crawler's `createHttp` reads every response body as text.**
   - Symptom: an image fetched through it comes back as a decoded string, its bytes corrupted.
   - Fix: `scripts/assets/download.ts` gives createHttp a fetch that reads a `200 image/*` body
@@ -454,7 +461,7 @@ are about to touch. When you hit a new one, add it here in the same shape.
 - **A Site copy link to a product, accessory, post or the 404 page fails at `route`.** A link
   target would carry one slug or id for every language, and nothing resolves it against the item
   (a post's slug differs per language, an item can be hidden in a language), so `routeTarget`
-  refuses the item routes (lead decision, cycle 5); no link leads to the 404 page either. A
+  refuses the item routes; no link leads to the 404 page either. A
   target's `params` therefore take a `vehicle` only.
   - Symptom: `{ route: 'post' }` fails at `target.route` ("A Site copy link names a static or
     category page, not the item route "post""), `{ route: 'notFound' }` likewise ("... not the
@@ -660,8 +667,8 @@ are about to touch. When you hit a new one, add it here in the same shape.
   `document.hasFocus()` is false), then back to the first control; Shift+Tab from the first
   control does the same.
   - Symptom: "Tab stays inside" fails on the press after the last control.
-  - Fix: the island wraps Tab and Shift+Tab at the ends itself (`wrapFocus` in
-    menu-dialog.ts); `e2e/menu.spec.ts` checks `hasFocus()` after each press.
+  - Fix: both islands wrap Tab and Shift+Tab at the ends themselves (`wrapFocus` in
+    `dialog-focus.ts`); `e2e/menu.spec.ts` checks `hasFocus()` after each press.
 - **A click on a modal dialog's content focuses the dialog.** Chromium gives a modal dialog focus
   when a click lands on anything inside it that cannot take focus itself (its padding, text,
   headings, an empty area), whatever its overflow.
@@ -704,8 +711,9 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: listeners wired in `useEffect` miss clicks for about 11-41 ms after `ssr` is gone, so
     a test that waits for `ssr` to go (the readiness rule in the e2e section) still clicks a dead
     burger now and then.
-  - Fix: wire native listeners in `useLayoutEffect` (MobileMenu.tsx); `e2e/menu.spec.ts` clicks
-    the burger in the microtask after `ssr` is removed.
+  - Fix: wire native listeners in `useLayoutEffect` (both islands); `e2e/menu.spec.ts` clicks
+    the burger, and `e2e/explainer.spec.ts` an explainer button, in the microtask after `ssr` is
+    removed.
 - **A mark drawn as a background disappears in forced colors.** In forced-colors mode (Windows
   High Contrast) the browser paints backgrounds with the Canvas colour.
   - Symptom: the burger's bars and the close button's X (span backgrounds) vanish, leaving two

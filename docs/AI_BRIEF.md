@@ -3,30 +3,42 @@
 **Stack:** Node 24 / Astro 7 (static output) with Preact islands / TypeScript 6 (strictest)
 **Database:** none. Content reaches pages through an Astro Content Layer loader; today its source
 is a JSON snapshot in the repo, a CMS source arrives in Phase 5.
-**Last explored:** 2026-10-09
+**Last explored:** 2026-10-10
 
 ## Purpose
 
-The INVETEC / Pandora website (`https://invetec.eu`), rebuilt as a static Astro site. Phase 0 is
-groundwork: every quality gate (types, lint, format, unit tests, build, e2e + axe, CI), a
-proven content seam that renders one product on `/en/`, and a read-only crawler that inventories
-the live URLs for the future redirect map.
+The INVETEC / Pandora website (`https://invetec.eu`), rebuilt as a static Astro site. Phase 1 is
+the site's foundation: the full content contract, a snapshot converted once from the design
+prototype with every image self-hosted, pure route, publish-rule and level modules, a query
+module that every page reads through, and the styled `/en/` shell (tokens, fonts, head, header,
+footer, theme, language switcher, mobile menu, explainer dialog, SEO files, 404 pages) around an
+interim system index. Phase 0 laid the groundwork it builds on: every quality gate (types, lint,
+format, unit tests, build, e2e + axe, CI) and a read-only crawler that inventoried the live URLs
+for the future redirect map. The real home, catalogue, product and compare pages come in Phase 2
+(see Phase 1 limits at the end).
 
 ## Structure
 
 ```
 .github/workflows/    ci.yml (quality + e2e jobs), pr-title.yml
 .husky/pre-commit     Node 24 guard -> astro sync -> lint-staged
-content-snapshot/     one JSON file per collection or global: the content source; PROVENANCE.md
+content-snapshot/     one JSON file per collection or global: the content's source of truth;
+                      PROVENANCE.md (what the one-time conversion read)
 docs/                 this brief, gotchas.md
 e2e/                  Playwright + axe specs, run against `astro preview`
 public/               favicon.webp (the host's `_redirects` is generated into dist/, see SEO files)
 redirects/            crawl.json (live URL inventory, written by `npm run crawl`), CRAWL.md (its
                       summary, written by `npm run crawl:summary`); .crawl-cache/ (gitignored)
+scripts/assets/       the one-time media fetch (`media:sources`, `media:fetch`),
+                      media-sources.json (what it fetched), __tests__/
 scripts/crawl/        read-only redirect crawler (run with tsx), __fixtures__/, __tests__/
-scripts/snapshot/     the one-time snapshot converter, the snapshot reader, __fixtures__/, __tests__/
-scripts/pricelist/    the pricelist check behind `npm run check:pricelist` (+ __tests__/)
+scripts/snapshot/     the one-time snapshot converter, the snapshot reader, __fixtures__/,
+                      __tests__/
+scripts/pricelist/    the pricelist check (+ __tests__/); its entry point is
+                      scripts/check-pricelist.ts (`npm run check:pricelist`)
 src/
+  assets/             media/ (the content's images, pricelist/ with the 38 pricelist PNGs,
+                      manifest.json), brand/ (the two logos, site chrome)
   content/            contract/ (Zod contract; contract.ts re-exports it), loader.ts, hues.ts,
                       routes.ts, rules.ts (+ completeness.ts), levels.ts, query.ts (+
                       explainer.ts), media.ts, copy.ts, seo.ts (the SEO files), __tests__/
@@ -36,10 +48,9 @@ src/
   components/         SiteHeader.astro, ThemeToggle.astro, LanguageSwitcher.astro,
                       SiteFooter.astro, FeatureButton.astro, LevelButton.astro, system-index.ts
                       (the interim index's content), NotFoundPage.astro + not-found.ts (a 404
-                      page), islands/ (MobileMenu.tsx + MobileMenu.css
-                      and menu-dialog.ts, its behaviour; Explainer.tsx + Explainer.css and
-                      explainer-dialog.ts; dialog-focus.ts, the focus code both share;
-                      __tests__/), __tests__/
+                      page), islands/ (MobileMenu.tsx + MobileMenu.css and menu-dialog.ts, its
+                      behaviour; Explainer.tsx + Explainer.css and explainer-dialog.ts;
+                      dialog-focus.ts, the focus code both share; __tests__/), __tests__/
   fonts/              fontsource-variable.ts (the Fonts API provider), __tests__/
   layouts/            BaseLayout.astro (head, theme script, skip link, header, main#main, footer,
                       explainer island, reveal script), head.ts (what the head says), shell.ts
@@ -51,8 +62,9 @@ src/
   styles/             tokens.css (design tokens), base.css (element defaults, utilities, reveal
                       grammar), __tests__/
   test/               setup.ts (+ the jsdom <dialog> stand-in), container.ts (a Container API
-                      container that renders Preact islands), fixtures/ (a test-only Preact
-                      island)
+                      container that renders Preact islands), fetch-guard.test.ts (the fetch
+                      guard is installed in site tests too), fixtures/ (a test-only Preact
+                      island no page imports)
 ```
 
 ## Key Files
@@ -63,7 +75,9 @@ src/
   JSON-LD); `src/integrations/build-files.ts` -- what the build adds to `dist/` (see SEO files and
   404 pages)
 - `src/layouts/BaseLayout.astro` -- the document shell of every page (see Styles, fonts and the
-  page shell)
+  page shell); `head.ts`, `shell.ts` and `explainer-content.ts` build what it passes down
+- `src/components/islands/MobileMenu.tsx`, `Explainer.tsx` -- the two Preact islands (see
+  Islands)
 - `src/content/contract.ts` -- the content contract (re-exports `src/content/contract/`)
 - `src/content/loader.ts` -- `contentLoader(name)`, the `CONTENT_SOURCE` switch
 - `src/content/routes.ts`, `rules.ts`, `levels.ts` -- the URL map, the publish rules and the level
@@ -72,8 +86,10 @@ src/
   and the `siteQuery()` adapter, the only code besides `content.config.ts` that imports
   `astro:content`
 - `src/content/media.ts` -- the media resolver: a media id -> `ImageMetadata` + alt text
+- `src/content/copy.ts` -- reading Site copy in a language (`textIn`, `fill`, `pluralIn`)
 - `src/content.config.ts` -- collections, each wired to `contentLoader`
-- `src/pages/[locale]/index.astro` -- the home page per locale
+- `src/pages/[locale]/index.astro` -- the home page per built language (in Phase 1 the interim
+  system index); `src/pages/[locale]/404.astro` and `src/pages/404.astro` -- the 404 pages
 - `eslint.config.js` -- typed and untyped lint layers, Astro, a11y, import, unicorn, sonarjs
 - `vitest.config.ts` -- Vitest through Astro's `getViteConfig`
 - `playwright.config.ts` -- e2e against `npm run build && npm run preview` on port 4321
@@ -85,6 +101,14 @@ src/
 - `scripts/crawl/summary.ts` -- `npm run crawl:summary` entry; `summary-cli.ts` checks
   `crawl.json` and writes or `--check`s `CRAWL.md`, `summary-render.ts`, `summary-coverage.ts`
   and `summary-open-items.ts` hold its sections
+- `scripts/assets/config.ts` -- the media fetch's fixed origin, politeness values, size cap and
+  output folders
+- `scripts/assets/fetch-media.ts` -- `npm run media:fetch` entry; `fetch-cli.ts` reads the flags,
+  `run.ts` makes every listed file exist, `download.ts` reads image bodies as bytes over the
+  crawler's request stack, `manifest.ts` holds `src/assets/media/manifest.json`
+- `scripts/assets/extract-sources.ts` -- `npm run media:sources` entry; `extract-cli.ts` reads the
+  prototype, `extract.ts` holds the rule (which images the launch site uses), `sources.ts` the
+  checks of `media-sources.json`
 - `scripts/snapshot/convert.ts` -- `npm run snapshot:convert` entry; `convert-cli.ts` reads and
   writes the files, `convert-data.ts` (with `convert-items.ts`, `media-refs.ts`, `alt-text.ts`)
   holds the rule; `read-snapshot.ts` reads the committed snapshot through the contract
@@ -101,6 +125,11 @@ src/
 - CI: `.github/workflows/ci.yml`, `.github/workflows/pr-title.yml`
 - Crawl: `npm run crawl` -> `scripts/crawl/crawl.ts` -> `redirects/crawl.json`; then
   `npm run crawl:summary` -> `scripts/crawl/summary.ts` -> `redirects/CRAWL.md`
+- Media (done once): `npm run media:sources` -> `scripts/assets/media-sources.json`; then
+  `npm run media:fetch` -> `src/assets/media/`, `src/assets/brand/`, `public/favicon.webp`,
+  `src/assets/media/manifest.json`
+- Snapshot (done once): `npm run snapshot:convert` -> `content-snapshot/*.json`,
+  `src/content/hues.ts`, `content-snapshot/PROVENANCE.md`
 
 ## Dependencies
 
@@ -120,8 +149,10 @@ is `24`.
 - **Unit tests:** vitest 5.0.3, jsdom 30.1.2, @testing-library/preact 3.2.4,
   @testing-library/jest-dom 7.0.1
 - **e2e:** @playwright/test 1.64.0, @axe-core/playwright 4.13.0
-- **Crawl:** tsx 4.23.15 (runs `scripts/crawl/crawl.ts`; brings esbuild). The crawler parses
-  sitemaps and HTML with its own small scanners, so it adds no parser dependency.
+- **Scripts:** tsx 4.23.15 (runs every command under `scripts/`: the crawl, the media fetch, the
+  snapshot converter, the pricelist check; brings esbuild). The crawler parses sitemaps and HTML
+  with its own small scanners, and the converter reads the prototype's data file as data, so
+  neither adds a parser dependency.
 
 Why some pins are held back:
 
@@ -156,14 +187,48 @@ avoids EBADENGINE warnings). npm scripts and Playwright's `webServer` run whiche
 | `npm run crawl:summary`            | Write `redirects/CRAWL.md` from `redirects/crawl.json` (no network)                        |
 | `npm run crawl:summary -- --check` | Fail when `CRAWL.md` does not match `crawl.json`; writes nothing                           |
 | `npm run check:pricelist`          | Check the snapshot against PRICELIST 2026; prints `clean: ...` or every problem (exit 1)   |
-| `npm run snapshot:convert`         | The one-time prototype conversion (`-- --source <absolute path>`); see Content seam        |
+| `npm run media:sources`            | Write `media-sources.json` from the prototype (`-- --design-dir <path>`, `--check`)        |
+| `npm run media:fetch -- --help`    | Media fetch usage; makes no request                                                        |
+| `npm run media:fetch`              | The one-time media download: done, never run again unless the site owner asks (see Media)  |
+| `npm run snapshot:convert`         | The one-time prototype conversion (`-- --source <path>`): done, never run again            |
 
+- Paths passed to the scripts are absolute. `media:sources` and `snapshot:convert` read the
+  design prototype, which is not in this repository; neither makes a request.
 - First e2e run on a machine: `npx playwright install chromium`. Stop `npm run dev` (or any
   preview) first: the dev server, the preview and the e2e run all use port 4321.
 - The CI order, reproducible locally: `npm ci`, `npm run lint`, `npm run format:check`,
   `npm run typecheck`, `npm run test`, `npm run build`; then `npm run test:e2e`.
 - Astro telemetry is on by default. CI sets `ASTRO_TELEMETRY_DISABLED=1`; locally,
   `npx astro telemetry disable` opts out once per machine.
+
+## Media
+
+Every image the site shows is self-hosted: it lives in this repository and the build serves it
+from the site's own origin. Nothing is hotlinked from the live site.
+
+- **Folders:** `src/assets/media/` holds the content's images (54 from the live site, and
+  `pricelist/` with 38 PNGs copied from the design prototype), each referenced by a media item in
+  `content-snapshot/media.json` (see Content seam). `src/assets/brand/` holds the two logos and
+  `public/favicon.webp` the favicon: site chrome, code assets rather than media items (A8).
+  `src/assets/media/manifest.json` has one record per file (95: `file`, `source` as `{ url }` or
+  `{ designFile }`, `bytes`, `sha256`, `contentType`, `fetchedAt`).
+- **What was fetched:** `scripts/assets/media-sources.json` lists every image the launch site
+  takes from the live site or the prototype, each with the file it becomes and every use;
+  `npm run media:sources -- --design-dir <absolute path>` wrote it from the prototype's data file
+  and page (images only parked items use are left out), and `--check` compares. Both commands
+  refuse a source on another origin, with a query string or outside the asset folders.
+- **The fetch ran once** (`npm run media:fetch`, 2026-10-09): robots.txt plus one request per
+  file, all answered 200. Its rules are fixed in `scripts/assets/config.ts`, and no flag changes
+  them: GET only, `https://invetec.eu` only (a redirect that leaves it is refused), robots.txt
+  obeyed, the crawler's politeness (2 requests in flight, 250 ms pause, 20 s timeout, 2 retries),
+  `image/*` responses only, no query string, at most 15 MB per body.
+- **Never run it again unless the site owner asks.** It is idempotent: a file whose bytes match
+  its manifest record is skipped, and a run with every file current sends no request at all
+  (robots.txt included). CI never runs it. Its tests serve loopback fixtures under the global
+  fetch guard (see Redirect crawl, Tests).
+- **Guard:** `scripts/assets/__tests__/committed.test.ts` (no network) checks that the manifest has
+  exactly one record per listed source and that each file exists with that size and SHA-256, so
+  a listed image that is edited or lost fails the tests.
 
 ## Content seam
 
@@ -233,30 +298,34 @@ Pages never read content files. Content flows contract -> loader -> `getCollecti
    show as props (see The site shell below); none reads content itself.
 
 - **The snapshot** (`content-snapshot/`) has one file per collection or global, and it is the
-  source of truth: content edits go into these files directly (decision P1-10).
+  source of truth until the CMS takes over (Phase 5): content edits go into these files directly,
+  by hand (decision P1-10). After an edit, `npm run test` (the contract, the integrity test) and
+  `npm run check:pricelist` check it, and the e2e specs count what `/en/` shows (see gotchas).
   - `npm run snapshot:convert -- --source <absolute path to nightwatch-data.js>`
     (`scripts/snapshot/`) converted the prototype's data file into it once: every collection file,
     `finder.json` and `src/content/hues.ts` (product hues are code, A7). It reads the file as
     data, never runs it, and is deterministic: a second run on the same file writes the same
-    bytes. `PROVENANCE.md` records the source file name, its SHA-256 and the date. Running it
-    again would overwrite every edit made since; it is kept for the record and its tests.
+    bytes. `PROVENANCE.md` records the source file name, its SHA-256 and the date. Never run it
+    again: it would overwrite every edit made since. It is kept for the record and its tests,
+    which run on a fixture in a scratch folder.
   - English everywhere; Greek only where the prototype had it (6 product blurbs, the 38 accessory
     descriptions, the camper category description). Every item has `showIn` all four languages.
   - Products carry `order`, their place in the prototype (the flagship first in each category):
-    added to `products.json` by hand after the conversion (cycle 8), and written by the converter
-    too, so a re-run gives the same file.
-  - Media: one item per file of `src/assets/media/` the content uses (92), its id the file path
-    without the extension, `/` as `-` (`pricelist-acc-band`). Alt text follows the patterns of
-    spec §3.1 or, where none fits the picture, `ALT_BY_MEDIA` in `scripts/snapshot/alt-text.ts`,
-    written after viewing each image; category heads are decorative. The home hero poster's file
-    is also Smart V4's install image, so it has an alt; the hero renders it with `alt=""`
-    because of where it sits (spec §3.1).
-  - The `site-copy-*.json` files hold the prototype's English, transcribed once;
+    added to `products.json` by hand after the conversion, and written by the converter too, so a
+    re-run on the same file gives the same bytes.
+  - Media: one item per file of `src/assets/media/` the content uses (92; six of the files are
+    byte-identical copies of others), its id the file path without the extension, `/` as `-`
+    (`pricelist-acc-band`). Alt text follows the patterns of spec §3.1 or, where none fits the
+    picture, `ALT_BY_MEDIA` in `scripts/snapshot/alt-text.ts`, written after viewing each image;
+    category heads are decorative. The home hero poster's file is also Smart V4's install image,
+    so it has an alt; the hero renders it with `alt=""` because of where it sits (spec §3.1).
+  - The `site-copy-*.json` files hold the prototype's English, transcribed once, plus the only
+    new English (A6): the skip link (`common.skipLink`) and the 404 copy (`notFound`).
     `languages.json` has `en` live and `el`, `it`, `sq` not live.
   - Guards: the unit test `src/content/__tests__/integrity.test.ts` checks that every reference
     across the snapshot resolves (A13); `npm run check:pricelist` checks the matrix, the prices,
-    the accessories, the Finder picks and the level lists against PRICELIST 2026 (constants in
-    `scripts/pricelist/check.ts`, shared with the framework tool until it retires).
+    the accessories, the Finder picks and the level lists against PRICELIST 2026 (its
+    transcription, verbatim, is the constants in `scripts/pricelist/check.ts`).
 - **The data store**: `astro build`, `sync` and `check` keep it in
   `node_modules/.astro/data-store.json`; `astro dev` keeps its own in `.astro/data-store.json`. It
   persists between runs; the loader clears it on every load, so a changed or removed item is never
@@ -290,8 +359,8 @@ types it; the snapshot readers in `scripts/` use the same type).
   snapshot loads, instead of failing every page of the language later.
 - **Site copy link targets** (`routeTarget`, the footer's links) name static and category pages
   only. A target would carry one slug or id for every language and nothing resolves it against
-  the item, so the item routes `product`, `accessory` and `post` fail at `route` (lead decision,
-  cycle 5), and so does the 404 page (`notFound`), which no link leads to. The only parameter a
+  the item, so the item routes `product`, `accessory` and `post` fail at `route`, and so does the
+  404 page (`notFound`), which no link leads to. The only parameter a
   target can carry is therefore a `vehicle`; a `slug` or `id` key is unknown. A later phase that
   needs an item link adds an id-based target resolved through the page rules.
 - **The item rule (`completeness.ts`, re-exported by `rules.ts`):** `gapsIn(value, L, media)`
@@ -322,8 +391,9 @@ types it; the snapshot readers in `scripts/` use the same type).
 
 Spec §5 (P1-1): the one way pages read content.
 
-- **`createQuery(data, { preview })`** (`query.ts`) is pure: tests call it on fixtures or on the
-  snapshot (`readSnapshot()`). Unless `preview`, it first runs `assertLanguageReady` for every
+- **`createQuery(data, { preview, pageTypes? })`** (`query.ts`) is pure: tests call it on
+  fixtures or on the snapshot (`readSnapshot()`), and pass `pageTypes` to build page types other
+  than `BUILT_PAGE_TYPES`. Unless `preview`, it first runs `assertLanguageReady` for every
   live language, so a live language with gaps throws one error listing every missing path; a
   preview build shows all four languages without the check. It then answers with the contract's
   types and the publish rules applied. The content answers and `image()` refuse a language that
@@ -347,8 +417,8 @@ Spec §5 (P1-1): the one way pages read content.
     (`pathParams` in `routes.ts`), so they always match the links; a type not in
     `BUILT_PAGE_TYPES` is an error, except `notFound`: one 404 page per built language, listed
     nowhere (A18);
-  - `rootLanguage()`: the root's language (`rules.ts`, from the live languages), the root 404
-    page's;
+  - `built`: the languages the build renders; `rootLanguage()`: the root's language (`rules.ts`,
+    from the live languages), the root 404 page's;
   - `pageUrl`, `alternates`, `switcherTargets`, `sitemapEntries`: the page rules over the build's
     `Site`.
   - Item links come from the query, never from a page: a product URL exists only for a product
@@ -399,22 +469,21 @@ Spec §6.
   through `var(--display)` / `var(--body)`. BaseLayout preloads the latin face of each family.
 - **`src/layouts/BaseLayout.astro`** (props `locale`, `page`, `header` (`solid`, the default, or
   `overlay`), `hasExplainer` (default true; the 404 pages pass false), and for every page but
-  home its `name` and `description`, A5) builds its head
-  with `pageHead()` (`head.ts`) from the query module: the title (home's own; else Site copy
-  `common.titleTemplate` around `name`), the
+  home its `name` and `description`, A5) builds its head with `pageHead()` (`head.ts`) from the
+  query module: the title (home's own; else Site copy `common.titleTemplate` around `name`), the
   description, the absolute canonical URL (`pageUrl` against astro.config.mjs `site`), one
   `hreflang` link per alternate plus `x-default`, `og:title` / `og:description` / `og:url` /
   `og:locale` (`OG_LOCALES`: `en_GB`, `el_GR`, `it_IT`, `sq_AL`), on a language home the
-  Organization JSON-LD, the favicon, the fonts. A 404 page gets
+  Organization JSON-LD in its language, the favicon, the fonts. A 404 page gets
   `<meta name="robots" content="noindex">` and no canonical URL, alternate or `og:url`. An
   inline script before any stylesheet sets `html.js` and `data-theme` (the saved `theme` in
   localStorage when it is `dark`, else light; storage that throws means light, P1-6). The skip
   link (Site copy `common.skipLink`) shows only while focused and leads to
   `<main id="main" tabindex="-1">`, between the site header and the site footer. The explainer
-  island follows the footer (see Islands). An inline script at the end of `<body>` adds `.in` to each
-  reveal element once a tenth of it is in view (IntersectionObserver), to an element taller than
-  nine viewports as soon as it is in view, and to every reveal element at once where the browser
-  has no IntersectionObserver.
+  island follows the footer (see Islands). An inline script at the end of `<body>` adds `.in` to
+  each reveal element once a tenth of it is in view (IntersectionObserver), to an element taller
+  than nine viewports as soon as it is in view, and to every reveal element at once where the
+  browser has no IntersectionObserver.
 - **`src/content/copy.ts`:** `textIn(text, L, field)` (a Site copy value, or an error naming the
   field), `fill(template, values)` (a template's `{name}` placeholders, nothing else) and
   `pluralIn(plural, L, field, { count, ... })` (the form `Intl.PluralRules` picks, else `other`;
@@ -473,10 +542,10 @@ index's with `src/components/system-index.ts`. No component holds visible copy (
 - **The interim index** (P1-8, `src/pages/[locale]/index.astro`): the home hero heading as the h1
   (`lead <span class="b">payload</span>`), then, in order, each category that has a visible
   system, as an h2 over its systems: the package shot through `<Image>` (A19; `widths` 320 and
-  640, lazy), the name (h3), the level button, the tag, the highlight feature buttons and the "See the system" link to
-  the product URL (404 until Phase 2). Systems come in their `order` (the prototype's, flagship
-  first; the Content Layer hands the collection over sorted by id). No reveal classes, so the h1
-  (LCP) never starts hidden.
+  640, lazy), the name (h3), the level button, the tag, the highlight feature buttons and the
+  "See the system" link to the product URL (404 until Phase 2). Systems come in their `order`
+  (the prototype's, flagship first; the Content Layer hands the collection over sorted by id). No
+  reveal classes, so the h1 (LCP) never starts hidden.
 - **Inline scripts and styles** (Phase 5's `_headers` needs a CSP hash for each, computed from the
   built files in `dist` at build time, since Astro and the Fonts API write some of them): the
   theme script in the head, the Fonts API's two `@font-face` `<style>` blocks in the head (one
@@ -501,9 +570,10 @@ JavaScript nothing an island renders is needed (A11).
 - **`islands/MobileMenu.tsx`** (+ `MobileMenu.css`), in SiteHeader with
   `client:media="(max-width: 1119px)"`: its script loads only below 1120px (`MobileMenu.*.js` is
   2.7 KB, 1.1 KB gzip, and imports Preact, its hooks and the shared chunk only; Preact and the
-  renderer load on every page for the explainer). Props (`MobileMenuProps`, built by `headerContent(...).menu` in `shell.ts`): the
-  labels (`header.openMenu`, `closeMenu`, `mobileNavLabel`, `languageLabel`), the nav's links
-  with `isCurrent`, and the switcher's languages with their endonym. The burger
+  renderer load on every page for the explainer). Props (`MobileMenuProps`, built by
+  `headerContent(...).menu` in `shell.ts`): the labels (`header.openMenu`, `closeMenu`,
+  `mobileNavLabel`, `languageLabel`), the nav's links with `isCurrent`, and the switcher's
+  languages with their endonym. The burger
   (`aria-haspopup="dialog"`, `aria-controls`) opens a full-screen modal dialog named by its nav
   (`aria-labelledby` on the nav, whose `aria-label` is the mobile nav label: no new string). The
   behaviour is `menu-dialog.ts` (`wireMenu`, native listeners on the server's markup, added in a
@@ -535,7 +605,7 @@ JavaScript nothing an island renders is needed (A11).
   in forced colors) and `e2e/header-spacing.spec.ts`.
 - **`islands/Explainer.tsx`** (+ `Explainer.css`), in BaseLayout after the footer with
   `client:idle`, so on every page but one that passes `hasExplainer={false}` (the 404 pages, which
-  have no explainer button): `Explainer.*.js` is 3.5 KB (1.4 KB gzip) and imports Preact,
+  have no explainer button): `Explainer.*.js` is 3.7 KB (1.5 KB gzip) and imports Preact,
   its hooks and the shared chunk only; with the renderer and Preact about 9 KB gzip. Props
   (`ExplainerProps`, built by `explainerContent(query, L)` in `layouts/explainer-content.ts`):
   the labels (Site copy `common.explainer.*`, `howItWorks`, `matrix.included` / `optional`), one
@@ -573,21 +643,19 @@ JavaScript nothing an island renders is needed (A11).
   focus stop below it. The page under it does not
   scroll (`html:has(.fx-panel[open])`). The panel slides in and the backdrop fades only without
   `prefers-reduced-motion`; closing is instant. Without JavaScript the buttons are hidden and their
-  labels show as text. Before the island hydrates a click on a button does nothing: on `/en/`
-  the island hydrates by first paint on a desktop, and about 65-100 ms after it (up to 200 ms) at
-  4x CPU throttling, from the local preview. Over a network the scripts come in two round trips
-  after the idle callback (the component and the renderer, then the Preact, hooks and shared chunks
-  they import; no modulepreload): about 0.9 s after first paint at a 300 ms round trip. No
-  pre-hydration queue in Phase 1 (later options: modulepreload links, hydrating on the first
-  interaction). Tests: `islands/__tests__/Explainer.test.tsx` (the views) and
+  labels show as text. Before the island hydrates a click on a button does nothing, and Phase 1
+  has no pre-hydration queue (timings and later options: gotchas, "`client:idle` loses a click
+  before hydration"). Tests: `islands/__tests__/Explainer.test.tsx` (the views) and
   `explainer-dialog.test.tsx` (closing and focus; jsdom, fixtures in `explainer-fixtures.tsx`),
   `layouts/__tests__/explainer-content.test.ts` (the props on the snapshot),
   `components/__tests__/explainer-buttons.test.ts`, `layouts/__tests__/BaseLayout.test.ts`,
   `e2e/explainer.spec.ts` (GPS, Wi-Fi positioning, Level 3, Tab, every way out, the backdrop
-  against the panel, drags across its edge, a double-click on the button, the Close ring, a click the instant it hydrates, the props size, axe open in both themes),
+  against the panel, drags across its edge, a double-click on the button, the Close ring, a click
+  the instant it hydrates, the props size, axe open in both themes),
   `e2e/explainer-layout.spec.ts` (390 × 844 and 320 × 256, focus clear of the close button,
-  keyboard scrolling after a click on the panel, reduced motion, a hidden opener; helpers in `e2e/explainer-fixtures.ts`), `e2e/shell.spec.ts`
-  (without JavaScript) and `e2e/forced-colors.spec.ts`.
+  keyboard scrolling after a click on the panel, reduced motion, a hidden opener; helpers in
+  `e2e/explainer-fixtures.ts`), `e2e/shell.spec.ts` (without JavaScript) and
+  `e2e/forced-colors.spec.ts`.
 
 ## i18n routing
 
@@ -636,10 +704,11 @@ Spec §9, generated from the rules: no URL, name or fact is written in code (A6)
 - **`src/integrations/build-files.ts`** (`astro:build:done`, in `dist/`): writes `_redirects`
   (`redirectsFile` over the snapshot's `languages`, read with `readSnapshot()`: `query.ts` needs
   Vite and astro:content, which the hook does not have; a different `_redirects` already in
-  `dist/`, which only a `public/_redirects` can put there, fails the build), moves each `{L}/404/index.html` to
-  `{L}/404.html` (Astro writes only the root `/404` as `404.html`; the build fails when a live
-  language has no 404 page), and deletes the images directly in `_astro/` that no other built
-  file names (HTML, CSS, JavaScript, XML, SVG). `media.ts` imports every media file, so Astro
+  `dist/`, which only a `public/_redirects` can put there, fails the build), moves each
+  `{L}/404/index.html` to `{L}/404.html` (Astro writes only the root `/404` as `404.html`; the
+  build fails when a live language has no 404 page), and deletes the images directly in
+  `_astro/` that no other built file names (HTML, CSS, JavaScript, XML, SVG). `media.ts` imports
+  every media file, so Astro
   writes each distinct original: 86 files for the 92 media items, since six media files are
   byte-identical copies of others. Astro itself removes the 16 that `<Image>` replaced (the
   index's package shots), and the integration prunes the other 70 (3.1 MB): `dist/_astro` goes
@@ -758,8 +827,8 @@ can point the crawler anywhere else.
 ## CI
 
 - `ci.yml` runs on pull requests to `main` and pushes to `main`; a newer push to a PR cancels its
-  older run, while every commit on `main` keeps its own result. `permissions: contents: read`, `ASTRO_TELEMETRY_DISABLED: 1`, Node from
-  `.nvmrc`, actions pinned to major tags.
+  older run, while every commit on `main` keeps its own result. `permissions: contents: read`,
+  `ASTRO_TELEMETRY_DISABLED: 1`, Node from `.nvmrc`, actions pinned to major tags.
   - **quality:** `npm ci`, `lint`, `format:check`, `typecheck`, `test`, `build`.
   - **e2e:** `npm ci`, `npx playwright install --with-deps chromium`, `test:e2e`; the
     `playwright-report/` folder is uploaded as an artifact when the job fails. Under `CI`,
@@ -771,20 +840,76 @@ can point the crawler anywhere else.
   trigger, so it also runs on the pull request that adds it; pull requests from forks are not
   supported.
 
-## Notes
+## Phase 1 limits
 
-Phase 0 limits:
+What the site does not do yet, and the phase that brings it. The phases: 2 the home, catalogue,
+product and compare pages; 3 the accessories, blog, installers, form and legal pages; 4 the CMS;
+5 the CMS wiring, publishing and hosting; 6 the draft preview and the translation workflow; 7
+the launch.
 
-- Styling so far is the shell (tokens, base styles, fonts, skip link, header, footer, mobile
-  menu, explainer) and the interim index.
-- No deploy: no hosting project, no `_headers`, no Functions. `dist/_redirects` (generated by the
-  build) is the only host file.
-- `/en/` is the interim system index (the 16 systems visible in English), and only `/en/` is
-  built; its system links 404 until Phase 2.
-- No CMS yet: `CONTENT_SOURCE=payload` throws until Phase 5.
-- Two islands ship: the mobile menu (below 1120px only) and the explainer (every page but the 404
-  pages, when idle). The test fixture `src/test/fixtures/FixtureToggle.tsx` is imported by no page.
-- `redirects/crawl.json` is the inventory, not the redirect map: the crawler and the summary map
-  no old URL to a new page (Phase 7 builds the map).
+**Pages and content**
+
+- Only English is live. The build makes `/en/`, the interim system index standing in for the
+  home (the 16 systems by category), the 404 pages and the SEO files. The real home (and with it
+  the first page with the overlay header), the category, product and compare pages come in
+  Phase 2, the other pages in Phase 3. Until then the index's "See the system" links 404, and
+  `BUILT_PAGE_TYPES` keeps every page not built out of the sitemaps and alternates.
+- Lists no page shows yet have no sort: FAQ, spec rows and accessory groups have `order` that
+  nothing reads, posts need a date sort, accessories and accessory cards an order, and product
+  pages (`pagesIn('product')`) follow the id order. Add each sort with the page that first shows
+  the list (gotchas: "The Content Layer returns a collection sorted by id").
+- An accessory without a vehicle has no URL (`accessoryPath` throws) until Phase 3 decides one;
+  the installers collection is empty (the build warns) until there is real partner data.
+- Content that waits for its page: five posts use stand-in images (their alts are true to the
+  pictures, which are not the posts' own; Phase 3); `antijammer-primo` is a white icon that needs
+  a dark plate, and the home hero's lead lost the prototype's line breaks and its payload accent
+  (Phase 2). Where the prototype changes English strings in code (the category heading's
+  highlight, the lower-cased "all" list), Phase 2 needs per-language copy or
+  `toLocaleLowerCase(L)`.
+
+**Islands and the shell**
+
+- A click on an explainer button before the island hydrates (`client:idle`) is lost; hydrating
+  on the first interaction or modulepreload links are Phase 2 options.
+- Below 1120px the header sits in the page flow (the design's is fixed); a sticky header is a
+  Phase 2 choice. Narrowing the window while a desktop nav link has focus drops focus to `<body>`.
+- With JavaScript on, an island script that fails to load leaves the burger and the explainer
+  buttons dead, and below 1120px the nav hidden: gate the nav on hydration when Phase 5 adds the
+  CSP.
+- The menu dialog is named by the nav's label, "Mobile"; a clearer "Menu" needs a new Site copy
+  string.
+- The index draws its info icons as about 150 inline SVGs (40 KB raw on `/en/`); Phase 2 makes
+  them one sprite or CSS mask.
+
+**Languages (when Greek, or another language, goes live)**
+
+- Before setting `languages.el.live`: give the snapshot every Greek string the readiness check
+  lists (the build fails until then); preload the greek font face on Greek pages (the latin-only
+  preload finds it late); re-measure the one-row header with `e2e/header-spacing.spec.ts` (longer
+  labels may need a wider breakpoint); give `header.logoAlt` its Greek copy; rework the fixed-key
+  readiness test, which assumes no Greek in the fixed-key sets. Numbers in templates other than
+  plurals are not formatted per language, and the shared "All" chip needs a neutral form in
+  Italian and Albanian.
+- Greek going live turns the root redirect from `/  /en/  302` into `/  /el/  301` and moves the
+  root 404 page and `x-default` to Greek. Browsers keep a 301, so taking Greek off live after
+  launch leaves cached redirects to `/el/`: plan it in the go-live runbook.
+
+**Hosting, CMS and preview**
+
+- No deploy: no hosting project, no `_headers`, no Functions; `dist/_redirects` (the root line
+  only) is the only host file. When Phase 5 adds `_headers`, every inline script and style needs
+  a CSP hash computed from `dist` at build time (see Inline scripts and styles).
+- No CMS: `CONTENT_SOURCE=payload` throws until Phase 5, and the build integration then needs the
+  CMS's `languages` in place of the snapshot's. CMS accessory ids must follow the URL segment
+  rule; the contract accepts duplicate `order` values (ties fall back to the id order).
+- No draft preview (Phase 6): `siteQuery()` takes no request, the media resolver knows local
+  files only, `image()` throws on a missing alt in a preview language, and a preview build needs
+  at least one live language and fails at `/el/404` until the Greek 404 copy exists.
+- The Organization JSON-LD names the hashed logo file under `/_astro/`; a stable logo path in
+  `public/` would suit crawler caches before launch. No `sameAs` until the social profiles have
+  URLs, and no `addressCountry` (the footer has no country field).
+- The image pruning compares every image name with every built file; revisit it at Phase 2's page
+  count.
+- `redirects/crawl.json` is the inventory, not the redirect map: Phase 7 maps the old URLs.
 
 Repo-specific traps and their fixes: `docs/gotchas.md`.
