@@ -4,6 +4,10 @@ import { expect, type Locator, type Page } from '@playwright/test';
 
 export const PHONE = { width: 390, height: 844 };
 
+// The menu's island (the explainer's is the page's other one).
+export const menuIsland = (page: Page) =>
+  page.locator('astro-island', { has: page.locator('.menu-open') });
+
 export interface Menu {
   readonly burger: Locator;
   readonly dialog: Locator;
@@ -27,7 +31,7 @@ export function menuOf(page: Page): Menu {
 export async function menuPage(page: Page, size = PHONE): Promise<Menu> {
   await page.setViewportSize(size);
   await page.goto('/en/');
-  await expect(page.locator('astro-island')).not.toHaveAttribute('ssr');
+  await expect(menuIsland(page)).not.toHaveAttribute('ssr');
   return menuOf(page);
 }
 
@@ -41,9 +45,10 @@ export async function openMenu(page: Page, { size = PHONE, byTap = false } = {})
   return menu;
 }
 
-// The focused element: inside the dialog, and the page (not the browser's UI) has focus.
-export async function focusInDialog(menu: Menu) {
-  return menu.dialog.evaluate((dialog) => {
+// The focused element: inside the dialog, and the page (not the browser's UI) has focus. For the
+// menu and the explainer (explainer.spec.ts).
+export async function focusInDialog({ dialog: open }: { readonly dialog: Locator }) {
+  return open.evaluate((dialog) => {
     const { activeElement } = dialog.ownerDocument;
     return {
       isInside: activeElement !== null && dialog.contains(activeElement),

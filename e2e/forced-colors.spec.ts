@@ -1,5 +1,6 @@
 import { expect, test, type Locator } from '@playwright/test';
 
+import { explainerPage, featureButton, openExplainer } from './explainer-fixtures';
 import { openMenu } from './menu-fixtures';
 
 // The icon-only controls in forced-colors mode (Windows High Contrast): the browser repaints every
@@ -56,6 +57,20 @@ for (const forcedColors of ['none', 'active'] as const) {
       await expect(menu.dialog).toBeHidden();
       await menu.burger.blur();
       expect(await markShare(menu.burger)).toBeGreaterThan(0.03);
+    });
+
+    test('shows the close X of the explainer', async ({ page }) => {
+      await page.emulateMedia({ forcedColors });
+      await explainerPage(page);
+      const explainer = await openExplainer(
+        page,
+        featureButton(page, 'gps'),
+        'GPS/GLONASS tracking',
+      );
+      await explainer.close.blur();
+
+      // An 18px X of 2px strokes in a 38 × 38px inner area.
+      expect(await markShare(explainer.close)).toBeGreaterThan(0.02);
     });
   });
 }

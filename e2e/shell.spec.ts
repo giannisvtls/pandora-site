@@ -218,11 +218,12 @@ test.describe('without JavaScript (A11)', () => {
       ]
         // Hidden on purpose: an element with `hidden` (the compare count, filled in Phase 2), the
         // logo meant for the dark theme, the theme toggle (it needs JavaScript) and its script,
-        // and the mobile menu (its burger needs JavaScript, its dialog is closed; the island's
-        // wrapper draws no box of its own, and Astro puts its runtime style and script beside it).
+        // the mobile menu (its burger needs JavaScript, its dialog is closed; the island's
+        // wrapper draws no box of its own, and Astro puts its runtime style and script beside it)
+        // and the explainer buttons (their names show as text beside them, checked below).
         .filter(
           (element) =>
-            !element.closest('[hidden], .theme-btn, .menu-btn, dialog') &&
+            !element.closest('[hidden], .theme-btn, .menu-btn, dialog, [data-fx], [data-lvl]') &&
             !element.matches('img.lw, script, style, astro-island'),
         )
         .filter((element) => {
@@ -252,6 +253,27 @@ test.describe('without JavaScript (A11)', () => {
     );
     await expect(page.getByRole('contentinfo').getByRole('link').first()).toBeVisible();
     await expect(page.locator('header .theme-btn')).toBeHidden();
+  });
+
+  test('offers no explainer button, and shows each feature and level name as text', async ({
+    page,
+  }) => {
+    await page.goto('/en/');
+    const buttons = page.locator('main').locator('[data-fx], [data-lvl]');
+    const card = page.locator('main li.sys').first();
+
+    // No control that announces a dialog it cannot open (A11).
+    expect(await buttons.count()).toBeGreaterThan(16);
+    await expect(page.locator('[aria-haspopup="dialog"]:visible')).toHaveCount(0);
+    const all = await buttons.all();
+    for (const button of all) await expect(button).toBeHidden();
+    // Each name stays on the page as plain text: the level tag and the feature titles.
+    await expect(page.locator('main .fx-text, main .lvl-text')).toHaveCount(await buttons.count());
+    await expect(card.locator('.lvl-text')).toHaveText('Level 3 · Recovery');
+    await expect(card.locator('.lvl-text')).toBeVisible();
+    await expect(
+      card.locator('.fx-text').filter({ hasText: 'GPS/GLONASS tracking' }),
+    ).toBeVisible();
   });
 });
 

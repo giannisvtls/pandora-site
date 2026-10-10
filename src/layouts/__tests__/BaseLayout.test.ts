@@ -179,6 +179,23 @@ describe('BaseLayout', () => {
     expect(overlay).toContain('<header class="hdr overlay"');
   });
 
+  it('puts the explainer island after the footer, hydrated when idle, with its props', async () => {
+    const html = await render({ locale: 'en', page: HOME });
+    const start = html.indexOf('<astro-island', html.indexOf('</footer>'));
+    const island = html.slice(start, html.indexOf('</astro-island>', start));
+    const props = /props="([^"]*)"/u.exec(island)?.[1]?.replaceAll('&quot;', '"') ?? '{}';
+
+    expect(start).toBeGreaterThan(html.indexOf('</footer>'));
+    expect(island).toContain(' client="idle"');
+    expect(island).toMatch(/component-url="[^"]*Explainer[^"]*"/u);
+    // A closed dialog (no `open`), named by the title a button will put in it.
+    expect(island).toContain('<dialog class="fx-panel" aria-labelledby="fx-title">');
+    expect(props).toContain('"close":[0,"Close"]');
+    expect(props).toContain('"title":[0,"Level 3 · Recovery"]');
+    // The reveal script comes after it.
+    expect(html.indexOf("querySelectorAll('.rv, .zoom")).toBeGreaterThan(start);
+  });
+
   it('refuses a page the language does not have', async () => {
     await expect(render({ locale: 'en', page: { type: 'blog' } })).rejects.toThrow(
       'The blog page does not exist in "en", so it has no head',

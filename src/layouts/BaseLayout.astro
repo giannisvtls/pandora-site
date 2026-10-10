@@ -1,12 +1,14 @@
 ---
-// The document shell of every page (spec §6, §7): the head (title, description, canonical,
+// The document shell of every page (spec §6, §7, §8): the head (title, description, canonical,
 // hreflang alternates, og: tags, favicon, fonts), the theme applied before first paint, the
-// localized skip link, the site header, <main>, the site footer and the reveal script. Everything
-// it says comes through the query module.
+// localized skip link, the site header, <main>, the site footer, the explainer island and the
+// reveal script. Everything it says comes through the query module.
 import { Font } from 'astro:assets';
 
+import { explainerContent } from './explainer-content';
 import { pageHead } from './head';
 import { footerContent, headerContent } from './shell';
+import Explainer from '../components/islands/Explainer';
 import SiteFooter from '../components/SiteFooter.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import type { Locale } from '../content/contract';
@@ -78,6 +80,11 @@ const head = pageHead(query, Astro.site, { locale, page, name, description });
       <slot />
     </main>
     <SiteFooter content={footerContent(query, locale, new Date().getFullYear())} />
+    {/*
+        The explainer (spec §8): one dialog for every feature and level button on the page,
+        hydrated once the browser is idle; its markup is a closed dialog until a button opens it.
+      */}
+    <Explainer client:idle {...explainerContent(query, locale)} />
     {/*
         The reveal grammar (base.css): `.in` once a tenth of an element is in view. An element
         taller than nine viewports (a tenth of it barely fits, over ten it never does) gets `.in`

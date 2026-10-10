@@ -3,6 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 import {
   focusInDialog,
+  menuIsland,
   menuOf,
   menuPage,
   openMenu,
@@ -192,17 +193,14 @@ test.describe('the mobile menu at 390 × 844', () => {
   }
 });
 
-// The island's own files: its component and the Preact renderer, as the page names them.
-async function islandScripts(page: Page): Promise<string[]> {
-  const island = page.locator('astro-island');
-  const urls = [
-    await island.getAttribute('component-url'),
-    await island.getAttribute('renderer-url'),
-  ];
-  return urls.flatMap((url) => (url === null ? [] : [new URL(url, page.url()).href]));
+// The menu island's component script, as the page names it. (Preact and its renderer load on
+// every page for the explainer, client:idle.)
+async function menuScript(page: Page): Promise<string> {
+  const url = (await menuIsland(page).getAttribute('component-url')) ?? '';
+  return new URL(url, page.url()).href;
 }
 
-// /en/ at `width`: the island's files and every URL the page requested once the network is idle.
+// /en/ at `width`: the menu's script and every URL the page requested once the network is idle.
 async function loadAt(page: Page, width: number) {
   const requested: string[] = [];
   page.on('request', (request) => {
@@ -210,7 +208,7 @@ async function loadAt(page: Page, width: number) {
   });
   await page.setViewportSize({ width, height: 800 });
   await page.goto('/en/', { waitUntil: 'networkidle' });
-  return { scripts: await islandScripts(page), requested };
+  return { script: await menuScript(page), requested };
 }
 
 test.describe('from 1120px', () => {
@@ -218,22 +216,22 @@ test.describe('from 1120px', () => {
     test(`hides the burger at ${String(width)}px and never requests the island's script`, async ({
       page,
     }) => {
-      const { scripts, requested } = await loadAt(page, width);
+      const { script, requested } = await loadAt(page, width);
 
       await expect(menuOf(page).burger).toBeHidden();
       await expect(page.getByRole('navigation', { name: 'Primary', exact: true })).toBeVisible();
-      expect(scripts.filter((url) => url.endsWith('.js'))).toHaveLength(2);
-      expect(requested.filter((url) => scripts.includes(url))).toEqual([]);
+      expect(script).toMatch(/\/MobileMenu\.[\w-]+\.js$/u);
+      expect(requested).not.toContain(script);
     });
   }
 
   test("requests it at 1119px, where the burger shows (the island's media query is the CSS one)", async ({
     page,
   }) => {
-    const { scripts, requested } = await loadAt(page, 1119);
+    const { script, requested } = await loadAt(page, 1119);
 
     await expect(menuOf(page).burger).toBeVisible();
-    expect(new Set(requested.filter((url) => scripts.includes(url)))).toEqual(new Set(scripts));
+    expect(requested).toContain(script);
   });
 });
 
@@ -252,6 +250,6 @@ test.describe('without JavaScript at 390px (A11)', () => {
     for (const link of links) await expect(link).toBeVisible();
     await expect(page.locator('header .hdr-right > ul.lang')).toBeVisible();
     await expect(page.locator('header .menu-open')).toBeHidden();
-    await expect(page.locator('dialog')).toBeHidden();
+    await expect(page.locator('dialog.m-nav')).toBeHidden();
   });
 });

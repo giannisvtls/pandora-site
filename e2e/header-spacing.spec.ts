@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
+import { menuIsland } from './menu-fixtures';
+
 // WCAG 1.4.12 Text Spacing and the header (spec §7, §8). With the spacing the criterion names
 // (line height 1.5, letter spacing 0.12em, word spacing 0.16em, paragraph spacing 2em) applied, no
 // header control is pushed out of reach at any width from 320 to 1440px: from 1120px the header is
@@ -110,7 +112,7 @@ test.describe('the header under text spacing (WCAG 1.4.12)', () => {
   test('lets the open menu scroll to each of its controls at 320 × 568', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 568 });
     await withTextSpacing(page);
-    await expect(page.locator('astro-island')).not.toHaveAttribute('ssr');
+    await expect(menuIsland(page)).not.toHaveAttribute('ssr');
     await page.getByRole('button', { name: 'Open menu', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Mobile', exact: true });
     const controls = dialog.locator('a, button');

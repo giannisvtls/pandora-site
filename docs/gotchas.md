@@ -492,9 +492,11 @@ are about to touch. When you hit a new one, add it here in the same shape.
     server waits on `/en/`, not `/`.
 - **`dist/_astro` holds more Preact chunks than a page loads.**
   - Symptom: `signals.module.*.js` (and the other Preact chunks) in `dist/_astro`.
-  - Fix: expected. A page loads the island's chunk, the renderer (`client.*.js`), Preact and its
-    hooks only where the island's `client:media` matches (below 1120px for the mobile menu, about
-    8 KB gzip in all); the renderer imports `signals` only for an island given a signal prop.
+  - Fix: expected. A page loads an island's chunk only where its directive asks: the mobile menu's
+    below 1120px (`client:media`), the explainer's on every page once the browser is idle
+    (`client:idle`), with the renderer (`client.*.js`), Preact, its hooks and the chunk the two
+    islands share (about 9 KB gzip in all); the renderer imports `signals` only for an island
+    given a signal prop.
 - **`@types/node` is global** (no `types` list in `tsconfig.json`).
   - Symptom: Node globals type-check inside browser code too.
   - Fix: scope the types when islands grow.
@@ -646,8 +648,9 @@ are about to touch. When you hit a new one, add it here in the same shape.
 - **Focus after a dialog opened from code.** On close the browser returns focus to the element
   focused before `showModal()`, which is `<body>` when the opener never took focus (a tap on
   iOS, a click in some browsers).
-  - Fix: the dialog's `close` event gives focus back to the burger, so every way out (Escape,
-    the close button, a link) restores it.
+  - Fix: the dialog's `close` event gives focus back to the burger (the menu) or to the button
+    that opened it (the explainer, else `<main>` when that button is gone or hidden), so every way
+    out (Escape, the close button, the backdrop, a link) restores it.
 - **`useEffect` runs after Astro has marked the island hydrated.** Astro removes the island's
   `ssr` attribute as soon as Preact's `hydrate()` returns; Preact runs `useEffect` callbacks a
   frame later, `useLayoutEffect` callbacks inside `hydrate()`.
@@ -664,6 +667,36 @@ are about to touch. When you hit a new one, add it here in the same shape.
     `currentColor` top borders; an icon is an inline SVG with `stroke="currentColor"`.
     `e2e/forced-colors.spec.ts` checks the pixels inside each control with
     `page.emulateMedia({ forcedColors: 'active' })`.
+- **A click on a dialog's padding looks like a backdrop click.** The browser gives a click on a
+  modal dialog's `::backdrop` the dialog itself as its target, and a click on the dialog's own
+  padding or border too.
+  - Symptom: a backdrop check on `event.target === dialog` closes the explainer when its panel's
+    padding is clicked.
+  - Fix: the dialog has no padding or border; its panel (`.fx-body`) fills the dialog's box and
+    carries them, so only the backdrop leaves the dialog as the target. `e2e/explainer.spec.ts`
+    clicks the panel's padding and border (stays open) and the backdrop (closes).
+- **Sticky offsets inside a scroll container count its padding.** Chromium constrains a sticky
+  element to the scroll container's padding box minus its padding.
+  - Symptom: the explainer's sticky close button, `top: 14px` in a panel with 56px of top padding,
+    sits at 70px, not 14px.
+  - Fix: subtract the padding (`top: calc(14px - var(--pad-top))`, Explainer.css);
+    `e2e/explainer-layout.spec.ts` checks the button 14px from the panel's corner.
+- **Astro's serialized props are about twice their JSON.** Every prop value is wrapped
+  (`[0,"text"]`, `[1,[...]]` for an array) and the attribute escapes each quote as `&quot;`.
+  - Symptom: the query's `explainer('en')`, 35 KB as JSON, makes a 65 KB `props` attribute.
+  - Fix: pass a trimmed shape with few values (`layouts/explainer-content.ts`: the texts the
+    dialog shows, systems as one table referred to by index, absent keys instead of `undefined`),
+    and check the built attribute (`e2e/explainer.spec.ts`, under 40 KB; 17.4 KB on `/en/`).
+- **Props are plain objects.** An island's revived props inherit `Object.prototype`.
+  - Symptom: `features[button.dataset.fx]` for `data-fx="constructor"` is a function, not
+    `undefined`, and the view crashes.
+  - Fix: look up keys that come from the page with `Object.hasOwn` (`viewFor` in Explainer.tsx).
+- **`client:idle` loses a click before hydration.** The explainer's buttons are on the page from
+  the first paint; its script runs once the browser is idle after load.
+  - Symptom: a click in that window opens nothing (on `/en/` from the local preview: none on a
+    desktop, about 65-100 ms and up to 200 ms at 4x CPU throttling; a network adds a round trip).
+  - Fix: none in Phase 1 (a queue would need an inline script with its own CSP hash, or
+    `client:load`); the next click works.
 
 ## Unit tests (Vitest)
 
@@ -775,12 +808,18 @@ are about to touch. When you hit a new one, add it here in the same shape.
     passes for "Camper V3"); `page.goto()` returns the last response of a redirect chain.
   - Fix: pass `exact: true`, and assert `response.request().redirectedFrom()` is null when the
     status matters.
-- **An island is dead until it hydrates.** `client:media` loads the island's script after the
-  page; `page.goto` can return before it ran.
-  - Symptom: a click on the burger does nothing, now and then.
-  - Fix: wait until `astro-island` has lost its `ssr` attribute (Astro removes it once
-    hydrated) before using the island, as `e2e/menu.spec.ts` does. This holds because the islands
-    wire their listeners in `useLayoutEffect` (see the Islands section).
+- **An island is dead until it hydrates.** `client:media` and `client:idle` load the island's
+  script after the page; `page.goto` can return before it ran.
+  - Symptom: a click on the burger or an explainer button does nothing, now and then.
+  - Fix: wait until the island's `astro-island` has lost its `ssr` attribute (Astro removes it
+    once hydrated) before using it, as `menuPage()` and `explainerPage()` do. This holds because
+    the islands wire their listeners in `useLayoutEffect` (see the Islands section).
+- **Two islands on a page.** `/en/` has the mobile menu's island (in the header) and the
+  explainer's (after the footer).
+  - Symptom: `page.locator('astro-island')` or `page.locator('dialog')` in an assertion fails
+    with a strict mode violation (two elements).
+  - Fix: name the island or the dialog: `menuIsland(page)` (the island holding `.menu-open`),
+    `explainerIsland(page)` (`client="idle"`), `dialog.m-nav`, or the dialog by its role and name.
 - **Headless Chromium hides scrollbars.** Playwright launches it with `--hide-scrollbars`, so the
   page's classic scrollbar (10px, base.css) takes no room.
   - Symptom: no e2e sees layout that a scrollbar changes, such as the scroll lock taking the
@@ -819,5 +858,6 @@ are about to touch. When you hit a new one, add it here in the same shape.
     until Phase 2), the logo for the other theme, the theme toggle (hidden without JavaScript),
     or the mobile menu: its burger (hidden without JavaScript), its closed dialog, the
     `astro-island` wrapper (`display: contents`, no box) and the runtime `style` and `script`
-    Astro writes beside it.
+    Astro writes beside it; or the explainer buttons (`[data-fx]`, `[data-lvl]`, hidden without
+    JavaScript, their labels shown as text beside them).
   - Fix: those are skipped by name in the test; a new element hidden on purpose needs the same.

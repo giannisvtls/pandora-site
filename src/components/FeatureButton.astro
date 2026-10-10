@@ -1,6 +1,8 @@
 ---
 // A feature's explainer button (spec §8): `data-fx` names the feature, and the explainer island
-// (slice 10) opens its dialog from any such button on the page. Until then it opens nothing.
+// (Explainer.tsx, in the layout) opens its dialog from any such button on the page. Without
+// JavaScript nothing can open it (A11): the button is hidden and the title beside it shows as
+// plain text, so there is no control that does nothing.
 interface Props {
   // The feature key (`gps`).
   feature: string;
@@ -25,6 +27,7 @@ const { feature, title } = Astro.props;
     <path d="M12 11v5M12 8h.01"></path>
   </svg>
 </button>
+<span class="fx-text">{title}</span>
 
 <style>
   /* nightwatch.css "feature explainers": a dotted underline and an info mark. The design resets
@@ -71,5 +74,18 @@ const { feature, title } = Astro.props;
   .fx:focus-visible {
     outline: 2px solid var(--armed);
     outline-offset: 3px;
+  }
+
+  /* Without JavaScript (A11): the title as text, in place of the button that could not open. */
+  .fx-text {
+    display: none;
+  }
+
+  :global(html:not(.js)) .fx {
+    display: none;
+  }
+
+  :global(html:not(.js)) .fx-text {
+    display: inline;
   }
 </style>

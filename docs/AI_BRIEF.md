@@ -34,11 +34,14 @@ src/
   components/         SiteHeader.astro, ThemeToggle.astro, LanguageSwitcher.astro,
                       SiteFooter.astro, FeatureButton.astro, LevelButton.astro, system-index.ts
                       (the interim index's content), islands/ (MobileMenu.tsx + MobileMenu.css
-                      and menu-dialog.ts, its behaviour; __tests__/), __tests__/
+                      and menu-dialog.ts, its behaviour; Explainer.tsx + Explainer.css and
+                      explainer-dialog.ts; dialog-focus.ts, the focus code both share;
+                      __tests__/), __tests__/
   fonts/              fontsource-variable.ts (the Fonts API provider), __tests__/
   layouts/            BaseLayout.astro (head, theme script, skip link, header, main#main, footer,
-                      reveal script), head.ts (what the head says), shell.ts (what the header and
-                      footer say), __tests__/
+                      explainer island, reveal script), head.ts (what the head says), shell.ts
+                      (what the header and footer say), explainer-content.ts (the explainer's
+                      props), __tests__/
   pages/[locale]/     index.astro, the only page (one per built language: /en/), the interim
                       system index
   styles/             tokens.css (design tokens), base.css (element defaults, utilities, reveal
@@ -390,7 +393,8 @@ Spec §6.
   inline script before any stylesheet sets `html.js` and `data-theme` (the saved `theme` in
   localStorage when it is `dark`, else light; storage that throws means light, P1-6). The skip
   link (Site copy `common.skipLink`) shows only while focused and leads to
-  `<main id="main" tabindex="-1">`, between the site header and the site footer. An inline script at the end of `<body>` adds `.in` to each
+  `<main id="main" tabindex="-1">`, between the site header and the site footer. The explainer
+  island follows the footer (see Islands). An inline script at the end of `<body>` adds `.in` to each
   reveal element once a tenth of it is in view (IntersectionObserver), to an element taller than
   nine viewports as soon as it is in view, and to every reveal element at once where the browser
   has no IntersectionObserver.
@@ -445,8 +449,10 @@ index's with `src/components/system-index.ts`. No component holds visible copy (
   tagline).
 - **`FeatureButton.astro` / `LevelButton.astro`** (spec §8): a
   `<button type="button" aria-haspopup="dialog">` with `data-fx` (the feature key; shows the
-  feature's title) or `data-lvl` (the level; shows `common.level`, "Level 3 · Recovery"). They
-  open nothing until the explainer island (slice 10).
+  feature's title) or `data-lvl` (the level; shows `common.level`, "Level 3 · Recovery"), which
+  opens the explainer island (see Islands). Each is followed by its label as plain text
+  (`.fx-text`, `.lvl-text`), hidden with JavaScript; without JavaScript the button is hidden and
+  the text shows instead, so no control announces a dialog it cannot open (A11).
 - **The interim index** (P1-8, `src/pages/[locale]/index.astro`): the home hero heading as the h1
   (`lead <span class="b">payload</span>`), then, in order, each category that has a visible
   system, as an h2 over its systems: the package shot through `<Image>` (A19; `widths` 320 and
@@ -459,7 +465,8 @@ index's with `src/components/system-index.ts`. No component holds visible copy (
   theme script in the head, the Fonts API's two `@font-face` `<style>` blocks in the head (one
   per family), the theme toggle's script (ThemeToggle), the overlay header's script (SiteHeader,
   overlay pages only), Astro's island runtime with its `client:media` loader (and its `<style>`),
-  which Astro writes beside the first island, and the reveal script at the end of `<body>`.
+  which Astro writes beside the first island, its `client:idle` loader beside the explainer
+  island, and the reveal script at the end of `<body>`.
 
 ## Islands
 
@@ -469,10 +476,14 @@ import of `query.ts` or `media.ts` would put the eager media glob and zod into t
 markup carries no Astro scope, so its styles are a global stylesheet next to it. Without
 JavaScript nothing an island renders is needed (A11).
 
+- **`islands/dialog-focus.ts`**: what both dialogs do about focus, shared: `wrapFocus` (Tab and
+  Shift+Tab wrap at the ends; focus on the dialog itself or any other non-control counts as an
+  end, since Chromium lets Tab leave a modal dialog) and `isShown` (in the document, and neither
+  it nor an ancestor `display: none`, read from computed styles so jsdom answers too).
 - **`islands/MobileMenu.tsx`** (+ `MobileMenu.css`), in SiteHeader with
-  `client:media="(max-width: 1119px)"`: its script and Preact load only below 1120px (about 8 KB
-  gzip with the renderer; `MobileMenu.*.js` is 3.3 KB, 1.5 KB gzip, and imports Preact and its
-  hooks only). Props (`MobileMenuProps`, built by `headerContent(...).menu` in `shell.ts`): the
+  `client:media="(max-width: 1119px)"`: its script loads only below 1120px (`MobileMenu.*.js` is
+  2.7 KB, 1.1 KB gzip, and imports Preact, its hooks and the shared chunk only; Preact and the
+  renderer load on every page for the explainer). Props (`MobileMenuProps`, built by `headerContent(...).menu` in `shell.ts`): the
   labels (`header.openMenu`, `closeMenu`, `mobileNavLabel`, `languageLabel`), the nav's links
   with `isCurrent`, and the switcher's languages with their endonym. The burger
   (`aria-haspopup="dialog"`, `aria-controls`) opens a full-screen modal dialog named by its nav
@@ -504,6 +515,51 @@ JavaScript nothing an island renders is needed (A11).
   background; helpers in `e2e/menu-fixtures.ts`), `e2e/menu-scrollbar.spec.ts` (the close button
   on the burger with the page's scrollbar shown), `e2e/forced-colors.spec.ts` (the bars and the X
   in forced colors) and `e2e/header-spacing.spec.ts`.
+- **`islands/Explainer.tsx`** (+ `Explainer.css`), in BaseLayout after the footer with
+  `client:idle`, so on every page: `Explainer.*.js` is 3.5 KB (1.4 KB gzip) and imports Preact,
+  its hooks and the shared chunk only; with the renderer and Preact about 9 KB gzip. Props
+  (`ExplainerProps`, built by `explainerContent(query, L)` in `layouts/explainer-content.ts`):
+  the labels (Site copy `common.explainer.*`, `howItWorks`, `matrix.included` / `optional`), one
+  table of the visible systems (`{ name, url, vehicle }`, the vehicle word of `common.vehicles`),
+  and every feature (`title`, `what`, `how`, `needs`, `systems` and `optional` as indexes into
+  the table) and level (`title` filled from `common.level`, "Level 3 · Recovery", `what`, `items`,
+  `stops`, `systems`) of the language; a text the language lacks is left out, and an entry without
+  a title too. Astro wraps every prop value and escapes its quotes, so the shape is trimmed: about
+  17.4 KB on `/en/` (the full `explainer('en')` would be 65 KB), checked under 40 KB by
+  `e2e/explainer.spec.ts`. The size does not grow with the buttons a page shows (every feature is
+  in it) or with the languages built (a page carries its own language); it grows with the
+  catalogue (about 0.5 KB per feature with its texts, 0.1 KB per system) and with the length of a
+  language's texts. The behaviour is `explainer-dialog.ts` (`wireExplainer`, native listeners
+  added in a layout effect, so the buttons work the moment Astro removes `ssr`): one
+  document-level click listener opens the dialog from any `[data-fx]` / `[data-lvl]` button the
+  props have a view for (own keys only), buttons added after load included. The island renders
+  the view (a native modal `<dialog>` named by its h2 through `aria-labelledby`: the feature's
+  title, what, "How it works", "Needs", "On these systems" with each system's link and Included /
+  Optional; or the level's title, what, "What you get", "Where it stops", "Systems that reach this
+  level" with each vehicle word; h3 section heads, each list named by its head, a section without
+  text left out), then opens it on the close button. Tab and Shift+Tab wrap (`dialog-focus.ts`);
+  Escape, the close button, a click on the backdrop and following a link close it. The panel
+  (`.fx-body`) fills the dialog's box (the dialog has no padding or border), so a click whose
+  target is the dialog itself is on the backdrop. The dialog's `close` event gives focus back to
+  the button that opened it, or to `<main>` (without scrolling) when that button has gone or is
+  hidden; a late `close` event after a reopen does nothing. The look is the design's panel: on the
+  right, 460px wide (the whole screen below that), over a veiled, blurred page; the panel scrolls
+  inside, the close button (46px, an inline SVG X in `currentColor`) stays 14px from its corner
+  while it scrolls (sticky) and links that take focus stop below it. The page under it does not
+  scroll (`html:has(.fx-panel[open])`). The panel slides in and the backdrop fades only without
+  `prefers-reduced-motion`; closing is instant. Without JavaScript the buttons are hidden and their
+  labels show as text. Before the island hydrates a click on a button does nothing: on `/en/`
+  the island hydrates by first paint on a desktop, and about 65-100 ms after it (up to 200 ms) at
+  4x CPU throttling, from the local preview; a network adds a round trip for the scripts. No
+  pre-hydration queue in Phase 1. Tests: `islands/__tests__/Explainer.test.tsx` (the views) and
+  `explainer-dialog.test.tsx` (closing and focus; jsdom, fixtures in `explainer-fixtures.tsx`),
+  `layouts/__tests__/explainer-content.test.ts` (the props on the snapshot),
+  `components/__tests__/explainer-buttons.test.ts`, `layouts/__tests__/BaseLayout.test.ts`,
+  `e2e/explainer.spec.ts` (GPS, Wi-Fi positioning, Level 3, Tab, every way out, the backdrop
+  against the panel, a click the instant it hydrates, the props size, axe open in both themes),
+  `e2e/explainer-layout.spec.ts` (390 × 844 and 320 × 256, focus clear of the close button,
+  reduced motion, a hidden opener; helpers in `e2e/explainer-fixtures.ts`), `e2e/shell.spec.ts`
+  (without JavaScript) and `e2e/forced-colors.spec.ts`.
 
 ## i18n routing
 
@@ -646,15 +702,15 @@ can point the crawler anywhere else.
 Phase 0 limits:
 
 - Styling so far is the shell (tokens, base styles, fonts, skip link, header, footer, mobile
-  menu) and the interim index; the explainer island comes later in Phase 1.
+  menu, explainer) and the interim index.
 - No deploy: no hosting project, no `_headers`, no Functions. `public/_redirects` is the only
   host file.
 - `/en/` is the interim system index (the 16 systems visible in English), and only `/en/` is
   built; its system links 404 until Phase 2.
 - No CMS yet: `CONTENT_SOURCE=payload` throws until Phase 5.
 - No 404 page yet (Phase 1, with a per-locale strategy).
-- One island ships, the mobile menu (below 1120px only); the explainer comes in slice 10. The
-  test fixture `src/test/fixtures/FixtureToggle.tsx` is imported by no page.
+- Two islands ship: the mobile menu (below 1120px only) and the explainer (every page, when
+  idle). The test fixture `src/test/fixtures/FixtureToggle.tsx` is imported by no page.
 - `redirects/crawl.json` is the inventory, not the redirect map: the crawler and the summary map
   no old URL to a new page (Phase 7 builds the map).
 

@@ -1,7 +1,8 @@
 ---
 // A level's explainer button (spec §8): `data-lvl` names the level, and the explainer island
-// (slice 10) opens its dialog from any such button on the page. Until then it opens nothing. It
-// shows the level tag, "Level {n} · {title}".
+// (Explainer.tsx, in the layout) opens its dialog from any such button on the page. It shows the
+// level tag, "Level {n} · {title}". Without JavaScript nothing can open it (A11): the button is
+// hidden and the same tag beside it shows as plain text.
 import type { LevelId } from '../content/contract';
 
 interface Props {
@@ -16,6 +17,7 @@ const { level, label } = Astro.props;
 <button type="button" class="fx chipfx" data-lvl={level} aria-haspopup="dialog">
   <span class:list={['lvl', { l2: level === '2', l3: level === '3' }]}>{label}</span>
 </button>
+<span class:list={['lvl', 'lvl-text', { l2: level === '2', l3: level === '3' }]}>{label}</span>
 
 <style>
   /* nightwatch.css: the level tag (`.lvl`, coloured per level) inside a plain explainer button.
@@ -68,5 +70,18 @@ const { level, label } = Astro.props;
 
   .chipfx:hover .lvl {
     border-color: var(--ink);
+  }
+
+  /* Without JavaScript (A11): the tag as text, in place of the button that could not open. */
+  .lvl-text {
+    display: none;
+  }
+
+  :global(html:not(.js)) .chipfx {
+    display: none;
+  }
+
+  :global(html:not(.js)) .lvl-text {
+    display: inline-block;
   }
 </style>
