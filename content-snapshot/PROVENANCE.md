@@ -12,7 +12,9 @@ The converter wrote every collection file, `finder.json` and `src/content/hues.t
 converted from the data file:
 
 - the Site copy files (`site-copy-*.json`) and `languages.json`, transcribed from the
-  prototype page;
+  prototype page, except the new English the prototype has no text for (decision A6): the 404
+  copy (`site-copy-not-found.json`, its `name` for the page title included) and the skip link
+  (`skipLink` in `site-copy-common.json`);
 - the nav section labels, transcribed from the prototype page's header (`NAV_SECTIONS` in
   `scripts/snapshot/convert-data.ts`);
 - the media alt text no pattern gives, written after viewing each image (`ALT_BY_MEDIA` in

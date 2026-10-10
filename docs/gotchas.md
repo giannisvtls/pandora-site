@@ -503,6 +503,13 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: it emits meta-refresh HTML pages, not HTTP redirects.
   - Fix: the build integration (`src/integrations/build-files.ts`) writes the root redirect into
     `dist/_redirects` (`/  /en/  302`) for the static host.
+- **A `public/_redirects` fails the build.** Astro copies `public/` into `dist/` before the
+  integration runs, and the integration writes `dist/_redirects` itself.
+  - Symptom: the build stops after the pages are written, with
+    `dist/ already has a different _redirects (from a public/_redirects?)` in its message.
+  - Fix: remove `public/_redirects` and generate its rules with the root line (`redirectsFile` in
+    `src/content/seo.ts`). The same text already in `dist/` (the hook run again over a finished
+    build) passes.
 - **`_redirects` is not applied by `astro preview`.**
   - Symptom: locally `/` returns 404 and `/_redirects` is served as a plain file.
   - Fix: expected. `seo.test.ts` checks the generator, `e2e/seo.spec.ts` the built line, and the

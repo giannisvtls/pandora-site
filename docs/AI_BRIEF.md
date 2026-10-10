@@ -635,15 +635,20 @@ Spec §9, generated from the rules: no URL, name or fact is written in code (A6)
   Preact for it; the mobile menu's island stays). Never in a sitemap or an alternate (A18).
 - **`src/integrations/build-files.ts`** (`astro:build:done`, in `dist/`): writes `_redirects`
   (`redirectsFile` over the snapshot's `languages`, read with `readSnapshot()`: `query.ts` needs
-  Vite and astro:content, which the hook does not have), moves each `{L}/404/index.html` to
+  Vite and astro:content, which the hook does not have; a different `_redirects` already in
+  `dist/`, which only a `public/_redirects` can put there, fails the build), moves each `{L}/404/index.html` to
   `{L}/404.html` (Astro writes only the root `/404` as `404.html`; the build fails when a live
   language has no 404 page), and deletes the images directly in `_astro/` that no other built
-  file names (HTML, CSS, JavaScript, XML, SVG; `media.ts` imports every media file, so Astro
-  writes all 92 originals). On the Phase 1 build that is 70 files, 3.1 MB: `dist/_astro` goes
+  file names (HTML, CSS, JavaScript, XML, SVG). `media.ts` imports every media file, so Astro
+  writes each distinct original: 86 files for the 92 media items, since six media files are
+  byte-identical copies of others. Astro itself removes the 16 that `<Image>` replaced (the
+  index's package shots), and the integration prunes the other 70 (3.1 MB): `dist/_astro` goes
   from 4.30 MB to 1.08 MB. Fonts and `public/` files are never touched.
 - Tests: `content/__tests__/seo.test.ts` (fixtures with en, en + el, it and a preview build),
   `seo-xml.test.ts` (the XML through a parser), `integrations/__tests__/build-files.test.ts`,
-  `components/__tests__/not-found.test.ts`, `layouts/__tests__/BaseLayout.test.ts`, and
+  `components/__tests__/not-found.test.ts`, `root-not-found.test.ts` (the root 404 page in
+  Greek once Greek is live), `layouts/__tests__/BaseLayout.test.ts` (the JSON-LD in the page's
+  language), `e2e/shell.spec.ts` (no request to another origin on `/en/` and both 404 pages), and
   `e2e/seo.spec.ts` (the served files, the built `dist/`, the JSON-LD, both 404 pages with axe in
   both themes, an unknown URL, and every `/_astro/` file a page or its CSS names).
 

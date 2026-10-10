@@ -1,9 +1,10 @@
 // The build's files beside its pages (spec §9), finished once Astro has written everything
 // (`astro:build:done`, in dist/):
 // - `_redirects`, the static host's redirect file: line 1 is the root redirect from the live
-//   languages (seo.ts `redirectsFile`). The query module needs Vite and astro:content, which this
-//   hook does not have, so it reads the snapshot through the converter's reader and the publish
-//   rules (rules.ts);
+//   languages (seo.ts `redirectsFile`); a different _redirects already in dist/ (a
+//   public/_redirects) fails the build. The query module needs Vite and astro:content, which
+//   this hook does not have, so it reads the snapshot through the converter's reader and the
+//   publish rules (rules.ts);
 // - each language's 404 page moved from {L}/404/index.html to {L}/404.html, its URL (routes.ts):
 //   Astro writes only the root /404 route as 404.html;
 // - the images in _astro/ that no built file names deleted: media.ts imports every media file, so
@@ -99,11 +100,34 @@ export interface Finished {
   readonly pruned: Pruned;
 }
 
-// Finishes the build in `dir` (dist/) for the `languages` global: writes `_redirects`, moves the
-// 404 pages (every live language must then have its {L}/404.html) and prunes the images.
+// The text of `file`, or undefined when there is no such file.
+async function textOfFile(file: string): Promise<string | undefined> {
+  return (await isFile(file)) ? readFile(file, 'utf8') : undefined;
+}
+
+// Writes `redirects` as `dir`/_redirects. Astro copies public/ into dist/ first, so an existing
+// file that says something else came from a public/_redirects, whose rules the generated file
+// would silently replace: that fails the build. The same text again (the hook run once more over
+// a finished dist/) passes.
+async function writeRedirects(dir: string, redirects: string): Promise<void> {
+  const file = path.join(dir, '_redirects');
+  const existing = await textOfFile(file);
+  if (existing !== undefined && existing !== redirects) {
+    throw new Error(
+      'The build writes _redirects from the live languages, but dist/ already has a different ' +
+        '_redirects (from a public/_redirects?): remove public/_redirects and add its rules ' +
+        'through redirectsFile in src/content/seo.ts',
+    );
+  }
+  await writeFile(file, redirects);
+}
+
+// Finishes the build in `dir` (dist/) for the `languages` global: writes `_redirects` (refusing a
+// different one already there), moves the 404 pages (every live language must then have its
+// {L}/404.html) and prunes the images.
 export async function finishBuild(dir: string, languages: Languages): Promise<Finished> {
   const redirects = redirectsFile(languages);
-  await writeFile(path.join(dir, '_redirects'), redirects);
+  await writeRedirects(dir, redirects);
   const moved = await moveNotFoundPages(dir);
   for (const locale of liveLanguages(languages)) {
     if (!(await isFile(path.join(dir, locale, '404.html')))) {

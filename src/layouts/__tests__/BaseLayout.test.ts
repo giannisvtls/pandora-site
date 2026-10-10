@@ -28,6 +28,9 @@ const SKIP_LINK = { en: 'Skip to the content (fixture)', el: 'Skip (el fixture)'
 const TITLE_TEMPLATE = { en: '{page} | INVETEC (fixture)', el: '{page} | INVETEC (el)' };
 const HOME_TITLE = { en: 'Home title (en fixture)', el: 'Home title (el fixture)' };
 const HOME_DESCRIPTION = { en: 'Home description (en)', el: 'Home description (el)' };
+// The company's street in Greek ("Iera Odos 330" in Greek letters), so the JSON-LD shows which
+// language's footer it read.
+const GREEK_STREET = `${String.fromCodePoint(0x3_99, 0x3_b5, 0x3_c1, 0x3_ac, 0x20, 0x3_9f, 0x3_b4, 0x3_cc, 0x3_c2)} 330`;
 
 function fixtureQuery(): Query {
   const content = withLanguage(fixtureContent(['en', 'el']), 'el');
@@ -41,8 +44,13 @@ function fixtureQuery(): Query {
     title: HOME_TITLE,
     metaDescription: HOME_DESCRIPTION,
   };
+  const { company } = content.siteCopyFooter;
+  const siteCopyFooter = {
+    ...content.siteCopyFooter,
+    company: { ...company, street: { ...company.street, el: GREEK_STREET } },
+  };
   return createQuery(
-    { ...content, siteCopyCommon, siteCopyHome },
+    { ...content, siteCopyCommon, siteCopyHome, siteCopyFooter },
     { preview: false, pageTypes: ['home', 'compare'] },
   );
 }
@@ -76,6 +84,15 @@ const notFound = (locale: Locale) =>
     description: `Gone (${locale}).`,
     hasExplainer: false,
   });
+
+// The Organization JSON-LD of `locale`'s home, parsed; it must be in the head.
+async function homeJsonLd(locale: Locale): Promise<{ logo: string }> {
+  const html = await render({ locale, page: HOME });
+  const start = '<script type="application/ld+json">';
+  expect(html).toContain(start);
+  expect(html.indexOf(start)).toBeLessThan(html.indexOf('</head>'));
+  return JSON.parse(between(html, start, '</script>').slice(start.length)) as { logo: string };
+}
 
 describe('BaseLayout', () => {
   it('sets the language and the title and description of home in that language (A5)', async () => {
@@ -224,20 +241,17 @@ describe('BaseLayout', () => {
     expect(await render({ locale: 'en', page: HOME })).not.toContain('name="robots"');
   });
 
-  it('puts the Organization JSON-LD in the head of a language home, as JSON', async () => {
-    const html = await render({ locale: 'el', page: HOME });
-    const start = '<script type="application/ld+json">';
-    const json = between(html, start, '</script>').slice(start.length);
-    const data = JSON.parse(json) as { logo: string };
+  it('puts the Organization JSON-LD in the head of a language home, as JSON in its language', async () => {
+    const greek = await homeJsonLd('el');
 
-    expect(html.indexOf('application/ld+json')).toBeLessThan(html.indexOf('</head>'));
-    expect(data).toMatchObject({
+    expect(greek).toMatchObject({
       '@type': 'Organization',
       name: 'INVETEC E.E.',
       url: 'https://invetec.eu/',
-      address: { '@type': 'PostalAddress', streetAddress: 'Iera Odos 330' },
+      address: { '@type': 'PostalAddress', streetAddress: GREEK_STREET },
     });
-    expect(data.logo).toMatch(/^https:\/\/invetec\.eu\/.*invetec-logo/u);
+    expect(greek.logo).toMatch(/^https:\/\/invetec\.eu\/.*invetec-logo/u);
+    expect(await homeJsonLd('en')).toMatchObject({ address: { streetAddress: 'Iera Odos 330' } });
   });
 
   it('puts no JSON-LD on any other page: neither a 404 page nor another page type', async () => {

@@ -2,8 +2,8 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
 // The page shell of spec §6 on the built /en/: the theme before first paint, the self-hosted
-// fonts, nothing loaded from another origin, the content without JavaScript, the skip link. The
-// reveal grammar is in reveal.spec.ts.
+// fonts, nothing loaded from another origin (on the 404 pages too), the content without
+// JavaScript, the skip link. The reveal grammar is in reveal.spec.ts.
 
 // WCAG 2.0, 2.1 and 2.2 at levels A and AA. axe-core 4.13 defines no `wcag22a` tag.
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
@@ -117,21 +117,24 @@ test.describe('the theme before first paint (P1-6)', () => {
 });
 
 test.describe('the self-hosted fonts (A12)', () => {
-  test('load /en/ without a single request to another origin', async ({ page }) => {
-    const requests: string[] = [];
-    page.on('request', (request) => {
-      requests.push(request.url());
-    });
-    await page.goto('/en/', { waitUntil: 'networkidle' });
-    await page.locator('html').evaluate(async (html) => {
-      await html.ownerDocument.fonts.ready;
-    });
+  // The home and both 404 pages (Verification item 6: no request leaves the preview origin).
+  for (const path of ['/en/', '/404.html', '/en/404.html']) {
+    test(`load ${path} without a single request to another origin`, async ({ page }) => {
+      const requests: string[] = [];
+      page.on('request', (request) => {
+        requests.push(request.url());
+      });
+      await page.goto(path, { waitUntil: 'networkidle' });
+      await page.locator('html').evaluate(async (html) => {
+        await html.ownerDocument.fonts.ready;
+      });
 
-    // The preview's origin, where /en/ came from.
-    const origin = new URL(page.url()).origin;
-    expect(requests.filter((url) => new URL(url).origin !== origin)).toEqual([]);
-    expect(requests.filter((url) => url.includes('/_astro/fonts/'))).not.toEqual([]);
-  });
+      // The preview's origin, where the page came from.
+      const origin = new URL(page.url()).origin;
+      expect(requests.filter((url) => new URL(url).origin !== origin)).toEqual([]);
+      expect(requests.filter((url) => url.includes('/_astro/fonts/'))).not.toEqual([]);
+    });
+  }
 
   test('render the headings in Sofia Sans Extra Condensed 800 once the fonts are ready', async ({
     page,

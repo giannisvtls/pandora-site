@@ -1,6 +1,7 @@
-// The build integration (spec §9) on a scratch dist/: `_redirects` from the live languages, each
-// language's 404 page moved to {L}/404.html, and the images in _astro/ that no built file names
-// deleted while every named one stays; then the hook itself, over the committed snapshot.
+// The build integration (spec §9) on a scratch dist/: `_redirects` from the live languages (a
+// different one already there refused, the same one accepted), each language's 404 page moved to
+// {L}/404.html, and the images in _astro/ that no built file names deleted while every named one
+// stays; then the hook itself, over the committed snapshot.
 import {
   existsSync,
   mkdirSync,
@@ -104,6 +105,30 @@ describe('finishBuild', () => {
     await finishBuild(dir, languagesWith('en', 'el'));
 
     expect(readFileSync(path.join(dir, '_redirects'), 'utf8')).toBe('/  /el/  301\n');
+  });
+
+  it('refuses a different _redirects already in dist/ (a public/_redirects), changing nothing', async () => {
+    const dir = distWith({ ...DIST, _redirects: '/old  /new  301\n' });
+
+    await expect(finishBuild(dir, languagesWith('en'))).rejects.toThrow(
+      'dist/ already has a different _redirects (from a public/_redirects?)',
+    );
+    expect(readFileSync(path.join(dir, '_redirects'), 'utf8')).toBe('/old  /new  301\n');
+    expect(filesOf(dir)).toEqual([...Object.keys(DIST), '_redirects'].toSorted(byCodeUnit));
+  });
+
+  it('runs again over a finished dist/ with the same _redirects, changing nothing', async () => {
+    const dir = distWith(DIST);
+    await finishBuild(dir, languagesWith('en'));
+    const files = filesOf(dir);
+
+    expect(await finishBuild(dir, languagesWith('en'))).toEqual({
+      redirects: '/  /en/  302\n',
+      moved: [],
+      pruned: { files: [], bytes: 0 },
+    });
+    expect(filesOf(dir)).toEqual(files);
+    expect(readFileSync(path.join(dir, '_redirects'), 'utf8')).toBe('/  /en/  302\n');
   });
 
   it('fails when a live language has no 404 page', async () => {
