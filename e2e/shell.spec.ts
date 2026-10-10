@@ -99,8 +99,9 @@ test.describe('the theme before first paint (P1-6)', () => {
     expect(script).toBeGreaterThan(html.indexOf('<head>'));
     expect(styles).not.toEqual([]);
     expect(script).toBeLessThan(Math.min(...styles));
-    // The site's CSS is past Astro's 4 KB inline threshold: one external stylesheet, after it.
-    expect(html.match(/<link rel="stylesheet"/gu)).toHaveLength(1);
+    // The site's CSS and the page's own are each past Astro's 4 KB inline threshold: external
+    // stylesheets, all after it.
+    expect(html.match(/<link rel="stylesheet"/gu)?.length).toBeGreaterThanOrEqual(1);
   });
 
   test('has no WCAG 2.2 AA violations in dark (axe)', async ({ page }) => {

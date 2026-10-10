@@ -1,9 +1,11 @@
 // The explainer data (spec §5) through the query module: on the snapshot, the feature and level
-// views of the prototype (GPS on 11 systems, Wi-Fi positioning on Elite V3 only, Level 3 with
-// Finder and Tracer); on fixtures, only the systems a language shows.
+// views (GPS on 13 systems, Finder and Tracer among them, Wi-Fi positioning on Elite V3 only,
+// Level 3 with Finder and Tracer), and every product on the explainer of each feature it
+// highlights; on fixtures, only the systems a language shows.
 import { describe, expect, it } from 'vitest';
 
 import { createQuery } from '../query';
+import type { ContentData } from '../rules';
 import { fixtureContent, snapshot } from './rules-fixtures';
 
 const site = createQuery(snapshot, { preview: false });
@@ -21,6 +23,19 @@ const system = (id: string, name: string, path: string, vehicle: string) => ({
 });
 const fleet = 'trucks & trackers';
 
+// Each visible product and highlighted feature whose explainer does not list that product.
+function unlistedHighlights(data: ContentData): string[] {
+  const query = createQuery(data, { preview: false });
+  const { features } = query.explainer('en');
+  return query
+    .products('en')
+    .flatMap(({ id, highlights }) =>
+      highlights
+        .filter((key) => (features[key]?.systems ?? []).every((system) => system.id !== id))
+        .map((key) => `${id} highlights ${key}`),
+    );
+}
+
 describe('a feature', () => {
   it('lists Wi-Fi positioning on Elite V3 alone, Included, with its page', () => {
     expect(english.features.wifi?.systems).toEqual([
@@ -28,15 +43,18 @@ describe('a feature', () => {
     ]);
   });
 
-  it('lists GPS on 11 systems: Light Pro V2 and Primo Optional, 9 Included', () => {
+  it('lists GPS on 13 systems: Light Pro V2 and Primo Optional, 11 Included', () => {
     const systems = english.features.gps?.systems ?? [];
     const optional = systems.filter(({ availability }) => availability === 'optional');
 
-    expect(systems).toHaveLength(11);
+    expect(systems).toHaveLength(13);
     expect(namesOf(optional)).toEqual(['Light Pro V2', 'Primo']);
-    expect(systems.filter(({ availability }) => availability === 'included')).toHaveLength(9);
-    // Finder and Tracer highlight GPS but have no matrix: the row decides (spec §5).
-    expect(namesOf(systems)).not.toContain('Finder');
+    expect(systems.filter(({ availability }) => availability === 'included')).toHaveLength(11);
+    // Finder and Tracer have no matrix: they are on the features they highlight, Included.
+    expect(systems.slice(-2)).toEqual([
+      expect.objectContaining({ id: 'finder', availability: 'included' }),
+      expect.objectContaining({ id: 'tracer', availability: 'included' }),
+    ]);
   });
 
   it('lists, for a key without a matrix row, the systems that highlight it, as Included', () => {
@@ -61,6 +79,21 @@ describe('a feature', () => {
     });
     expect(english.features.wifi?.needs).toBeUndefined();
     expect(Object.keys(english.features)).toHaveLength(snapshot.features.length);
+  });
+
+  it('lists every product on the explainer of each feature it highlights', () => {
+    expect(unlistedHighlights(snapshot)).toEqual([]);
+    // A product whose matrix says No for a feature it highlights is reported, not dropped quietly.
+    const elite = snapshot.products.find(({ id }) => id === 'elite');
+    const changed = {
+      ...snapshot,
+      products: snapshot.products.map((product) =>
+        product === elite && product.matrix !== undefined
+          ? { ...product, matrix: { ...product.matrix, gps: 0 as const } }
+          : product,
+      ),
+    };
+    expect(unlistedHighlights(changed)).toEqual(['elite highlights gps']);
   });
 
   it('lists only the systems the language shows', () => {

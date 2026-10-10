@@ -76,6 +76,24 @@ const { feature, title } = Astro.props;
     outline-offset: 3px;
   }
 
+  /* A 44px touch target where the site takes its touch-sized layout (below 1120px, the header's
+     breakpoint, where the burger and the 46px theme toggle appear): an invisible box reaching 10px
+     beyond the drawn button above and below (its offsets count from the padding box, which ends
+     above the 1px underline: hence 11px below) takes the taps. Nothing drawn moves, so the dotted
+     underline stays right under the label. The page spaces its rows 20px apart, so neighbouring
+     targets never overlap (index.astro). */
+  @media (max-width: 1119px) {
+    .fx {
+      position: relative;
+    }
+
+    .fx::before {
+      content: '';
+      position: absolute;
+      inset: -10px 0 -11px;
+    }
+  }
+
   /* Without JavaScript (A11): the title as text, in place of the button that could not open. */
   .fx-text {
     display: none;

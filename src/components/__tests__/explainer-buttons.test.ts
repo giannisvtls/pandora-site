@@ -88,12 +88,17 @@ describe('LevelButton', () => {
       );
       expect(button.text).toBe(label);
       expect(html).toMatch(new RegExp(`<span class="${tag}"`, 'u'));
+      // The feature buttons' info mark after the tag, decorative (the name stays the tag).
+      expect(between(html, '<button', '</button>')).toMatch(
+        new RegExp(`${label}<svg [^>]*aria-hidden="true"`, 'u'),
+      );
       // The same tag as text, shown instead of the button without JavaScript.
       const text = textAfter(html);
       expect(text.tag).toMatch(
         new RegExp(`^<span class="${tag.replace('lvl', 'lvl lvl-text')}"`, 'u'),
       );
       expect(text.text).toBe(label);
+      expect(html.slice(html.indexOf('</button>'))).not.toContain('<svg');
     },
   );
 
@@ -101,6 +106,7 @@ describe('LevelButton', () => {
     expect(displays('../LevelButton.astro')).toEqual([
       '.chipfx: inline-block',
       '.lvl: inline-block',
+      '.chipfx .lvl: inline-flex',
       '.lvl-text: none',
       ':global(html:not(.js)) .chipfx: none',
       ':global(html:not(.js)) .lvl-text: inline-block',

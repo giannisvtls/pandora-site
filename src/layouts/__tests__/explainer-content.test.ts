@@ -52,7 +52,7 @@ describe('the explainer props', () => {
     });
   });
 
-  it('give GPS its texts and 11 systems, Light Pro V2 and Primo Optional', () => {
+  it('give GPS its texts and 13 systems, Light Pro V2 and Primo Optional', () => {
     const gps = props.features.gps;
     const feature = snapshot.features.find(({ id }) => id === 'gps');
 
@@ -63,11 +63,12 @@ describe('the explainer props', () => {
       needs: feature?.needs?.en,
     });
     const systems = gps === undefined ? [] : listed(props, gps);
-    expect(systems).toHaveLength(11);
+    expect(systems).toHaveLength(13);
     expect(systems.filter((entry) => entry.endsWith(' Optional'))).toEqual([
       'Light Pro V2 Optional',
       'Primo Optional',
     ]);
+    expect(systems.slice(-2)).toEqual(['Finder Included', 'Tracer Included']);
   });
 
   it('give Wi-Fi positioning Elite V3 alone, and no key for a text it lacks', () => {

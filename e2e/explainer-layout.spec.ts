@@ -12,7 +12,8 @@ import {
 // scrolls inside, the close button stays in its corner and in reach, nothing scrolls sideways
 // (WCAG 1.4.10) and a focused link is never under the close button (2.4.11). After a click on the
 // panel's text the keyboard scrolls the panel. The opening slides in, unless reduced motion is
-// asked for. Focus lands somewhere visible when the button that opened it is hidden meanwhile.
+// asked for. Focus lands somewhere visible when the button that opened it is hidden meanwhile. A
+// long title ends 8px before the close button, also while the panel scrolls under the button.
 
 const GPS = 'GPS/GLONASS tracking';
 const LEVEL_3 = 'Level 3 · Recovery';
@@ -73,11 +74,11 @@ for (const screen of SCREENS) {
       const close = await explainer.close.boundingBox();
       const below = (close?.y ?? 0) + (close?.height ?? 0);
 
-      // Down through the 11 links, then back up: each one scrolls into view clear of the button
+      // Down through the 13 links, then back up: each one scrolls into view clear of the button
       // and on the screen (to the pixel: the text's box can end a fraction past the edge).
       const keys = [
-        ...Array.from({ length: 11 }, () => 'Tab'),
-        ...Array.from({ length: 10 }, () => 'Shift+Tab'),
+        ...Array.from({ length: 13 }, () => 'Tab'),
+        ...Array.from({ length: 12 }, () => 'Shift+Tab'),
       ];
       for (const [press, key] of keys.entries()) {
         await page.keyboard.press(key);
@@ -92,6 +93,44 @@ for (const screen of SCREENS) {
     });
   });
 }
+
+test.describe('the title and the close button', () => {
+  for (const size of [
+    { width: 1280, height: 800 },
+    { width: 390, height: 844 },
+  ]) {
+    test(`keep a long title clear of Close, also while the panel scrolls (${String(size.width)}px)`, async ({
+      page,
+    }) => {
+      await explainerPage(page, size);
+      await openExplainer(page, featureButton(page, 'gps'), GPS);
+      // Located by class: the long title renames the dialog.
+      const heading = page.locator('dialog.fx-panel h2');
+      const close = page.locator('dialog.fx-panel .fx-close');
+      const panel = page.locator('dialog.fx-panel .fx-body');
+      await heading.evaluate((title) => {
+        title.textContent = Array.from({ length: 4 }, () => title.textContent).join(' ');
+      });
+
+      for (const top of [0, 30, 60]) {
+        await panel.evaluate((element, scrolled) => {
+          element.scrollTop = scrolled;
+        }, top);
+        const [title, button] = [await heading.boundingBox(), await close.boundingBox()];
+        if (title === null || button === null) throw new Error('No box');
+        const isOverlapping =
+          title.x < button.x + button.width &&
+          button.x < title.x + title.width &&
+          title.y < button.y + button.height &&
+          button.y < title.y + title.height;
+        expect(isOverlapping, `scrolled ${String(top)}px`).toBe(false);
+        expect(title.x + title.width, `scrolled ${String(top)}px`).toBeLessThanOrEqual(
+          button.x - 8,
+        );
+      }
+    });
+  }
+});
 
 test.describe('the keyboard after a click on the panel', () => {
   test('scrolls the panel, and Tab still goes to Close (390×600)', async ({ page }) => {

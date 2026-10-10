@@ -37,7 +37,7 @@ async function expectClosedWithFocusOn(page: Page, dialog: Locator, button: Loca
 }
 
 test.describe('the explainer', () => {
-  test(`opens "${GPS}" from its button, with focus on Close and 11 systems`, async ({ page }) => {
+  test(`opens "${GPS}" from its button, with focus on Close and 13 systems`, async ({ page }) => {
     await explainerPage(page);
     const explainer = await openExplainer(page, featureButton(page, 'gps'), GPS);
 
@@ -48,12 +48,17 @@ test.describe('the explainer', () => {
       'On these systems',
     ]);
     const systems = await entries(explainer, 'On these systems');
-    expect(systems).toHaveLength(11);
+    expect(systems).toHaveLength(13);
     expect(systems.filter(([, beside]) => beside === 'Optional')).toEqual([
       ['Light Pro V2', 'Optional'],
       ['Primo', 'Optional'],
     ]);
-    expect(systems.filter(([, beside]) => beside === 'Included')).toHaveLength(9);
+    expect(systems.filter(([, beside]) => beside === 'Included')).toHaveLength(11);
+    // Finder and Tracer, which have no specification matrix, are on it as Included.
+    expect(systems.slice(-2)).toEqual([
+      ['Finder', 'Included'],
+      ['Tracer', 'Included'],
+    ]);
     await expect(explainer.dialog.getByRole('link', { name: 'Elite V3' })).toHaveAttribute(
       'href',
       '/en/systems/car/elite-v3/',
@@ -68,14 +73,14 @@ test.describe('the explainer', () => {
     const explainer = await openExplainer(page, button, GPS, { byTap: true });
 
     const names = new Set<string>();
-    for (let press = 1; press <= 15; press += 1) {
+    for (let press = 1; press <= 17; press += 1) {
       await page.keyboard.press('Tab');
       const focus = await focusInDialog(explainer);
       expect(focus, `Tab ${String(press)}`).toMatchObject({ isInside: true, hasFocus: true });
       names.add(focus.name);
     }
-    // 15 presses went round the 12 controls: Close and 11 system links.
-    expect(names.size).toBe(12);
+    // 17 presses went round the 14 controls: Close and 13 system links.
+    expect(names.size).toBe(14);
     await explainer.close.focus();
     await page.keyboard.press('Shift+Tab');
     await expect(explainer.dialog.getByRole('link').last()).toBeFocused();

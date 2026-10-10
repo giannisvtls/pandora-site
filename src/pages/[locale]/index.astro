@@ -128,7 +128,10 @@ const { heading, seeSystem, categories } = systemIndex(await siteQuery(), locale
     border-top: 4px solid var(--blue-soft);
   }
 
+  /* `min-height: 0` keeps the plate square: a flex item's automatic minimum height (the card is a
+     flex column) is its content's, so a portrait shot (the truck's) would stretch it. */
   .plate {
+    min-height: 0;
     aspect-ratio: 1;
     background: color-mix(in srgb, var(--blue-soft) 18%, var(--plate));
     display: grid;
@@ -194,6 +197,19 @@ const { heading, seeSystem, categories } = systemIndex(await siteQuery(), locale
   .go {
     margin-top: auto;
     align-self: flex-start;
+  }
+
+  /* The touch-sized layout (FeatureButton.astro): the feature buttons' 44px targets reach 10px
+     above and below their 24px line, so the rows are 20px apart and neighbouring targets never
+     overlap; the "See the system" link gets 8px more above, as the design's `.cta` below its 900px. */
+  @media (max-width: 1119px) {
+    .features {
+      row-gap: 20px;
+    }
+
+    .cta {
+      padding-top: 8px;
+    }
   }
 
   @media (max-width: 980px) {

@@ -633,6 +633,28 @@ are about to touch. When you hit a new one, add it here in the same shape.
     covers the screen.
   - Fix: BaseLayout's reveal script gives `.in` at once to an element taller than nine
     viewports; without IntersectionObserver it gives `.in` to every reveal element.
+- **`aspect-ratio` on a flex item yields to its content.** A flex item's automatic minimum height
+  is its content's, and `aspect-ratio` only sets a preferred size.
+  - Symptom: the index card's square plate (`aspect-ratio: 1`, an item of the card's flex column)
+    grows about 20px taller than wide around the portrait truck shot; `min-height: 0` on the image (the grid
+    item inside) does not help.
+  - Fix: `min-height: 0` on the plate itself (`index.astro`); `e2e/index-cards.spec.ts` checks
+    every plate is square at 1280 and 390px.
+- **A touch target grown with padding moves what is drawn.** The design gives its feature buttons
+  10px more padding above and below on small screens, taken back by negative margins.
+  - Symptom: the button's dotted underline (its bottom border) drops 10px below the label, and
+    Playwright's `boundingBox()` reports 44px though only the padding grew.
+  - Fix: an invisible, absolutely positioned `::before` reaching 10px beyond the drawn button
+    above and below takes the taps and nothing drawn moves (FeatureButton.astro; its offsets count
+    from the padding box, which ends above the underline, so it is `inset: -10px 0 -11px`). `boundingBox()` cannot see it:
+    `e2e/index-cards.spec.ts` reads the `::before` box from computed styles and checks with
+    `elementFromPoint` that points 9px above and below the label hit the button, and taps there.
+- **Astro inlines a page's CSS only under 4 KB.** With `build.inlineStylesheets` on `auto`, each
+  CSS chunk under 4 KB goes into a `<style>`, a larger one into a `<link rel="stylesheet">`.
+  - Symptom: the number of stylesheet links changes when a page's own styles cross 4 KB (the
+    index page's did, giving `/en/` a second one).
+  - Fix: expected; tests check that the theme script comes before every stylesheet, not how many
+    there are (`e2e/shell.spec.ts`).
 
 ## Islands (Preact)
 
@@ -649,9 +671,10 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: the menu sits open on the page, but `showModal()` was never called (nothing is
     inert, Escape does nothing).
   - Fix: set `display` on `.m-nav[open]` only.
-- **The header's breakpoint is written four times.** `client:media` cannot read CSS, so
-  SiteHeader's media queries, ThemeToggle's, MobileMenu.css and the island's
-  `client:media="(max-width: 1119px)"` must agree.
+- **The header's breakpoint is written six times.** `client:media` cannot read CSS, so
+  SiteHeader's media queries, ThemeToggle's, MobileMenu.css, the island's
+  `client:media="(max-width: 1119px)"`, and the feature buttons' touch targets (FeatureButton.astro
+  and the row spacing in `index.astro`) must agree.
   - Symptom: a burger that shows but was never hydrated (a dead button), or the island's script
     loaded where the burger is hidden.
   - Fix: change them together; `header-menu.test.ts` fails when one differs, and
@@ -751,7 +774,7 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: the query's `explainer('en')`, 35 KB as JSON, makes a 65 KB `props` attribute.
   - Fix: pass a trimmed shape with few values (`layouts/explainer-content.ts`: the texts the
     dialog shows, systems as one table referred to by index, absent keys instead of `undefined`),
-    and check the built attribute (`e2e/explainer.spec.ts`, under 40 KB; 17.4 KB on `/en/`).
+    and check the built attribute (`e2e/explainer.spec.ts`, under 40 KB; 17.5 KB on `/en/`).
 - **Props are plain objects.** An island's revived props inherit `Object.prototype`.
   - Symptom: `features[button.dataset.fx]` for `data-fx="constructor"` is a function, not
     `undefined`, and the view crashes.

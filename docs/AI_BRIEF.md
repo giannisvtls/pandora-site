@@ -408,9 +408,11 @@ Spec §5 (P1-1): the one way pages read content.
     `categories(L)` (in order), `accessories(L)` (`url` under `vehicles[0]`, none without a
     vehicle), `posts(L)` (`url` with the slug in `L`), `navSections(L)` (in order, with `url`),
     `siteCopy(L)` (the 12 groups by short name: `home`, `common`, ...), `finder(L)`;
-  - `explainer(L)` (`explainer.ts`): per feature key its texts in `L` and "on these systems" (a
-    matrix row: the products with 1 Included or 2 Optional; a key without a row: the products
-    that highlight it, Included); per level its texts and its products with the vehicle word of
+  - `explainer(L)` (`explainer.ts`): per feature key its texts in `L` and "on these systems"
+    (for a matrix row, a product with a matrix as its matrix says: 1 Included, 2 Optional; for a
+    key without a row, and for a product without a matrix such as Finder and Tracer: the products
+    that highlight it, Included; so every product is on the explainer of each feature it
+    highlights, which `explainer.test.ts` checks on the snapshot); per level its texts and its products with the vehicle word of
     their category (`common.vehicles.*.word`, the prototype's label there). Only products
     visible in `L`, each with its URL. A text `L` lacks (preview only) is `undefined`;
   - `image(id, L)` (`media.ts`): `{ src: ImageMetadata, alt }` for `<Image>`; an unknown id, an
@@ -518,7 +520,8 @@ index's with `src/components/system-index.ts`. No component holds visible copy (
   the one-row header needs 957px in English, 997px with two language codes and 1076px with all
   four, and a fixed row cannot scroll to what overflows (`e2e/header-spacing.spec.ts` checks every
   width from 320 to 1440px, with one and with four codes). The island's `client:media`, the theme
-  toggle's touch size and MobileMenu.css use the same query (`header-menu.test.ts`).
+  toggle's touch size, MobileMenu.css and the feature buttons' touch targets use the same query
+  (`header-menu.test.ts`).
 - **`ThemeToggle.astro`:** a plain `<button>` whose `aria-label` names what a press does
   (`header.themeToDark` / `themeToLight`), no `aria-pressed` (an action label with a pressed state
   contradicts itself). The script after it sets the label from the theme the head script applied,
@@ -539,16 +542,26 @@ index's with `src/components/system-index.ts`. No component holds visible copy (
 - **`FeatureButton.astro` / `LevelButton.astro`** (spec §8): a
   `<button type="button" aria-haspopup="dialog">` with `data-fx` (the feature key; shows the
   feature's title) or `data-lvl` (the level; shows `common.level`, "Level 3 · Recovery"), which
-  opens the explainer island (see Islands). Each is followed by its label as plain text
-  (`.fx-text`, `.lvl-text`), hidden with JavaScript; without JavaScript the button is hidden and
-  the text shows instead, so no control announces a dialog it cannot open (A11).
+  opens the explainer island (see Islands). The level chip carries the feature buttons' info mark
+  after its tag (same glyph, 14px, `--blue-soft`; `aria-hidden`, so the name stays the tag) as the
+  cue that it opens an explainer too. Below 1120px (the site's touch-sized layout, the header's
+  breakpoint) a feature button takes taps in a 44px-tall area: an invisible `::before` reaching
+  10px beyond its drawn 24px line above and below. Nothing drawn moves, so the button looks
+  as on a wide screen, the dotted underline right under the label (the design instead pads the
+  button below its 900px, which drops the underline). Each is followed by its label as plain text
+  (`.fx-text`, `.lvl-text`, without the mark), hidden with JavaScript; without JavaScript the
+  button is hidden and the text shows instead, so no control announces a dialog it cannot open
+  (A11).
 - **The interim index** (P1-8, `src/pages/[locale]/index.astro`): the home hero heading as the h1
   (`lead <span class="b">payload</span>`), then, in order, each category that has a visible
   system, as an h2 over its systems: the package shot through `<Image>` (A19; `widths` 320 and
   640, lazy), the name (h3), the level button, the tag, the highlight feature buttons and the
   "See the system" link to the product URL (404 until Phase 2). Systems come in their `order`
   (the prototype's, flagship first; the Content Layer hands the collection over sorted by id). No
-  reveal classes, so the h1 (LCP) never starts hidden.
+  reveal classes, so the h1 (LCP) never starts hidden. The plates are square at every width
+  (`min-height: 0`, see gotchas). Below 1120px the feature rows are 20px apart, so the buttons'
+  44px tap areas never overlap (the e2e measures each area and taps inside it), and the "See the system" link gets 8px more above it, as the
+  design's `.cta` (`e2e/index-cards.spec.ts`).
 - **Inline scripts and styles** (Phase 5's `_headers` needs a CSP hash for each, computed from the
   built files in `dist` at build time, since Astro and the Fonts API write some of them): the
   theme script in the head, the Fonts API's two `@font-face` `<style>` blocks in the head (one
@@ -617,7 +630,7 @@ JavaScript nothing an island renders is needed (A11).
   the table) and level (`title` filled from `common.level`, "Level 3 · Recovery", `what`, `items`,
   `stops`, `systems`) of the language; a text the language lacks is left out, and an entry without
   a title too. Astro wraps every prop value and escapes its quotes, so the shape is trimmed: about
-  17.4 KB on `/en/` (the full `explainer('en')` would be 65 KB), checked under 40 KB by
+  17.5 KB on `/en/` (the full `explainer('en')` would be 65 KB), checked under 40 KB by
   `e2e/explainer.spec.ts`. The size does not grow with the buttons a page shows (every feature is
   in it) or with the languages built (a page carries its own language); it grows with the
   catalogue (about 0.5 KB per feature with its texts, 0.1 KB per system) and with the length of a
@@ -642,8 +655,9 @@ JavaScript nothing an island renders is needed (A11).
   hidden; a late `close` event after a reopen does nothing. The look is the design's panel: on the
   right, 460px wide (the whole screen below that), over a veiled, blurred page; the panel scrolls
   inside, the close button (46px, an inline SVG X in `currentColor`, its focus ring flush and
-  square as the design's) stays 14px from its corner while it scrolls (sticky) and links that take
-  focus stop below it. The page under it does not
+  square as the design's) stays 14px from its corner while it scrolls (sticky), the title ends 8px
+  before the button's column (so a long title never runs under it, scrolled or not), and links that
+  take focus stop below it. The page under it does not
   scroll (`html:has(.fx-panel[open])`). The panel slides in and the backdrop fades only without
   `prefers-reduced-motion`; closing is instant. Without JavaScript the buttons are hidden and their
   labels show as text. Before the island hydrates a click on a button does nothing, and Phase 1

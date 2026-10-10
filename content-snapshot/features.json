@@ -20,7 +20,7 @@
       "en": "GPS/GLONASS tracking"
     },
     "what": {
-      "en": "A satellite receiver (GPS, GLONASS, BeiDou) reports the car's position and movement on the map in the app and web service. Elite V3 adds Wi-Fi positioning for garages and underground car parks where satellites fail."
+      "en": "A satellite receiver (GPS, GLONASS, BeiDou) reports the vehicle's position and movement on the map in the app and web service. Elite V3 adds Wi-Fi positioning for garages and underground car parks where satellites fail."
     },
     "how": {
       "en": "Position is logged with every event. Black Box keeps the record inside the unit and syncs it when signal returns."

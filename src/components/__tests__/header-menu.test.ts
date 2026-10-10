@@ -1,7 +1,8 @@
 // The mobile menu in the site header (spec §8), through the Container API: the island hydrates
 // only below the header's breakpoint (its `client:media` is the media query of the header's,
-// the theme toggle's and the menu's styles), its labels come from Site copy, its links and languages
-// are the nav's and the switcher's, and its server markup is the burger and a closed dialog.
+// the theme toggle's, the menu's and the feature buttons' touch-target styles), its labels come
+// from Site copy, its links and languages are the nav's and the switcher's, and its server markup
+// is the burger and a closed dialog.
 import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
@@ -97,6 +98,13 @@ describe('the mobile menu in the header (spec §8)', () => {
       ['', '36px'],
       [`@media ${COMPACT}`, '44px'],
     ]);
+    // The feature buttons' 44px touch targets, and the index's row spacing that keeps them apart.
+    expect(declaration(rulesOf('../FeatureButton.astro'), '.fx::before', 'inset')).toEqual([
+      [`@media ${COMPACT}`, '-10px 0 -11px'],
+    ]);
+    expect(
+      declaration(rulesOf('../../pages/[locale]/index.astro'), '.features', 'row-gap'),
+    ).toEqual([[`@media ${COMPACT}`, '20px']]);
   });
 
   it('renders the burger, named from Site copy, and the dialog closed, named by its nav', async () => {

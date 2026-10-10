@@ -76,8 +76,9 @@ function nameIn(product: ExplainerProduct, locale: Locale): string {
   return name;
 }
 
-// The systems a feature is on: for a matrix row, the products whose matrix has it Included (1)
-// or Optional (2); for a key without a row, the products that highlight it, as Included.
+// The systems a feature is on. A product with a matrix, for a matrix row: Included (1) or
+// Optional (2) as its matrix says. Otherwise (a key without a row, or a product without a matrix,
+// such as Finder and Tracer): Included when the product highlights the feature.
 function featureSystems(
   key: string,
   products: readonly ExplainerProduct[],
@@ -85,7 +86,8 @@ function featureSystems(
 ): FeatureSystem[] {
   return products.flatMap((product): FeatureSystem[] => {
     const value = isRowKey(key) ? product.matrix?.[key] : undefined;
-    const isOn = isRowKey(key) ? value === 1 || value === 2 : product.highlights.includes(key);
+    const isOn =
+      value === undefined ? product.highlights.includes(key) : value === 1 || value === 2;
     if (!isOn) return [];
     const { id, url } = product;
     const availability = value === 2 ? 'optional' : 'included';
