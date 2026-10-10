@@ -1,8 +1,10 @@
 // What the site header and footer show on a page (spec §7), read through the query module: the
-// header's links, labels and language targets, and the footer's company block, its columns with
-// their links resolved by routes.ts (A9: a link with no URL yet, and a column left without links,
-// are not rendered) and the legal line. SiteHeader and SiteFooter render these as given.
-import type { Locale, RouteKey } from '../content/contract';
+// header's links, labels and language targets (and the mobile menu's props, spec §8), and the
+// footer's company block, its columns with their links resolved by routes.ts (A9: a link with no
+// URL yet, and a column left without links, are not rendered) and the legal line. SiteHeader and
+// SiteFooter render these as given.
+import type { MobileMenuProps } from '../components/islands/MobileMenu';
+import { LANGUAGE_NAMES, type Locale, type RouteKey } from '../content/contract';
 import { fill, textIn } from '../content/copy';
 import type { Query } from '../content/query';
 import { routePath, targetHref } from '../content/routes';
@@ -24,6 +26,9 @@ export interface HeaderContent {
   // The theme toggle's labels, each naming what a press does.
   readonly theme: { readonly toDark: string; readonly toLight: string };
   readonly language: { readonly label: string; readonly targets: readonly SwitcherTarget[] };
+  // The mobile menu island's props: plain, serialisable data (the island imports no content
+  // module), the same links and languages as the nav and the switcher.
+  readonly menu: MobileMenuProps;
 }
 
 // The nav section a page belongs to: category and product pages are under `systems` (spec §7),
@@ -53,20 +58,20 @@ export function headerContent(query: Query, page: Page, locale: Locale): HeaderC
   const text = (value: Parameters<typeof textIn>[0], field: string) =>
     textIn(value, locale, `siteCopyHeader.${field}`);
   const section = sectionOf(page);
+  const links = query.navSections(locale).map((item) => ({
+    label: textIn(item.label, locale, `navSections.${item.id}.label`),
+    href: item.url,
+    isCurrent: item.route === section,
+  }));
+  const languageLabel = text(header.languageLabel, 'languageLabel');
+  const targets = query.switcherTargets(page, locale);
   return {
     home: {
       href: routePath(locale, 'home', {}),
       label: text(header.homeLinkLabel, 'homeLinkLabel'),
       logoAlt: text(header.logoAlt, 'logoAlt'),
     },
-    nav: {
-      label: text(header.primaryNavLabel, 'primaryNavLabel'),
-      links: query.navSections(locale).map((item) => ({
-        label: textIn(item.label, locale, `navSections.${item.id}.label`),
-        href: item.url,
-        isCurrent: item.route === section,
-      })),
-    },
+    nav: { label: text(header.primaryNavLabel, 'primaryNavLabel'), links },
     compare: {
       href: routePath(locale, 'compare', {}),
       text: textIn(common.pages.compare, locale, 'siteCopyCommon.pages.compare'),
@@ -76,9 +81,16 @@ export function headerContent(query: Query, page: Page, locale: Locale): HeaderC
       toDark: text(header.themeToDark, 'themeToDark'),
       toLight: text(header.themeToLight, 'themeToLight'),
     },
-    language: {
-      label: text(header.languageLabel, 'languageLabel'),
-      targets: query.switcherTargets(page, locale),
+    language: { label: languageLabel, targets },
+    menu: {
+      labels: {
+        open: text(header.openMenu, 'openMenu'),
+        close: text(header.closeMenu, 'closeMenu'),
+        nav: text(header.mobileNavLabel, 'mobileNavLabel'),
+        language: languageLabel,
+      },
+      links,
+      languages: targets.map((target) => ({ ...target, name: LANGUAGE_NAMES[target.locale] })),
     },
   };
 }

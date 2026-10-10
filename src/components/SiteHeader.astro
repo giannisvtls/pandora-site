@@ -1,16 +1,22 @@
 ---
 // The site header (spec §7): the logo link to the language home, the primary nav with the page's
 // section marked, the compare link (its count badge stays hidden until Phase 2 fills it), the
-// theme toggle and the language switcher. `variant`: `solid` sits on the page's own background;
-// `overlay` is transparent over the page's first section (Phase 2's hero) and turns solid once
-// that section has scrolled up under it. It is transparent only where that can happen: with
-// JavaScript (html.js) and an IntersectionObserver, and while the header is fixed over the
-// section; without JavaScript, and in the page flow below 900px, it has the solid background.
-// Everything it shows comes from `content` (layouts/shell.ts, through the query module).
-// Until the mobile menu (slice 9) the nav and the switcher show at every width: below 900px the
-// header wraps and stays in the page flow instead of covering it.
+// theme toggle, the language switcher and the mobile menu (spec §8). `variant`: `solid` sits on
+// the page's own background; `overlay` is transparent over the page's first section (Phase 2's
+// hero) and turns solid once that section has scrolled up under it. It is transparent only where
+// that can happen: with JavaScript (html.js) and an IntersectionObserver, and while the header is
+// fixed over the section; without JavaScript, and in the page flow below 1120px, it has the solid
+// background. Everything it shows comes from `content` (layouts/shell.ts, through the query
+// module).
+// From 1120px the header is one fixed row. Below, it sits in the page flow and may wrap, so it
+// never covers the content: with JavaScript the burger (the mobile menu island, hydrated only
+// there) stands in for the nav and the switcher; without JavaScript they stay inline (A11).
+// 1120px, not the design's 900px: under WCAG 1.4.12 text spacing the one-row header needs 957px
+// in English, 997px with two language codes and 1076px with all four, and a fixed row cannot
+// scroll to what overflows; the rest is room for a classic scrollbar (up to 17px) and rendering.
 import { Image } from 'astro:assets';
 
+import MobileMenu from './islands/MobileMenu';
 import LanguageSwitcher from './LanguageSwitcher.astro';
 import ThemeToggle from './ThemeToggle.astro';
 import logoWhite from '../assets/brand/invetec-logo-lettering-white.webp';
@@ -23,7 +29,7 @@ interface Props {
 }
 
 const { content, variant } = Astro.props;
-const { home, nav, compare, theme, language } = content;
+const { home, nav, compare, theme, language, menu } = content;
 ---
 
 <header class:list={['hdr', variant]}>
@@ -59,6 +65,8 @@ const { home, nav, compare, theme, language } = content;
     </a>
     <ThemeToggle toDark={theme.toDark} toLight={theme.toLight} />
     <LanguageSwitcher label={language.label} targets={language.targets} />
+    {/* The island's script loads only where the media query matches: keep it the CSS breakpoint. */}
+    <MobileMenu client:media="(max-width: 1119px)" {...menu} />
   </div>
   {variant === 'overlay' && <script is:inline>
     {
@@ -112,8 +120,8 @@ const { home, nav, compare, theme, language } = content;
   /* The design's transparent `.hdr` over the page's first section: only with JavaScript, whose
      script turns the header solid once the section has gone (the IntersectionObserver fallback
      adds `.solid` at once), and only where the header is fixed over the section. Without
-     JavaScript, and in the page flow below 900px, the overlay keeps the solid look above. */
-  @media not all and (max-width: 900px) {
+     JavaScript, and in the page flow below 1120px, the overlay keeps the solid look above. */
+  @media not all and (max-width: 1119px) {
     :global(html.js) .hdr.overlay:not(.solid) {
       background: linear-gradient(rgba(10, 15, 20, 0.85), rgba(10, 15, 20, 0));
       backdrop-filter: none;
@@ -211,9 +219,11 @@ const { home, nav, compare, theme, language } = content;
     display: none;
   }
 
-  /* Narrow screens, until the mobile menu (slice 9): everything stays shown, the header wraps and
-     sits in the page flow, so it never covers the content or the focused element. */
-  @media (max-width: 900px) {
+  /* Below 1120px (the header's comment says why not 900px): the header sits in the page flow and
+     wraps when it must, so it never covers the content or the focused element, and no control is
+     pushed out of reach. With JavaScript the mobile menu holds the nav and the switcher (its burger
+     shows, MobileMenu.css); without it they stay inline (A11). */
+  @media (max-width: 1119px) {
     .hdr {
       position: relative;
       flex-wrap: wrap;
@@ -229,6 +239,12 @@ const { home, nav, compare, theme, language } = content;
 
     .cmp-link {
       min-height: 44px;
+    }
+
+    /* The header's own switcher only: the menu's sits inside the island. */
+    :global(html.js) nav,
+    :global(html.js) .hdr-right > :global(.lang) {
+      display: none;
     }
   }
 

@@ -33,7 +33,8 @@ src/
   content.config.ts   every registered collection
   components/         SiteHeader.astro, ThemeToggle.astro, LanguageSwitcher.astro,
                       SiteFooter.astro, FeatureButton.astro, LevelButton.astro, system-index.ts
-                      (the interim index's content), __tests__/
+                      (the interim index's content), islands/ (MobileMenu.tsx + MobileMenu.css,
+                      __tests__/), __tests__/
   fonts/              fontsource-variable.ts (the Fonts API provider), __tests__/
   layouts/            BaseLayout.astro (head, theme script, skip link, header, main#main, footer,
                       reveal script), head.ts (what the head says), shell.ts (what the header and
@@ -42,7 +43,9 @@ src/
                       system index
   styles/             tokens.css (design tokens), base.css (element defaults, utilities, reveal
                       grammar), __tests__/
-  test/               setup.ts, redirects.test.ts, fixtures/ (a test-only Preact island)
+  test/               setup.ts (+ the jsdom <dialog> stand-in), container.ts (a Container API
+                      container that renders Preact islands), redirects.test.ts, fixtures/ (a
+                      test-only Preact island)
 ```
 
 ## Key Files
@@ -408,20 +411,27 @@ index's with `src/components/system-index.ts`. No component holds visible copy (
   in `L`, in order; `aria-current="page"` on the page's section, `sectionOf(page)`: category and
   product pages are `systems`, a post `blog`), the compare link (`common.pages.compare`, named
   `header.compareLinkLabel`, its count badge `hidden` until Phase 2), the theme toggle
-  (`ThemeToggle.astro`) and the language switcher. `solid` sits on the page background, fixed,
-  with an 88px spacer after it; `overlay` (Phase 2's hero) is transparent until the page's first
-  section has scrolled up under it, and only where its script can tell: with JavaScript
-  (`html.js`) and an IntersectionObserver (otherwise the script adds `solid` at once), while the
-  header is fixed over that section. Without JavaScript, and in the page flow below 900px, the
-  overlay has the solid background in its night tokens (`e2e/overlay.spec.ts`, on a fixture page
-  made from the built `/en/`). Below 900px, until the mobile menu (slice 9), the header wraps and
-  stays in the page flow, so the nav and the switcher show at every width and nothing is covered.
+  (`ThemeToggle.astro`), the language switcher and the mobile menu (see Islands). `solid` sits on
+  the page background, fixed, with an 88px spacer after it; `overlay` (Phase 2's hero) is
+  transparent until the page's first section has scrolled up under it, and only where its script
+  can tell: with JavaScript (`html.js`) and an IntersectionObserver (otherwise the script adds
+  `solid` at once), while the header is fixed over that section. Without JavaScript, and in the
+  page flow below 1120px, the overlay has the solid background in its night tokens
+  (`e2e/overlay.spec.ts`, on a fixture page made from the built `/en/`). From 1120px the header is
+  one fixed 88px row. Below 1120px (`max-width: 1119px`) it sits in the page flow and wraps when
+  it must, so it never covers the content: with JavaScript the mobile menu's burger stands in for
+  the nav and the switcher (`html.js` hides them); without JavaScript they stay inline and the
+  burger is hidden (A11). The breakpoint is not the design's 900px: under WCAG 1.4.12 text spacing
+  the one-row header needs 957px in English, 997px with two language codes and 1076px with all
+  four, and a fixed row cannot scroll to what overflows (`e2e/header-spacing.spec.ts` checks every
+  width from 320 to 1440px, with one and with four codes). The island's `client:media`, the theme
+  toggle's touch size and MobileMenu.css use the same query (`header-menu.test.ts`).
 - **`ThemeToggle.astro`:** a plain `<button>` whose `aria-label` names what a press does
   (`header.themeToDark` / `themeToLight`), no `aria-pressed` (an action label with a pressed state
   contradicts itself). The script after it sets the label from the theme the head script applied,
   then on a press flips `data-theme`, saves it (storage that throws only loses the save), updates
   the label and dispatches `themechange` on `document` (`detail`: the theme). Without JavaScript
-  the toggle is hidden. It is drawn 38px square (46px below 900px), content-box like the design's
+  the toggle is hidden. It is drawn 38px square (46px below 1120px), content-box like the design's
   `all: unset` button.
 - **`LanguageSwitcher.astro`** (P1-5): the query's `switcherTargets(page, L)`, one entry per
   built language: the current one as text with `aria-current="true"`, every other one as
@@ -446,7 +456,35 @@ index's with `src/components/system-index.ts`. No component holds visible copy (
   (LCP) never starts hidden.
 - **Inline scripts** (Phase 5's `_headers` needs a CSP hash for each): the theme script in the
   head, the theme toggle's script (ThemeToggle), the overlay header's script (SiteHeader, overlay
-  pages only) and the reveal script at the end of `<body>`.
+  pages only), Astro's island runtime with its `client:media` loader (and its `<style>`), which
+  Astro writes beside the first island, and the reveal script at the end of `<body>`.
+
+## Islands
+
+Spec §8: Preact, a native `<dialog>` opened with `showModal()` (A10), every label from Site copy.
+An island takes plain, serialisable props and imports only types from `src/content/` (a value
+import of `query.ts` or `media.ts` would put the eager media glob and zod into the browser). Its
+markup carries no Astro scope, so its styles are a global stylesheet next to it. Without
+JavaScript nothing an island renders is needed (A11).
+
+- **`islands/MobileMenu.tsx`** (+ `MobileMenu.css`), in SiteHeader with
+  `client:media="(max-width: 1119px)"`: its script and Preact load only below 1120px (about 8 KB
+  gzip with the renderer; `MobileMenu.*.js` is 2.4 KB, 1.1 KB gzip, and imports Preact and its
+  hooks only). Props (`MobileMenuProps`, built by `headerContent(...).menu` in `shell.ts`): the
+  labels (`header.openMenu`, `closeMenu`, `mobileNavLabel`, `languageLabel`), the nav's links
+  with `isCurrent`, and the switcher's languages with their endonym. The burger
+  (`aria-haspopup="dialog"`, `aria-controls`) opens a full-screen modal dialog named by its nav
+  (`aria-labelledby` on the nav, whose `aria-label` is the mobile nav label: no new string). Its
+  close button is measured into the burger's place. Focus goes to the first link; Tab and
+  Shift+Tab wrap at the ends (a native modal dialog lets focus leave the page for the browser's own
+  UI); Escape (the browser's close request), the close button and following a link close it, and
+  the dialog's `close` event gives focus back to the burger on every way out. The page under it
+  does not scroll (`html:has(.m-nav[open]) { overflow: hidden }`, lifted on every close). The
+  burger's transition is off under reduced motion. No reveal classes: the reveal script never sees
+  island markup. Tests: `islands/__tests__/MobileMenu.test.tsx` (jsdom, with the `showModal()`
+  stand-in of `src/test/setup.ts`), `components/__tests__/header-menu.test.ts` (Container API),
+  `e2e/menu.spec.ts` (390 × 844, 1280, 1120, 1119, without JavaScript, axe with the menu open in
+  both themes) and `e2e/header-spacing.spec.ts`.
 
 ## i18n routing
 
@@ -588,16 +626,16 @@ can point the crawler anywhere else.
 
 Phase 0 limits:
 
-- Styling so far is the shell (tokens, base styles, fonts, skip link, header, footer) and the
-  interim index; the mobile menu and the explainer islands come later in Phase 1.
+- Styling so far is the shell (tokens, base styles, fonts, skip link, header, footer, mobile
+  menu) and the interim index; the explainer island comes later in Phase 1.
 - No deploy: no hosting project, no `_headers`, no Functions. `public/_redirects` is the only
   host file.
 - `/en/` is the interim system index (the 16 systems visible in English), and only `/en/` is
   built; its system links 404 until Phase 2.
 - No CMS yet: `CONTENT_SOURCE=payload` throws until Phase 5.
 - No 404 page yet (Phase 1, with a per-locale strategy).
-- No islands ship: the only Preact component is the test fixture
-  `src/test/fixtures/FixtureToggle.tsx`, which no page imports.
+- One island ships, the mobile menu (below 1120px only); the explainer comes in slice 10. The
+  test fixture `src/test/fixtures/FixtureToggle.tsx` is imported by no page.
 - `redirects/crawl.json` is the inventory, not the redirect map: the crawler and the summary map
   no old URL to a new page (Phase 7 builds the map).
 

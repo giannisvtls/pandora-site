@@ -490,10 +490,11 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: locally `/` returns 404 and `/_redirects` is served as a plain file.
   - Fix: expected. The root redirect is covered by `src/test/redirects.test.ts`, and the e2e
     server waits on `/en/`, not `/`.
-- **`dist/_astro` contains Preact runtime chunks.**
-  - Symptom: JS files in `dist/_astro` although no page has a `<script>`.
-  - Fix: expected from the Preact integration; nothing reaches the browser. Recheck once real
-    islands exist.
+- **`dist/_astro` holds more Preact chunks than a page loads.**
+  - Symptom: `signals.module.*.js` (and the other Preact chunks) in `dist/_astro`.
+  - Fix: expected. A page loads the island's chunk, the renderer (`client.*.js`), Preact and its
+    hooks only where the island's `client:media` matches (below 1120px for the mobile menu, about
+    8 KB gzip in all); the renderer imports `signals` only for an island given a signal prop.
 - **`@types/node` is global** (no `types` list in `tsconfig.json`).
   - Symptom: Node globals type-check inside browser code too.
   - Fix: scope the types when islands grow.
@@ -577,6 +578,50 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Fix: BaseLayout's reveal script gives `.in` at once to an element taller than nine
     viewports; without IntersectionObserver it gives `.in` to every reveal element.
 
+## Islands (Preact)
+
+- **An island's markup has no Astro scope.** A scoped `<style>` in the `.astro` parent never
+  reaches the elements an island renders (Astro hands the island its scope id only as a
+  `data-astro-cid-*` prop, which the island ignores).
+  - Symptom: the burger and the menu are unstyled although SiteHeader's `<style>` names them.
+  - Fix: a global stylesheet imported by the island (`MobileMenu.css`; Astro bundles it into the
+    page's CSS, so it applies before hydration) with class names only the island uses. A parent
+    rule that must not reach into the island uses a child combinator: `.hdr-right >
+:global(.lang)` hides the header's switcher, not the menu's.
+- **A `display` on a dialog's class shows it while closed.** The browser hides a closed dialog
+  with `dialog:not([open]) { display: none }`, and any author `display` beats it.
+  - Symptom: the menu sits open on the page, but `showModal()` was never called (nothing is
+    inert, Escape does nothing).
+  - Fix: set `display` on `.m-nav[open]` only.
+- **The header's breakpoint is written four times.** `client:media` cannot read CSS, so
+  SiteHeader's media queries, ThemeToggle's, MobileMenu.css and the island's
+  `client:media="(max-width: 1119px)"` must agree.
+  - Symptom: a burger that shows but was never hydrated (a dead button), or the island's script
+    loaded where the burger is hidden.
+  - Fix: change them together; `header-menu.test.ts` fails when one differs, and
+    `e2e/menu.spec.ts` checks 1119px (script requested, burger shown) against 1120px (neither).
+    The complement is `@media not all and (max-width: 1119px)` (the overlay's transparent look),
+    never `min-width: 1120px`, which would leave fractional widths such as 1119.5px in neither.
+- **The one-row header and text spacing.** Under WCAG 1.4.12 text spacing the fixed header row
+  needs 957px in English, 997px with two language codes and 1076px with all four.
+  - Symptom: below that the switcher slides past the edge of the screen, and a fixed row cannot
+    scroll to it.
+  - Fix: the breakpoint (1120px) sits above it, with room for a classic scrollbar (up to 17px).
+    Longer nav labels change the numbers: re-measure with `e2e/header-spacing.spec.ts` when a
+    language goes live.
+- **A native modal dialog lets Tab leave the page.** After a modal dialog's last control,
+  Chromium moves focus to the browser's own UI (`document.activeElement` is `<body>`,
+  `document.hasFocus()` is false), then back to the first control; Shift+Tab from the first
+  control does the same.
+  - Symptom: "Tab stays inside" fails on the press after the last control.
+  - Fix: the island wraps Tab and Shift+Tab at the ends itself (`wrapFocus` in MobileMenu.tsx);
+    `e2e/menu.spec.ts` checks `hasFocus()` after each press.
+- **Focus after a dialog opened from code.** On close the browser returns focus to the element
+  focused before `showModal()`, which is `<body>` when the opener never took focus (a tap on
+  iOS, a click in some browsers).
+  - Fix: the dialog's `close` event gives focus back to the burger, so every way out (Escape,
+    the close button, a link) restores it.
+
 ## Unit tests (Vitest)
 
 - **No Vitest globals, so no automatic Preact Testing Library cleanup.**
@@ -621,6 +666,20 @@ are about to touch. When you hit a new one, add it here in the same shape.
   - Symptom: run through a symlink or Windows junction, Vitest can fail to resolve its `/@fs/`
     setup-file path.
   - Fix: run it from the repository's real path.
+- **jsdom has no `showModal()` or `close()`.** jsdom 30.1.2 implements `<dialog>` and its
+  `open` attribute only.
+  - Symptom: `dialog.showModal is not a function` in an island test.
+  - Fix: `src/test/setup.ts` adds a stand-in where jsdom lacks them: `showModal()` sets `open`
+    and makes Escape (a keydown anywhere in the document) fire a cancelable `cancel`, then
+    `close()`; `close()` clears `open` and fires `close` a task later, as browsers do, so a
+    test waits (`waitFor`) for what the `close` event does. Nothing else a browser does (the
+    inert page, focus on opening, the top layer): `e2e/menu.spec.ts` covers that.
+- **A component that holds an island fails in a bare Container.**
+  - Symptom: `NoMatchingRenderer: Unable to render MobileMenu` from the SiteHeader or BaseLayout
+    tests.
+  - Fix: create the container with `createContainer()` (`src/test/container.ts`, the Preact
+    renderer through `loadRenderers` from `astro:container`). The island renders as
+    `<astro-island ... client="media" opts="...">` around its server markup.
 - **jsdom workers under load.**
   - Symptom: jsdom test workers time out on a machine busy with other test runs.
   - Fix: `npm run test -- --maxWorkers=1`.
@@ -673,6 +732,11 @@ are about to touch. When you hit a new one, add it here in the same shape.
     passes for "Camper V3"); `page.goto()` returns the last response of a redirect chain.
   - Fix: pass `exact: true`, and assert `response.request().redirectedFrom()` is null when the
     status matters.
+- **An island is dead until it hydrates.** `client:media` loads the island's script after the
+  page; `page.goto` can return before it ran.
+  - Symptom: a click on the burger does nothing, now and then.
+  - Fix: wait until `astro-island` has lost its `ssr` attribute (Astro removes it once
+    hydrated) before using the island, as `e2e/menu.spec.ts` does.
 - **What axe checks.** The tag set is WCAG 2.0-2.2 A/AA (`wcag2a`, `wcag2aa`, `wcag21a`,
   `wcag21aa`, `wcag22aa`; axe-core 4.13 has no `wcag22a` tag).
   - Symptom: best-practice rules (`region`, `landmark-one-main`, `heading-order`,
@@ -702,6 +766,8 @@ are about to touch. When you hit a new one, add it here in the same shape.
   `e2e/shell.spec.ts` lists every element of the header, `<main>` and the footer that is not
   shown.
   - Symptom: it reports `script#` (the toggle's inline script), the compare count (`hidden`
-    until Phase 2), the logo for the other theme or the theme toggle (hidden without
-    JavaScript).
+    until Phase 2), the logo for the other theme, the theme toggle (hidden without JavaScript),
+    or the mobile menu: its burger (hidden without JavaScript), its closed dialog, the
+    `astro-island` wrapper (`display: contents`, no box) and the runtime `style` and `script`
+    Astro writes beside it.
   - Fix: those are skipped by name in the test; a new element hidden on purpose needs the same.

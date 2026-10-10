@@ -217,10 +217,13 @@ test.describe('without JavaScript (A11)', () => {
         ),
       ]
         // Hidden on purpose: an element with `hidden` (the compare count, filled in Phase 2), the
-        // logo meant for the dark theme, the theme toggle (it needs JavaScript) and its script.
+        // logo meant for the dark theme, the theme toggle (it needs JavaScript) and its script,
+        // and the mobile menu (its burger needs JavaScript, its dialog is closed; the island's
+        // wrapper draws no box of its own, and Astro puts its runtime style and script beside it).
         .filter(
           (element) =>
-            !element.closest('[hidden], .theme-btn') && !element.matches('img.lw, script'),
+            !element.closest('[hidden], .theme-btn, .menu-btn, dialog') &&
+            !element.matches('img.lw, script, style, astro-island'),
         )
         .filter((element) => {
           const style = getComputedStyle(element);

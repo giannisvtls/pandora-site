@@ -4,7 +4,6 @@
 // switcher (P1-5); the solid and overlay variants.
 import { readFileSync } from 'node:fs';
 
-import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { describe, expect, it } from 'vitest';
 
 import { LANGUAGE_NAMES, type Locale } from '../../content/contract';
@@ -12,6 +11,7 @@ import type { Query } from '../../content/query';
 import type { Page } from '../../content/rules';
 import { headerContent } from '../../layouts/shell';
 import { cssRules } from '../../styles/__tests__/css-rules';
+import { createContainer } from '../../test/container';
 import LanguageSwitcher from '../LanguageSwitcher.astro';
 import SiteHeader from '../SiteHeader.astro';
 import { ACCESSORIES_LABEL, between, shellQuery } from './shell-fixtures';
@@ -19,7 +19,7 @@ import { ACCESSORIES_LABEL, between, shellQuery } from './shell-fixtures';
 // The component's source, for its scoped styles.
 const SOURCE = readFileSync(new URL('../SiteHeader.astro', import.meta.url), 'utf8');
 
-const container = await AstroContainer.create();
+const container = await createContainer();
 const englishOnly = shellQuery(['en']);
 const withGreek = shellQuery(['en', 'el']);
 
@@ -173,10 +173,10 @@ describe('SiteHeader', () => {
       declarations.get('background')?.startsWith('linear-gradient('),
     );
 
-    // Everywhere else, without JavaScript and in the page flow below 900px included, the overlay
+    // Everywhere else, without JavaScript and in the page flow below 1120px included, the overlay
     // has the solid header's background.
     expect(transparent.map(({ scope, selectors }) => [scope, selectors])).toEqual([
-      ['@media not all and (max-width: 900px)', [':global(html.js) .hdr.overlay:not(.solid)']],
+      ['@media not all and (max-width: 1119px)', [':global(html.js) .hdr.overlay:not(.solid)']],
     ]);
     const header = rules.find(({ scope, selectors }) => scope === '' && selectors.includes('.hdr'));
     expect(header?.declarations.get('background')).toBe('rgba(var(--night-rgb),0.92)');

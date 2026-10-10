@@ -94,7 +94,7 @@ test.describe('the site header', () => {
     await expect(html).toHaveAttribute('data-theme', 'light');
   });
 
-  test('draws the theme button as the design does: 38px, and 46px below 900px', async ({
+  test('draws the theme button as the design does: 38px, and 46px below 1120px', async ({
     page,
   }) => {
     await page.goto('/en/');
@@ -260,7 +260,8 @@ test.describe('the fixed header and keyboard focus (WCAG 2.2 SC 2.4.11)', () => 
   test('never covers the focused element, tabbing back from the footer through the index', async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 1024, height: 600 });
+    // The narrowest width with the fixed header, and a short screen.
+    await page.setViewportSize({ width: 1120, height: 600 });
     await page.goto('/en/');
     await page.locator('footer a[href]').last().focus();
 

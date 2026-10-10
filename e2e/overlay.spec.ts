@@ -83,7 +83,7 @@ test.describe('the overlay header', () => {
     expect(await backgroundOf(header)).toEqual(LIGHT_SOLID);
   });
 
-  test('is solid in the page flow below 900px', async ({ page }) => {
+  test('is solid in the page flow below 1120px', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     const header = await openOverlayPage(page);
 

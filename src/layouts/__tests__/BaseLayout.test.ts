@@ -1,13 +1,13 @@
 // BaseLayout (spec §6) through the Container API, on fixture content: the query module's adapter
 // (`siteQuery`) is replaced by a query over the fixtures, since astro:content serves no entries in
 // Vitest. English and Greek are live, so a page has two alternates and x-default (Greek).
-import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { describe, expect, it, vi } from 'vitest';
 
 import { fixtureContent, withLanguage } from '../../content/__tests__/rules-fixtures';
 import type { Locale } from '../../content/contract';
 import { createQuery, type Query } from '../../content/query';
 import type { Page } from '../../content/rules';
+import { createContainer } from '../../test/container';
 import BaseLayout from '../BaseLayout.astro';
 
 const state = vi.hoisted(() => ({ query: undefined as Query | undefined }));
@@ -46,7 +46,7 @@ function fixtureQuery(): Query {
 }
 
 state.query = fixtureQuery();
-const container = await AstroContainer.create({ astroConfig: { site: 'https://invetec.eu' } });
+const container = await createContainer({ astroConfig: { site: 'https://invetec.eu' } });
 
 interface RenderProps {
   readonly locale: Locale;
